@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { routing } from "@/i18n/routing";
 import { inter } from "../fonts";
 import "../globals.css";
@@ -33,7 +35,12 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
         <a href="#main" className="skip-link">
           {t("skipToContent")}
         </a>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster position="top-center" />
+          </TooltipProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

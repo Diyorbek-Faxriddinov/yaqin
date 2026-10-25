@@ -1,34 +1,153 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* Dizayn tokenlari 2.2-qadamda (dizayn tizimi) to'liq belgilanadi */
+/* shadcn komponentlaridagi dark: variantlari uchun. MVP'da qorong'i tema yo'q,
+   lekin tokenlar tayyor — keyin .dark blokini qo'shish kifoya. */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Yaqin dizayn tokenlari.
+ * Asosiy rang — firuza (teal-700), urg'u — amber, neytral — iliq kulrang (stone).
+ * Barcha matn/fon juftliklari WCAG 2.1 AA kontrastiga mos (≥ 4.5:1),
+ * input chegaralari ≥ 3:1.
+ */
 :root {
+  --radius: 0.75rem;
+
   --background: #ffffff;
-  --foreground: #171717;
-  --brand: #0f766e;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  /* Asosiy rang: oq matn bilan 5.5:1 */
+  --primary: #0f766e;
+  --primary-hover: #115e59;
+  --primary-foreground: #ffffff;
+  --primary-soft: #f0fdfa;
+  --primary-soft-foreground: #115e59;
+
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #57534e;
+  --accent: #f0fdfa;
+  --accent-foreground: #134e4a;
+
+  /* Holat ranglari: matn sifatida oq fonda ≥ 4.5:1 */
+  --destructive: #b91c1c;
+  --success: #047857;
+  --success-soft: #ecfdf5;
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
+
+  /* Reyting yulduzlari va urg'u. Matn sifatida ishlatilmaydi. */
+  --highlight: #f59e0b;
+
+  --border: #e7e5e4;
+  --input: #928b86;
+  --ring: #0d9488;
+
+  --chart-1: #0f766e;
+  --chart-2: #14b8a6;
+  --chart-3: #f59e0b;
+  --chart-4: #78716c;
+  --chart-5: #99f6e4;
+
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #0f766e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0fdfa;
+  --sidebar-accent-foreground: #134e4a;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #0d9488;
+
+  /* Telefondagi pastki navigatsiya balandligi — kontent uning ostida qolmasligi uchun */
+  --bottom-nav-height: 4rem;
 }
 
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-highlight: var(--highlight);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading tracking-tight text-balance;
+  }
 }
 
-/* Klaviatura foydalanuvchilari uchun: fokusda ko'rinadi */
+/* Klaviatura foydalanuvchilari uchun: faqat fokusda ko'rinadi */
 .skip-link {
   position: absolute;
   left: 1rem;
   top: -100%;
-  z-index: 50;
-  border-radius: 0.5rem;
-  background: var(--brand);
-  color: #fff;
+  z-index: 100;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
   padding: 0.5rem 1rem;
 }
 

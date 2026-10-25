@@ -21,6 +21,11 @@ test.describe("Asosiy tekshiruv", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sahifa topilmadi");
   });
 
+  test("dizayn ko'rgazmasi production'da yopiq", async ({ page }) => {
+    const response = await page.goto("/dev/ui");
+    expect(response?.status()).toBe(404);
+  });
+
   test("gorizontal scroll yo'q", async ({ page }) => {
     await page.goto("/");
     const overflow = await page.evaluate(

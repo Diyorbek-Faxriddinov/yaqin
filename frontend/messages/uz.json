@@ -6,7 +6,58 @@
   },
   "Common": {
     "siteName": "Yaqin",
-    "skipToContent": "Asosiy tarkibga oʻtish"
+    "skipToContent": "Asosiy tarkibga oʻtish",
+    "demoBanner": "Demo rejim: saytdagi bizneslar, narxlar va sharhlar namunaviy, haqiqiy emas.",
+    "tagline": "Yaqin atrofingizdagi doʻkon va xizmatlar",
+    "close": "Yopish"
+  },
+  "Nav": {
+    "main": "Asosiy navigatsiya",
+    "home": "Bosh sahifa",
+    "search": "Qidiruv",
+    "map": "Xarita",
+    "favorites": "Sevimlilar",
+    "profile": "Profil",
+    "categories": "Kategoriyalar",
+    "login": "Kirish"
+  },
+  "Search": {
+    "label": "Qidiruv",
+    "placeholder": "Doʻkon, xizmat yoki mahsulot…",
+    "submit": "Qidirish"
+  },
+  "Language": {
+    "label": "Til",
+    "uz": "Oʻzbekcha",
+    "ru": "Русский"
+  },
+  "Footer": {
+    "navLabel": "Qoʻshimcha havolalar",
+    "about": "Biz haqimizda",
+    "addBusiness": "Biznesingizni qoʻshing",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik siyosati",
+    "copyright": "© {year} Yaqin. Toshkent."
+  },
+  "Business": {
+    "status": {
+      "open": "Ochiq",
+      "closingSoon": "Tez orada yopiladi",
+      "closed": "Yopiq",
+      "unknown": "Ish vaqti nomaʼlum"
+    },
+    "reviews": "{count, plural, other {# ta sharh}}",
+    "noReviews": "Hali sharh yoʻq",
+    "rating": "Reyting: 5 dan {value}",
+    "distance": "Masofa: {distance}"
+  },
+  "States": {
+    "emptyTitle": "Hech narsa topilmadi",
+    "emptyDescription": "Boshqa soʻz bilan qidirib koʻring yoki filtrlarni oʻzgartiring.",
+    "errorTitle": "Nimadir xato ketdi",
+    "errorDescription": "Maʼlumotlarni yuklab boʻlmadi. Internet aloqasini tekshirib, qayta urinib koʻring.",
+    "retry": "Qayta urinish",
+    "loading": "Yuklanmoqda…"
   },
   "HomePage": {
     "title": "Yaqin atrofingizdagi xizmatlar",

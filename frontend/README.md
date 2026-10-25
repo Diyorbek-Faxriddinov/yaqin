@@ -21,8 +21,13 @@ Next.js (App Router) + TypeScript ilovasi. Umumiy maʼlumot, arxitektura va qaro
 ```text
 src/
 ├── app/[locale]/   sahifalar (uz — prefikssiz, ru — /ru)
+│   └── (public)/   ommaviy sahifalar (header, footer, pastki navigatsiya)
+├── components/
+│   ├── ui/         shadcn/Radix asosiy komponentlari
+│   └── common/     umumiy: karkas, holatlar, til almashtirgich
+├── features/       soha komponentlari: business, category, ...
 ├── i18n/           til sozlamalari (next-intl)
-└── lib/            umumiy yordamchi funksiyalar
+└── lib/            yordamchi funksiyalar (formatlash va h.k.)
 messages/           tarjimalar: uz.json, ru.json
 e2e/                Playwright testlari (375 / 768 / 1280 px)
 ```
@@ -33,3 +38,4 @@ e2e/                Playwright testlari (375 / 768 / 1280 px)
 - Ichki havolalar uchun `next/link` emas, `@/i18n/navigation` dagi `Link` ishlatiladi.
 - Oʻzbekcha matnlarda `ʻ` (U+02BB) va `ʼ` (U+02BC) belgilari ishlatiladi.
 - Narxlar tiyinda, butun son. Formatlash — `src/lib/format/price.ts`.
+- Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.

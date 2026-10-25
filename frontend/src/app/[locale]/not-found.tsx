@@ -1,20 +1,26 @@
 import { useTranslations } from "next-intl";
+import { PublicShell } from "@/components/common/public-shell";
+import { EmptyState } from "@/components/common/states";
+import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 
 export default function NotFound() {
   const t = useTranslations("NotFound");
 
   return (
-    <main
-      id="main"
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 py-16"
-    >
-      <p className="text-sm font-medium text-neutral-500">404</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t("title")}</h1>
-      <p className="mt-4 text-neutral-600">{t("description")}</p>
-      <Link href="/" className="mt-8 font-medium underline underline-offset-4">
-        {t("backHome")}
-      </Link>
-    </main>
+    <PublicShell>
+      <div className="mx-auto w-full max-w-3xl px-4 py-16">
+        <EmptyState
+          headingLevel="h1"
+          title={t("title")}
+          description={t("description")}
+          action={
+            <Button asChild>
+              <Link href="/">{t("backHome")}</Link>
+            </Button>
+          }
+        />
+      </div>
+    </PublicShell>
   );
 }
