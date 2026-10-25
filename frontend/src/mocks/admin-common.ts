@@ -5,6 +5,7 @@ import {
   CSRF_COOKIE,
   CSRF_HEADER,
   demoState,
+  permissionsOf,
   type AuditEntry,
   type DemoAdmin,
 } from "./demo-state";
@@ -40,7 +41,7 @@ export function revalidate(headers: Headers, ...tags: string[]) {
 }
 
 export function audit(
-  admin: DemoAdmin,
+  admin: DemoAdmin | null,
   action: string,
   targetType: AuditEntry["targetType"],
   targetId: string,
@@ -49,7 +50,7 @@ export function audit(
   demoState.audit.push({
     id: crypto.randomUUID(),
     at: new Date().toISOString(),
-    adminId: admin.id,
+    adminId: admin?.id ?? null,
     action,
     targetType,
     targetId,
@@ -57,11 +58,14 @@ export function audit(
   });
 }
 
-/** Admin sessiyasi + (o'zgartiruvchi so'rovlarda) CSRF + ruxsat (null — faqat sessiya) */
+/**
+ * Admin sessiyasi + (o'zgartiruvchi so'rovlarda) CSRF + ruxsat.
+ * null — faqat sessiya; "root" — faqat Root (administratorlar va rollarni boshqarish, ADR-0009).
+ */
 export function authorize(
   request: StrictRequest<DefaultBodyType>,
   cookies: Record<string, string>,
-  permission: AdminPermission | null,
+  permission: AdminPermission | "root" | null,
 ): { admin: DemoAdmin } | { response: Response } {
   const token = cookies[ADMIN_SESSION_COOKIE];
   const session = token ? demoState.adminSessions.get(token) : undefined;
@@ -70,7 +74,10 @@ export function authorize(
     return { response: error(401, "not_authenticated", "Admin sifatida kiring") };
   }
   const admin = demoState.admins.find((a) => a.id === session.adminId);
-  if (!admin) return { response: error(401, "not_authenticated", "Admin sifatida kiring") };
+  if (!admin || !admin.isActive) {
+    demoState.adminSessions.delete(token ?? "");
+    return { response: error(401, "not_authenticated", "Admin sifatida kiring") };
+  }
 
   if (!["GET", "HEAD"].includes(request.method)) {
     const header = request.headers.get(CSRF_HEADER);
@@ -80,10 +87,31 @@ export function authorize(
       };
     }
   }
-  if (permission && !admin.isRoot && !admin.permissions.includes(permission)) {
+  if (permission === "root" && !admin.isRoot) {
+    return { response: error(403, "root_required", "Bu amal faqat Root uchun") };
+  }
+  if (permission && permission !== "root" && !permissionsOf(admin).includes(permission)) {
     return { response: error(403, "permission_denied", "Bu amal uchun ruxsatingiz yo'q") };
   }
   return { admin };
+}
+
+/** /admin/me va 2FA javobi: maxfiy maydonlarsiz, amaldagi ruxsatlar bilan */
+export function toAdminMe(admin: DemoAdmin) {
+  return {
+    id: admin.id,
+    username: admin.username,
+    displayName: admin.displayName,
+    isRoot: admin.isRoot,
+    permissions: permissionsOf(admin),
+  };
+}
+
+/** Tasodifiy matn (vaqtinchalik parol, hisobot tokeni) — kriptografik generator */
+export function randomToken(length: number): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
 }
 
 export async function readJson(request: Request): Promise<Record<string, unknown> | null> {

@@ -142,6 +142,9 @@ function requiredNote(value: unknown, min: number, max: number): string | { prob
 export const adminModerationHandlers = [
   // --- Ommaviy: "Biznesingizni qo'shing" so'rovi ---
   http.post(`${API}/business-requests`, async ({ request }) => {
+    if (!demoState.settings.businessRequestsOpen) {
+      return error(403, "requests_closed", "Hozircha soʻrovlar qabul qilinmayapti");
+    }
     const body = await readJson(request);
     const businessName = text(body?.businessName);
     const contactName = text(body?.contactName);

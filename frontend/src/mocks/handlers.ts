@@ -18,6 +18,7 @@ import {
 import { adminCategoryHandlers } from "./admin-category-handlers";
 import { adminHandlers } from "./admin-handlers";
 import { adminModerationHandlers } from "./admin-moderation-handlers";
+import { adminSystemHandlers } from "./admin-system-handlers";
 import { meHandlers } from "./me-handlers";
 
 // Handler'lar har qanday host'dagi /api/v1 yo'lini ushlaydi (API_URL qanday bo'lishidan qat'i nazar)
@@ -53,6 +54,7 @@ export const handlers = [
   ...adminHandlers,
   ...adminCategoryHandlers,
   ...adminModerationHandlers,
+  ...adminSystemHandlers,
   http.get(`${API}/categories`, ({ request }) => {
     return HttpResponse.json(listCategories(langOf(new URL(request.url))));
   }),
@@ -183,5 +185,4 @@ export const handlers = [
   }),
 
   // Demo rejimida statistika hech qayerga yozilmaydi
-  http.post(`${API}/events`, () => new HttpResponse(null, { status: 202 })),
 ];

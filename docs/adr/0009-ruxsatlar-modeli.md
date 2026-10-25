@@ -20,7 +20,7 @@ Qoidalar:
 
 1. **Root — ruxsat emas, alohida belgi.** API orqali berilmaydi va oʻzgartirilmaydi; faqat serverdagi CLI buyrugʻi bilan.
 2. **Standart holatda rad etish.** Har bir endpoint kerakli ruxsatni aniq eʼlon qiladi va backendda tekshiradi.
-3. **Vakolatni oshirishning oldini olish.** Administrator boshqalarga faqat oʻzida bor va "berilishi mumkin" deb belgilangan ruxsatlarni bera oladi. Administratorlarni boshqarish — faqat Root.
+3. **Vakolatni oshirishning oldini olish.** Administrator boshqalarga faqat oʻzida bor va "berilishi mumkin" deb belgilangan ruxsatlarni bera oladi. Administratorlarni boshqarish — faqat Root. MVP'da administrator va rollarni **oʻzgartirish faqat Root**ga ruxsat etilgan; `staff.manage` — faqat koʻrish. Shu bilan vakolat oshirish yoʻli yopiq; "berilishi mumkin" belgisi administratorlarga boshqarish huquqi berilganda kerak boʻladi.
 4. **Amaldagi ruxsatlar.** Root har bir administrator uchun yakuniy ruxsatlar roʻyxatini va har birining manbasini (rol yoki alohida) koʻradi.
 5. **Biznes turi** qaysi modullar va rollar mavjudligini belgilaydi (sartaroshxonada kuryer yoʻq).
 6. **Bizneslar izolyatsiyasi.** Biznesga tegishli soʻrovlar umumiy qatlamda `business_id` boʻyicha filtrlanadi; har bir endpoint uchun "boshqa biznes maʼlumotiga kirib boʻlmaydi" testi yoziladi.

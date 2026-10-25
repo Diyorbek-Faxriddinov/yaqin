@@ -1335,6 +1335,373 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /settings:
+    get:
+      tags: [catalog]
+      operationId: getPublicSettings
+      summary: Ommaviy sozlamalar (platforma kontaktlari, so'rov formasi ochiqmi)
+      responses:
+        "200":
+          description: Sozlamalar
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicSettings" }
+
+  /reports/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, pattern: "^[A-Za-z0-9_-]{32,64}$" }
+    get:
+      tags: [stats]
+      operationId: getOwnerReport
+      summary: Biznes egasi uchun hisobot (maxfiy havola, kirish shart emas)
+      description: |
+        Faqat ko'rishlar va bosishlar soni — shaxsiy maʼlumotsiz (ADR-0007). Backend tokenning
+        faqat xeshini saqlaydi; havola bekor qilinsa yoki noto'g'ri bo'lsa — 404. IP bo'yicha cheklanadi.
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Hisobot (oxirgi 30 kun)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerReport" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/staff:
+    get:
+      tags: [admin]
+      operationId: adminListStaff
+      summary: Administratorlar va amaldagi ruxsatlari (manbasi bilan) — ruxsat staff.manage
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Administratorlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminStaff" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [admin]
+      operationId: adminCreateStaff
+      summary: Administrator qo'shish — faqat Root (ADR-0009)
+      description: |
+        Vaqtinchalik parol bir marta qaytariladi; backendda Argon2 xeshi saqlanadi. Yangi
+        administrator birinchi kirishda parolni almashtiradi va 2FA (TOTP) ni sozlaydi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminStaffCreate" }
+      responses:
+        "201":
+          description: Qo'shildi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [staff, temporaryPassword]
+                properties:
+                  staff: { $ref: "#/components/schemas/AdminStaff" }
+                  temporaryPassword: { type: string }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/staff/{adminId}:
+    parameters:
+      - $ref: "#/components/parameters/AdminId"
+    patch:
+      tags: [admin]
+      operationId: adminUpdateStaff
+      summary: Rollar, alohida ruxsatlar, faollik — faqat Root
+      description: |
+        Root'ni API orqali o'zgartirib bo'lmaydi (403). O'chirilgan (isActive=false) administratorning
+        sessiyalari darhol tugatiladi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminStaffUpdate" }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminStaff" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/staff/{adminId}/reset-password:
+    parameters:
+      - $ref: "#/components/parameters/AdminId"
+    post:
+      tags: [admin]
+      operationId: adminResetStaffPassword
+      summary: Yangi vaqtinchalik parol — faqat Root (sessiyalar tugatiladi)
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Vaqtinchalik parol (bir marta ko'rsatiladi)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [temporaryPassword]
+                properties:
+                  temporaryPassword: { type: string }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/roles:
+    get:
+      tags: [admin]
+      operationId: adminListRoles
+      summary: Rollar — ruxsat staff.manage
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Rollar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminRole" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [admin]
+      operationId: adminCreateRole
+      summary: Rol qo'shish — faqat Root
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminRoleInput" }
+      responses:
+        "201":
+          description: Qo'shildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminRole" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/roles/{roleId}:
+    parameters:
+      - name: roleId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [admin]
+      operationId: adminUpdateRole
+      summary: Rolni o'zgartirish — faqat Root (shu roldagi administratorlarga darhol ta'sir qiladi)
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminRoleInput" }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminRole" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [admin]
+      operationId: adminDeleteRole
+      summary: Rolni o'chirish — faqat Root; tizim roli yoki ishlatilayotgan rol — 409
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/audit:
+    get:
+      tags: [admin]
+      operationId: adminListAudit
+      summary: Audit jurnali (faqat o'qish, eng yangisi birinchi) — ruxsat audit.view
+      description: Jurnal faqat qo'shiladi (append-only) — o'zgartirish yoki o'chirish endpointi yo'q.
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - name: targetType
+          in: query
+          schema: { $ref: "#/components/schemas/AuditTargetType" }
+        - name: adminId
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Jurnal sahifasi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditPage" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/settings:
+    get:
+      tags: [admin]
+      operationId: adminGetSettings
+      summary: Platforma sozlamalari — ruxsat settings.manage
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Sozlamalar
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformSettings" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [admin]
+      operationId: adminUpdateSettings
+      summary: Sozlamalarni saqlash — ruxsat settings.manage
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PlatformSettings" }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformSettings" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/stats:
+    get:
+      tags: [admin]
+      operationId: adminGetStats
+      summary: Platforma statistikasi — ruxsat stats.view
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/StatsDays"
+      responses:
+        "200":
+          description: Statistika
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformStats" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/businesses/{businessId}/stats:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminGetBusinessStats
+      summary: Biznes statistikasi — ruxsat business.view
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/StatsDays"
+      responses:
+        "200":
+          description: Statistika
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StatsSeries" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/report-link:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminGetReportLink
+      summary: Egasi uchun hisobot havolasi holati — ruxsat business.view
+      description: Havolaning o'zi qaytarilmaydi (faqat xeshi saqlanadi) — yo'qolsa, yangisi yaratiladi.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Holat
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportLinkStatus" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [admin]
+      operationId: adminCreateReportLink
+      summary: Yangi havola — ruxsat business.edit (eskisi bekor bo'ladi)
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "201":
+          description: Token bir marta qaytariladi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, status]
+                properties:
+                  token: { type: string }
+                  status: { $ref: "#/components/schemas/ReportLinkStatus" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [admin]
+      operationId: adminRevokeReportLink
+      summary: Havolani bekor qilish — ruxsat business.edit
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: Bekor qilindi
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /search/suggest:
     get:
       tags: [businesses]
@@ -1407,6 +1774,16 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    AdminId:
+      name: adminId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    StatsDays:
+      name: days
+      in: query
+      description: Davr (kun) — oxirgi N kun, bugun bilan
+      schema: { type: integer, enum: [7, 30, 90], default: 30 }
     Lang:
       name: lang
       in: query
@@ -1966,6 +2343,7 @@ components:
         - staff.manage
         - audit.view
         - settings.manage
+        - stats.view
 
     AdminMe:
       type: object
@@ -2505,3 +2883,281 @@ components:
         total: { type: integer }
         page: { type: integer }
         pageSize: { type: integer }
+
+    AdminRoleRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+
+    EffectivePermission:
+      type: object
+      required: [permission, sources]
+      description: Amaldagi ruxsat va uning manbalari (ADR-0009, 4-qoida)
+      properties:
+        permission: { $ref: "#/components/schemas/AdminPermission" }
+        sources:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                required: [type, role]
+                properties:
+                  type: { type: string, const: role }
+                  role: { $ref: "#/components/schemas/AdminRoleRef" }
+              - type: object
+                required: [type]
+                properties:
+                  type: { type: string, const: direct }
+
+    AdminStaff:
+      type: object
+      required:
+        - id
+        - username
+        - displayName
+        - isRoot
+        - isActive
+        - roles
+        - extraPermissions
+        - effectivePermissions
+        - lastLoginAt
+        - createdAt
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        displayName: { type: string }
+        isRoot: { type: boolean }
+        isActive: { type: boolean }
+        roles:
+          type: array
+          items: { $ref: "#/components/schemas/AdminRoleRef" }
+        extraPermissions:
+          type: array
+          description: Roldan tashqari alohida berilgan ruxsatlar
+          items: { $ref: "#/components/schemas/AdminPermission" }
+        effectivePermissions:
+          type: array
+          items: { $ref: "#/components/schemas/EffectivePermission" }
+        lastLoginAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    AdminStaffCreate:
+      type: object
+      required: [username, displayName, roleIds, extraPermissions]
+      properties:
+        username: { type: string, pattern: "^[a-z][a-z0-9_.-]{2,31}$" }
+        displayName: { type: string, minLength: 2, maxLength: 60 }
+        roleIds:
+          type: array
+          items: { type: string, format: uuid }
+        extraPermissions:
+          type: array
+          items: { $ref: "#/components/schemas/AdminPermission" }
+
+    AdminStaffUpdate:
+      type: object
+      properties:
+        displayName: { type: string, minLength: 2, maxLength: 60 }
+        roleIds:
+          type: array
+          items: { type: string, format: uuid }
+        extraPermissions:
+          type: array
+          items: { $ref: "#/components/schemas/AdminPermission" }
+        isActive: { type: boolean }
+
+    AdminRole:
+      type: object
+      required: [id, name, description, permissions, isBuiltIn, adminCount]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        permissions:
+          type: array
+          items: { $ref: "#/components/schemas/AdminPermission" }
+        isBuiltIn:
+          type: boolean
+          description: Tizim roli — o'chirib bo'lmaydi (ruxsatlarini o'zgartirish mumkin)
+        adminCount: { type: integer }
+
+    AdminRoleInput:
+      type: object
+      required: [name, description, permissions]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 40 }
+        description: { type: [string, "null"], maxLength: 200 }
+        permissions:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/AdminPermission" }
+
+    AuditTargetType:
+      type: string
+      enum:
+        - auth
+        - business
+        - item
+        - photo
+        - review
+        - complaint
+        - category
+        - request
+        - user
+        - admin
+        - role
+        - settings
+        - report
+
+    AuditEntry:
+      type: object
+      required: [id, at, admin, action, targetType, targetId, summary]
+      properties:
+        id: { type: string, format: uuid }
+        at: { type: string, format: date-time }
+        admin:
+          oneOf:
+            - type: object
+              required: [id, displayName]
+              properties:
+                id: { type: string, format: uuid }
+                displayName: { type: string }
+            - type: "null"
+        action:
+          type: string
+          description: "Masalan: business.update, review.reject, auth.login"
+        targetType: { $ref: "#/components/schemas/AuditTargetType" }
+        targetId: { type: string }
+        summary: { type: string }
+
+    AuditPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AuditEntry" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    PlatformContacts:
+      type: object
+      required: [telegram, email, phone]
+      properties:
+        telegram: { type: [string, "null"], pattern: "^[A-Za-z0-9_]{5,32}$" }
+        email: { type: [string, "null"], format: email, maxLength: 120 }
+        phone: { type: [string, "null"], pattern: "^\\+998\\d{9}$" }
+
+    PlatformSettings:
+      type: object
+      required: [reviewsPremoderation, businessRequestsOpen, contacts]
+      properties:
+        reviewsPremoderation:
+          type: boolean
+          description: true — sharhlar moderatsiyadan keyin chiqadi; false — darhol (keyin rad etish mumkin)
+        businessRequestsOpen:
+          type: boolean
+          description: '"Biznesingizni qo''shing" formasi so''rov qabul qiladimi'
+        contacts: { $ref: "#/components/schemas/PlatformContacts" }
+
+    PublicSettings:
+      type: object
+      required: [businessRequestsOpen, contacts]
+      properties:
+        businessRequestsOpen: { type: boolean }
+        contacts: { $ref: "#/components/schemas/PlatformContacts" }
+
+    StatsTotals:
+      type: object
+      required: [profileViews, calls, telegramClicks, directionClicks]
+      properties:
+        profileViews: { type: integer }
+        calls: { type: integer }
+        telegramClicks: { type: integer }
+        directionClicks: { type: integer }
+
+    StatsDay:
+      allOf:
+        - $ref: "#/components/schemas/StatsTotals"
+        - type: object
+          required: [date]
+          properties:
+            date:
+              type: string
+              format: date
+              description: Toshkent vaqti bo'yicha kun (YYYY-MM-DD)
+
+    StatsSeries:
+      type: object
+      required: [from, to, days, totals, daily]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        days: { type: integer }
+        totals: { $ref: "#/components/schemas/StatsTotals" }
+        daily:
+          type: array
+          items: { $ref: "#/components/schemas/StatsDay" }
+
+    PlatformStats:
+      allOf:
+        - $ref: "#/components/schemas/StatsSeries"
+        - type: object
+          required: [topBusinesses, content]
+          properties:
+            topBusinesses:
+              type: array
+              maxItems: 10
+              items:
+                type: object
+                required: [business, profileViews, contactClicks]
+                properties:
+                  business: { $ref: "#/components/schemas/AdminBusinessRef" }
+                  profileViews: { type: integer }
+                  contactClicks:
+                    type: integer
+                    description: Qo'ng'iroq + Telegram + yo'nalish bosishlari
+            content:
+              type: object
+              required:
+                [
+                  publishedBusinesses,
+                  newBusinesses,
+                  newReviews,
+                  newComplaints,
+                  newRequests,
+                ]
+              properties:
+                publishedBusinesses: { type: integer }
+                newBusinesses: { type: integer }
+                newReviews: { type: integer }
+                newComplaints: { type: integer }
+                newRequests: { type: integer }
+
+    ReportLinkStatus:
+      type: object
+      required: [active, createdAt, lastViewedAt, viewCount]
+      properties:
+        active: { type: boolean }
+        createdAt: { type: [string, "null"], format: date-time }
+        lastViewedAt: { type: [string, "null"], format: date-time }
+        viewCount: { type: integer }
+
+    OwnerReport:
+      allOf:
+        - $ref: "#/components/schemas/StatsSeries"
+        - type: object
+          required: [business, generatedAt]
+          properties:
+            business:
+              type: object
+              required: [name, categoryName, districtName, isPublished]
+              properties:
+                name: { type: string }
+                categoryName: { type: string }
+                districtName: { type: string }
+                isPublished: { type: boolean }
+            generatedAt: { type: string, format: date-time }

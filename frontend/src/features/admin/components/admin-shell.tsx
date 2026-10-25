@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import {
   ArrowLeft,
+  BarChart3,
   Building2,
   FolderTree,
   Inbox,
@@ -11,7 +12,10 @@ import {
   Menu,
   MessageSquareWarning,
   Plus,
+  ScrollText,
+  Settings,
   Star,
+  UserCog,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -34,12 +38,22 @@ import { useAdminLogout, useAdminMe, useCan } from "../use-admin";
 
 type NavItem = {
   href: string;
-  key: "dashboard" | "businesses" | "requests" | "reviews" | "complaints" | "categories" | "users";
+  key:
+    | "dashboard"
+    | "businesses"
+    | "requests"
+    | "reviews"
+    | "complaints"
+    | "categories"
+    | "users"
+    | "stats"
+    | "audit"
+    | "staff"
+    | "settings";
   icon: LucideIcon;
   permission?: AdminPermission;
 };
 
-// Keyingi qadamda (2.9) administratorlar, audit va statistika qo'shiladi
 const ITEMS: NavItem[] = [
   { href: "/admin", key: "dashboard", icon: LayoutDashboard },
   { href: "/admin/bizneslar", key: "businesses", icon: Building2, permission: "business.view" },
@@ -58,6 +72,10 @@ const ITEMS: NavItem[] = [
     permission: "category.manage",
   },
   { href: "/admin/foydalanuvchilar", key: "users", icon: Users, permission: "user.view" },
+  { href: "/admin/statistika", key: "stats", icon: BarChart3, permission: "stats.view" },
+  { href: "/admin/audit", key: "audit", icon: ScrollText, permission: "audit.view" },
+  { href: "/admin/administratorlar", key: "staff", icon: UserCog, permission: "staff.manage" },
+  { href: "/admin/sozlamalar", key: "settings", icon: Settings, permission: "settings.manage" },
 ];
 
 function NavLinks({

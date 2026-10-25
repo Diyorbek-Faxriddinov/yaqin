@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate } from "./date";
+import { formatDate, formatShortDay } from "./date";
 
 describe("formatDate", () => {
   it("oʻzbekcha oy nomi Intl'ga bogʻliq emas", () => {
@@ -12,5 +12,12 @@ describe("formatDate", () => {
 
   it("ruscha — Intl orqali", () => {
     expect(formatDate("2026-10-12T08:00:00Z", "ru")).toMatch(/12 октября 2026/);
+  });
+});
+
+describe("formatShortDay", () => {
+  it("kalendar kuni vaqt zonasiga bog'liq emas", () => {
+    expect(formatShortDay("2026-10-05", "uz")).toBe("5-okt");
+    expect(formatShortDay("2026-01-31", "ru")).toMatch(/31 янв/);
   });
 });

@@ -905,6 +905,246 @@ export interface paths {
         patch: operations["adminUpdateUser"];
         trace?: never;
     };
+    "/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ommaviy sozlamalar (platforma kontaktlari, so'rov formasi ochiqmi) */
+        get: operations["getPublicSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Biznes egasi uchun hisobot (maxfiy havola, kirish shart emas)
+         * @description Faqat ko'rishlar va bosishlar soni — shaxsiy maʼlumotsiz (ADR-0007). Backend tokenning
+         *     faqat xeshini saqlaydi; havola bekor qilinsa yoki noto'g'ri bo'lsa — 404. IP bo'yicha cheklanadi.
+         */
+        get: operations["getOwnerReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Administratorlar va amaldagi ruxsatlari (manbasi bilan) — ruxsat staff.manage */
+        get: operations["adminListStaff"];
+        put?: never;
+        /**
+         * Administrator qo'shish — faqat Root (ADR-0009)
+         * @description Vaqtinchalik parol bir marta qaytariladi; backendda Argon2 xeshi saqlanadi. Yangi
+         *     administrator birinchi kirishda parolni almashtiradi va 2FA (TOTP) ni sozlaydi.
+         */
+        post: operations["adminCreateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/staff/{adminId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                adminId: components["parameters"]["AdminId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Rollar, alohida ruxsatlar, faollik — faqat Root
+         * @description Root'ni API orqali o'zgartirib bo'lmaydi (403). O'chirilgan (isActive=false) administratorning
+         *     sessiyalari darhol tugatiladi.
+         */
+        patch: operations["adminUpdateStaff"];
+        trace?: never;
+    };
+    "/admin/staff/{adminId}/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                adminId: components["parameters"]["AdminId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Yangi vaqtinchalik parol — faqat Root (sessiyalar tugatiladi) */
+        post: operations["adminResetStaffPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rollar — ruxsat staff.manage */
+        get: operations["adminListRoles"];
+        put?: never;
+        /** Rol qo'shish — faqat Root */
+        post: operations["adminCreateRole"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/roles/{roleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roleId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Rolni o'chirish — faqat Root; tizim roli yoki ishlatilayotgan rol — 409 */
+        delete: operations["adminDeleteRole"];
+        options?: never;
+        head?: never;
+        /** Rolni o'zgartirish — faqat Root (shu roldagi administratorlarga darhol ta'sir qiladi) */
+        patch: operations["adminUpdateRole"];
+        trace?: never;
+    };
+    "/admin/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit jurnali (faqat o'qish, eng yangisi birinchi) — ruxsat audit.view
+         * @description Jurnal faqat qo'shiladi (append-only) — o'zgartirish yoki o'chirish endpointi yo'q.
+         */
+        get: operations["adminListAudit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platforma sozlamalari — ruxsat settings.manage */
+        get: operations["adminGetSettings"];
+        /** Sozlamalarni saqlash — ruxsat settings.manage */
+        put: operations["adminUpdateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platforma statistikasi — ruxsat stats.view */
+        get: operations["adminGetStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Biznes statistikasi — ruxsat business.view */
+        get: operations["adminGetBusinessStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/report-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Egasi uchun hisobot havolasi holati — ruxsat business.view
+         * @description Havolaning o'zi qaytarilmaydi (faqat xeshi saqlanadi) — yo'qolsa, yangisi yaratiladi.
+         */
+        get: operations["adminGetReportLink"];
+        put?: never;
+        /** Yangi havola — ruxsat business.edit (eskisi bekor bo'ladi) */
+        post: operations["adminCreateReportLink"];
+        /** Havolani bekor qilish — ruxsat business.edit */
+        delete: operations["adminRevokeReportLink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/suggest": {
         parameters: {
             query?: never;
@@ -1227,7 +1467,7 @@ export interface components {
          * @description Atomar ruxsat (ADR-0009). Root barcha ruxsatlarga ega.
          * @enum {string}
          */
-        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "user.manage" | "staff.manage" | "audit.view" | "settings.manage";
+        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "user.manage" | "staff.manage" | "audit.view" | "settings.manage" | "stats.view";
         AdminMe: {
             /** Format: uuid */
             id: string;
@@ -1522,6 +1762,162 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        AdminRoleRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        /** @description Amaldagi ruxsat va uning manbalari (ADR-0009, 4-qoida) */
+        EffectivePermission: {
+            permission: components["schemas"]["AdminPermission"];
+            sources: ({
+                /** @constant */
+                type: "role";
+                role: components["schemas"]["AdminRoleRef"];
+            } | {
+                /** @constant */
+                type: "direct";
+            })[];
+        };
+        AdminStaff: {
+            /** Format: uuid */
+            id: string;
+            username: string;
+            displayName: string;
+            isRoot: boolean;
+            isActive: boolean;
+            roles: components["schemas"]["AdminRoleRef"][];
+            /** @description Roldan tashqari alohida berilgan ruxsatlar */
+            extraPermissions: components["schemas"]["AdminPermission"][];
+            effectivePermissions: components["schemas"]["EffectivePermission"][];
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminStaffCreate: {
+            username: string;
+            displayName: string;
+            roleIds: string[];
+            extraPermissions: components["schemas"]["AdminPermission"][];
+        };
+        AdminStaffUpdate: {
+            displayName?: string;
+            roleIds?: string[];
+            extraPermissions?: components["schemas"]["AdminPermission"][];
+            isActive?: boolean;
+        };
+        AdminRole: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string | null;
+            permissions: components["schemas"]["AdminPermission"][];
+            /** @description Tizim roli — o'chirib bo'lmaydi (ruxsatlarini o'zgartirish mumkin) */
+            isBuiltIn: boolean;
+            adminCount: number;
+        };
+        AdminRoleInput: {
+            name: string;
+            description: string | null;
+            permissions: components["schemas"]["AdminPermission"][];
+        };
+        /** @enum {string} */
+        AuditTargetType: "auth" | "business" | "item" | "photo" | "review" | "complaint" | "category" | "request" | "user" | "admin" | "role" | "settings" | "report";
+        AuditEntry: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            at: string;
+            admin: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+            } | null;
+            /** @description Masalan: business.update, review.reject, auth.login */
+            action: string;
+            targetType: components["schemas"]["AuditTargetType"];
+            targetId: string;
+            summary: string;
+        };
+        AuditPage: {
+            items: components["schemas"]["AuditEntry"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PlatformContacts: {
+            telegram: string | null;
+            /** Format: email */
+            email: string | null;
+            phone: string | null;
+        };
+        PlatformSettings: {
+            /** @description true — sharhlar moderatsiyadan keyin chiqadi; false — darhol (keyin rad etish mumkin) */
+            reviewsPremoderation: boolean;
+            /** @description "Biznesingizni qo'shing" formasi so'rov qabul qiladimi */
+            businessRequestsOpen: boolean;
+            contacts: components["schemas"]["PlatformContacts"];
+        };
+        PublicSettings: {
+            businessRequestsOpen: boolean;
+            contacts: components["schemas"]["PlatformContacts"];
+        };
+        StatsTotals: {
+            profileViews: number;
+            calls: number;
+            telegramClicks: number;
+            directionClicks: number;
+        };
+        StatsDay: components["schemas"]["StatsTotals"] & {
+            /**
+             * Format: date
+             * @description Toshkent vaqti bo'yicha kun (YYYY-MM-DD)
+             */
+            date: string;
+        };
+        StatsSeries: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            days: number;
+            totals: components["schemas"]["StatsTotals"];
+            daily: components["schemas"]["StatsDay"][];
+        };
+        PlatformStats: components["schemas"]["StatsSeries"] & {
+            topBusinesses: {
+                business: components["schemas"]["AdminBusinessRef"];
+                profileViews: number;
+                /** @description Qo'ng'iroq + Telegram + yo'nalish bosishlari */
+                contactClicks: number;
+            }[];
+            content: {
+                publishedBusinesses: number;
+                newBusinesses: number;
+                newReviews: number;
+                newComplaints: number;
+                newRequests: number;
+            };
+        };
+        ReportLinkStatus: {
+            active: boolean;
+            /** Format: date-time */
+            createdAt: string | null;
+            /** Format: date-time */
+            lastViewedAt: string | null;
+            viewCount: number;
+        };
+        OwnerReport: components["schemas"]["StatsSeries"] & {
+            business: {
+                name: string;
+                categoryName: string;
+                districtName: string;
+                isPublished: boolean;
+            };
+            /** Format: date-time */
+            generatedAt: string;
+        };
     };
     responses: {
         /** @description Topilmadi */
@@ -1592,6 +1988,9 @@ export interface components {
         BusinessId: string;
         CategoryId: string;
         RequestId: string;
+        AdminId: string;
+        /** @description Davr (kun) — oxirgi N kun, bugun bilan */
+        StatsDays: 7 | 30 | 90;
         Lang: components["schemas"]["Locale"];
         Slug: string;
         Page: number;
@@ -3026,6 +3425,454 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getPublicSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sozlamalar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSettings"];
+                };
+            };
+        };
+    };
+    getOwnerReport: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hisobot (oxirgi 30 kun) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerReport"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Administratorlar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStaff"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminStaffCreate"];
+            };
+        };
+        responses: {
+            /** @description Qo'shildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        staff: components["schemas"]["AdminStaff"];
+                        temporaryPassword: string;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminUpdateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                adminId: components["parameters"]["AdminId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminStaffUpdate"];
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStaff"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminResetStaffPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                adminId: components["parameters"]["AdminId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vaqtinchalik parol (bir marta ko'rsatiladi) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        temporaryPassword: string;
+                    };
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListRoles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rollar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRole"][];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRoleInput"];
+            };
+        };
+        responses: {
+            /** @description Qo'shildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRole"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminDeleteRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminUpdateRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRoleInput"];
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRole"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListAudit: {
+        parameters: {
+            query?: {
+                targetType?: components["schemas"]["AuditTargetType"];
+                adminId?: string;
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Jurnal sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditPage"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sozlamalar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettings"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformSettings"];
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetStats: {
+        parameters: {
+            query?: {
+                /** @description Davr (kun) — oxirgi N kun, bugun bilan */
+                days?: components["parameters"]["StatsDays"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statistika */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformStats"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetBusinessStats: {
+        parameters: {
+            query?: {
+                /** @description Davr (kun) — oxirgi N kun, bugun bilan */
+                days?: components["parameters"]["StatsDays"];
+            };
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statistika */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsSeries"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminGetReportLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Holat */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportLinkStatus"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminCreateReportLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Token bir marta qaytariladi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        token: string;
+                        status: components["schemas"]["ReportLinkStatus"];
+                    };
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminRevokeReportLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bekor qilindi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };

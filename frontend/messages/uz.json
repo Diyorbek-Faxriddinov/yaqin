@@ -362,7 +362,11 @@
       "reviews": "Sharhlar",
       "complaints": "Shikoyatlar",
       "categories": "Kategoriyalar",
-      "users": "Foydalanuvchilar"
+      "users": "Foydalanuvchilar",
+      "stats": "Statistika",
+      "audit": "Audit jurnali",
+      "staff": "Administratorlar",
+      "settings": "Sozlamalar"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -442,7 +446,8 @@
       "hours": "Ish vaqti",
       "contacts": "Aloqa va rozilik",
       "catalog": "Narxlar",
-      "status": "Holat"
+      "status": "Holat",
+      "stats": "Statistika"
     },
     "basic": {
       "name": "Biznes nomi",
@@ -823,6 +828,291 @@
         "unit": "Koʻpi bilan 20 belgi",
         "options": "Kamida 2 ta variant"
       }
+    },
+    "permissions": {
+      "groups": {
+        "businesses": "Bizneslar",
+        "content": "Kontent va moderatsiya",
+        "users": "Foydalanuvchilar",
+        "system": "Tizim"
+      },
+      "fromRole": "Rol orqali berilgan",
+      "items": {
+        "business_view": {
+          "name": "Bizneslarni koʻrish",
+          "hint": "Roʻyxat, profil va statistika (faqat koʻrish)"
+        },
+        "business_edit": {
+          "name": "Bizneslarni qoʻshish va tahrirlash",
+          "hint": "Usta, katalog, rasmlar, soʻrovlar (telefonlar bilan)"
+        },
+        "business_publish": {
+          "name": "Eʼlon qilish va yashirish",
+          "hint": "Biznes saytda koʻrinishini boshqarish"
+        },
+        "category_manage": {
+          "name": "Kategoriyalar va atributlar",
+          "hint": "Yoʻnalishlar, ichki kategoriyalar, xususiyatlar"
+        },
+        "review_moderate": {
+          "name": "Sharhlar moderatsiyasi",
+          "hint": "Chop etish va rad etish"
+        },
+        "complaint_manage": {
+          "name": "Shikoyatlar",
+          "hint": "Koʻrib chiqish va javob berish"
+        },
+        "user_view": {
+          "name": "Foydalanuvchilarni koʻrish",
+          "hint": "Ism, kirish usuli, faollik (kontaktsiz)"
+        },
+        "user_manage": {
+          "name": "Foydalanuvchilarni bloklash",
+          "hint": "Bloklash va blokdan chiqarish"
+        },
+        "stats_view": {
+          "name": "Statistika",
+          "hint": "Platforma boʻyicha koʻrishlar va bosishlar"
+        },
+        "audit_view": {
+          "name": "Audit jurnali",
+          "hint": "Barcha admin harakatlarini koʻrish"
+        },
+        "settings_manage": {
+          "name": "Sozlamalar",
+          "hint": "Moderatsiya rejimi, soʻrov formasi, kontaktlar"
+        },
+        "staff_manage": {
+          "name": "Administratorlarni koʻrish",
+          "hint": "Roʻyxat va rollar (oʻzgartirish — faqat Root)"
+        }
+      }
+    },
+    "staff": {
+      "title": "Administratorlar",
+      "description": "Har bir administratorda faqat kerakli ruxsatlar boʻlsin. Qoʻshish va oʻzgartirish — faqat Root.",
+      "readOnly": "Sizda faqat koʻrish ruxsati bor. Administratorlar va rollarni Root boshqaradi.",
+      "sections": "Boʻlimlar",
+      "tabAdmins": "Administratorlar",
+      "tabRoles": "Rollar",
+      "add": "Administrator qoʻshish",
+      "newTitle": "Yangi administrator",
+      "editTitle": "{name} — oʻzgartirish",
+      "dialogDescription": "Ruxsatlar rollar orqali beriladi; kerak boʻlsa — alohida qoʻshimcha ruxsat.",
+      "username": "Login",
+      "usernameHint": "Kichik lotin harflari, raqamlar va . _ - (3–32). Keyin oʻzgarmaydi.",
+      "displayName": "Ism",
+      "roles": "Rollar",
+      "extraPermissions": "Alohida ruxsatlar",
+      "extraHint": "Roldan tashqari kerak boʻlgan ruxsatlar. Rol orqali berilganlari belgilangan holda koʻrinadi.",
+      "create": "Qoʻshish",
+      "save": "Saqlash",
+      "saved": "Saqlandi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+      "inactive": "Oʻchirilgan",
+      "lastLogin": "Oxirgi kirish: {date}",
+      "neverLoggedIn": "Hali kirmagan",
+      "rootPermissions": "Barcha ruxsatlar (Root)",
+      "effective": "{count, plural, other {Amaldagi ruxsatlar: #}}",
+      "sourceRole": "{role} roli",
+      "sourceDirect": "alohida",
+      "edit": "Oʻzgartirish",
+      "resetPassword": "Parolni yangilash",
+      "resetConfirm": "{name} uchun yangi parol yaratilsinmi?",
+      "resetHint": "Eski parol ishlamay qoladi va faol sessiyalar tugatiladi.",
+      "deactivate": "Oʻchirish",
+      "activate": "Faollashtirish",
+      "deactivated": "Administrator oʻchirildi — sessiyalari tugatildi",
+      "activated": "Administrator faollashtirildi",
+      "cancel": "Bekor qilish",
+      "passwordTitle": "Vaqtinchalik parol",
+      "passwordDescription": "Parol faqat hozir koʻrinadi — uni administratorga xavfsiz yoʻl bilan yetkazing. Birinchi kirishda parolni almashtirish va 2FA ni sozlash kerak boʻladi.",
+      "temporaryPassword": "Parol",
+      "demoTotp": "Demo rejimda 2FA kodi: 123456.",
+      "copy": "Nusxalash",
+      "copied": "Nusxalandi",
+      "copyFailed": "Nusxalab boʻlmadi — qoʻlda belgilang",
+      "done": "Tayyor",
+      "validation": {
+        "username": "Login: kichik lotin harflari, raqamlar va . _ - (3–32)",
+        "displayName": "Ism kamida 2 belgi"
+      }
+    },
+    "roles": {
+      "add": "Rol qoʻshish",
+      "newTitle": "Yangi rol",
+      "editTitle": "Rolni oʻzgartirish",
+      "affects": "{count, plural, other {Bu rol # ta administratorga berilgan — oʻzgarish darhol taʼsir qiladi.}}",
+      "builtIn": "Tizim roli",
+      "admins": "{count, plural, other {# ta administrator}}",
+      "name": "Nomi",
+      "description": "Tavsif (ixtiyoriy)",
+      "edit": "Oʻzgartirish",
+      "delete": "Oʻchirish",
+      "deleteConfirm": "“{name}” roli oʻchirilsinmi?",
+      "deleted": "Rol oʻchirildi",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "saved": "Saqlandi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+      "validation": {
+        "name": "Nomi kamida 2 belgi",
+        "permissions": "Kamida bitta ruxsat tanlang"
+      }
+    },
+    "audit": {
+      "title": "Audit jurnali",
+      "description": "Barcha admin harakatlari: kim, qachon, nima qildi. Jurnalni oʻzgartirib yoki oʻchirib boʻlmaydi.",
+      "filterLabel": "Turi boʻyicha",
+      "targets": {
+        "all": "Hammasi",
+        "business": "Bizneslar",
+        "review": "Sharhlar",
+        "complaint": "Shikoyatlar",
+        "request": "Soʻrovlar",
+        "category": "Kategoriyalar",
+        "user": "Foydalanuvchilar",
+        "admin": "Administratorlar",
+        "role": "Rollar",
+        "settings": "Sozlamalar",
+        "report": "Hisobotlar",
+        "auth": "Kirishlar"
+      },
+      "count": "{count, plural, other {# ta yozuv}}",
+      "empty": "Yozuvlar yoʻq",
+      "system": "Tizim",
+      "actions": {
+        "auth_login": "kirdi",
+        "business_create": "biznes qoʻshdi",
+        "business_update": "biznesni tahrirladi",
+        "business_status_published": "eʼlon qildi",
+        "business_status_hidden": "yashirdi",
+        "business_status_draft": "qoralamaga qaytardi",
+        "photo_upload": "rasm yukladi",
+        "photo_reorder": "rasmlar tartibini oʻzgartirdi",
+        "photo_delete": "rasmni oʻchirdi",
+        "item_create": "narx qoʻshdi",
+        "item_update": "narxni tahrirladi",
+        "item_delete": "narxni oʻchirdi",
+        "review_publish": "sharhni chop etdi",
+        "review_reject": "sharhni rad etdi",
+        "complaint_in_review": "shikoyatni koʻrib chiqishga oldi",
+        "complaint_resolved": "shikoyatni hal qildi",
+        "complaint_rejected": "shikoyatni rad etdi",
+        "request_new": "soʻrovni qayta ochdi",
+        "request_contacted": "soʻrov boʻyicha bogʻlandi",
+        "request_rejected": "soʻrovni rad etdi",
+        "request_convert": "soʻrovdan biznes yaratdi",
+        "user_block": "foydalanuvchini blokladi",
+        "user_unblock": "foydalanuvchini blokdan chiqardi",
+        "category_create": "kategoriya qoʻshdi",
+        "category_update": "kategoriyani tahrirladi",
+        "category_delete": "kategoriyani oʻchirdi",
+        "category_attributes": "atributlarni oʻzgartirdi",
+        "admin_create": "administrator qoʻshdi",
+        "admin_update": "administratorni oʻzgartirdi",
+        "admin_reset_password": "parolni yangiladi",
+        "role_create": "rol qoʻshdi",
+        "role_update": "rolni oʻzgartirdi",
+        "role_delete": "rolni oʻchirdi",
+        "settings_update": "sozlamalarni oʻzgartirdi",
+        "report_create": "hisobot havolasini yaratdi",
+        "report_revoke": "hisobot havolasini bekor qildi"
+      }
+    },
+    "stats": {
+      "title": "Statistika",
+      "description": "Saytdagi koʻrishlar va bogʻlanish tugmalari bosilishi. Shaxsiy maʼlumot saqlanmaydi.",
+      "demoNote": "Demo rejim: statistika namunaviy (toʻqib chiqarilgan); saytdagi haqiqiy bosishlar ustiga qoʻshiladi.",
+      "topTitle": "Eng koʻp koʻrilgan bizneslar",
+      "business": "Biznes",
+      "views": "Koʻrishlar",
+      "contacts": "Bogʻlanishlar",
+      "contentTitle": "{count, plural, other {Oxirgi # kunda}}",
+      "content": {
+        "publishedBusinesses": "Eʼlon qilingan bizneslar (jami)",
+        "newBusinesses": "Yangi bizneslar",
+        "newReviews": "Yangi sharhlar",
+        "newComplaints": "Yangi shikoyatlar",
+        "newRequests": "Yangi soʻrovlar"
+      }
+    },
+    "report": {
+      "title": "Egasi uchun hisobot havolasi",
+      "description": "Maxfiy havola: egasi biznesi necha marta koʻrilgani va bosilganini koʻradi. Shaxsiy maʼlumot yoʻq; havolani istalgan vaqtda bekor qilish mumkin.",
+      "active": "Havola faol ({date} dan).",
+      "viewed": "{count, plural, other {# marta ochilgan, oxirgisi — {date}}}",
+      "notViewed": "Hali ochilmagan.",
+      "create": "Havola yaratish",
+      "regenerate": "Yangi havola (eskisi bekor boʻladi)",
+      "created": "Havola yaratildi",
+      "onceWarning": "Havola faqat hozir koʻrinadi — nusxalab egasiga yuboring.",
+      "copy": "Nusxalash",
+      "copied": "Nusxalandi",
+      "copyFailed": "Nusxalab boʻlmadi — qoʻlda belgilang",
+      "share": "Ulashish",
+      "shareTitle": "{name} — Yaqin hisoboti",
+      "revoke": "Bekor qilish",
+      "revokeConfirm": "Havola bekor qilinsinmi?",
+      "revokeHint": "Egasi havolani ocholmay qoladi. Kerak boʻlsa, yangisini yaratasiz.",
+      "revoked": "Havola bekor qilindi",
+      "cancel": "Yopish",
+      "error": "Bajarib boʻlmadi. Qayta urinib koʻring."
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "description": "Platforma boʻyicha umumiy sozlamalar. Har bir oʻzgarish audit jurnaliga yoziladi.",
+      "moderationTitle": "Moderatsiya va formalar",
+      "premoderation": {
+        "label": "Sharhlar moderatsiyadan keyin chiqadi",
+        "hint": "Oʻchirilsa, sharhlar darhol chiqadi — keyin rad etish mumkin."
+      },
+      "requestsOpen": {
+        "label": "“Biznesingizni qoʻshing” formasi ochiq",
+        "hint": "Yopilsa, sayt yangi soʻrov qabul qilmaydi."
+      },
+      "contactsTitle": "Platforma kontaktlari",
+      "contactsHint": "“Aloqa” sahifasida koʻrsatiladi. Boʻsh qoldirilsa — koʻrsatilmaydi.",
+      "contacts": {
+        "telegram": "Telegram",
+        "email": "Email",
+        "phone": "Telefon"
+      },
+      "save": "Saqlash",
+      "saved": "Sozlamalar saqlandi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+      "validation": {
+        "telegram": "Lotin harflari, raqamlar va _ (5–32 belgi)",
+        "email": "Email notoʻgʻri",
+        "phone": "Raqam notoʻgʻri. Namuna: 90 123 45 67"
+      }
     }
+  },
+  "Stats": {
+    "metricsLabel": "Koʻrsatkichlar",
+    "metrics": {
+      "profileViews": "Profil koʻrishlari",
+      "calls": "Qoʻngʻiroqlar",
+      "telegramClicks": "Telegram",
+      "directionClicks": "Yoʻnalish"
+    },
+    "chartTitle": "{metric} — kunlar boʻyicha",
+    "chartLabel": "{metric}: {from} – {to}, jami {total}",
+    "showTable": "Jadval",
+    "showChart": "Grafik",
+    "tableCaption": "Kunlar boʻyicha koʻrsatkichlar",
+    "date": "Sana",
+    "periodLabel": "Davr",
+    "days": "{count, plural, other {# kun}}"
+  },
+  "Report": {
+    "title": "Hisobot",
+    "eyebrow": "Yaqin — biznes hisoboti",
+    "period": "Oxirgi 30 kun: {from} – {to}",
+    "notPublished": "Biznes hozir saytda koʻrinmayapti — yangi koʻrishlar qoʻshilmaydi.",
+    "demoNote": "Demo rejim: raqamlar namunaviy.",
+    "privacy": "Faqat sonlar koʻrsatiladi — kim koʻrgani yoki qoʻngʻiroq qilgani saqlanmaydi. Havolani boshqalarga bermang.",
+    "notFoundTitle": "Havola topilmadi",
+    "notFoundDescription": "Havola notoʻgʻri yoki bekor qilingan. Yangi havolani administratordan soʻrang."
   }
 }

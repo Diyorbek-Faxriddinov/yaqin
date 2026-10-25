@@ -16,6 +16,8 @@ Doʻkonlarga login/parol berib, keyin ularning akkauntiga kirish xavfli: parol m
 - Har bir oʻzgarish audit jurnaliga "kim → qaysi biznes uchun → nima" koʻrinishida yoziladi.
 - Biznes qoʻshilganda **rozilik** qayd etiladi: kim, qachon, nimani eʼlon qilishga rozi boʻldi (ixtiyoriy — hujjat rasmi).
 - Egaga **faqat oʻqish uchun hisobot havolasi** berilishi mumkin: maxfiy, bekor qilinadigan, shaxsiy maʼlumotsiz (koʻrishlar va bosishlar soni).
+  - Token ~250 bit tasodifiy; backend faqat uning SHA-256 xeshini saqlaydi — havola faqat yaratilganda bir marta koʻrsatiladi, yoʻqolsa yangisi yaratiladi (eskisi bekor boʻladi).
+  - Sahifa `noindex`, `Referrer-Policy: no-referrer`, keshlanmaydi; ochilishlar soni va oxirgi ochilgan vaqt adminga koʻrinadi (2.9).
 
 ## Keyingi bosqich
 

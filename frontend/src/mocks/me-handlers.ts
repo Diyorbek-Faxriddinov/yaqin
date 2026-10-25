@@ -1,5 +1,6 @@
 import { http, HttpResponse, type DefaultBodyType, type StrictRequest } from "msw";
 import type { ApiError, Complaint, ComplaintReason, MyReview } from "@/lib/api/types";
+import { revalidate } from "./admin-common";
 import { getBusiness, listBusinesses } from "./db";
 import {
   createDemoUser,
@@ -249,13 +250,23 @@ export const meHandlers = [
       businessId: business.id,
       rating,
       text: text || null,
-      status: "pending",
+      // Oldindan moderatsiya o'chirilgan bo'lsa — darhol chop etiladi (keyin rad etish mumkin)
+      status: demoState.settings.reviewsPremoderation ? "pending" : "published",
       rejectionReason: null,
       createdAt: new Date().toISOString(),
       moderatedAt: null,
     };
     demoState.reviews.push(review);
-    return HttpResponse.json(toMyReview(review), { status: 201 });
+    const headers =
+      review.status === "published"
+        ? revalidate(
+            new Headers(),
+            "businesses",
+            `business:${business.slug}`,
+            `reviews:${business.slug}`,
+          )
+        : undefined;
+    return HttpResponse.json(toMyReview(review), { status: 201, headers });
   }),
 
   http.get(`${API}/me/reviews`, ({ request, cookies }) => {

@@ -11,20 +11,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
-import { parseTab, type BusinessSection } from "../admin-params";
+import { EDITOR_TABS, parseTab, type EditorTab } from "../admin-params";
 import { useCan } from "../use-admin";
 import { useAdminBusiness } from "../use-admin-business";
-import { WIZARD_STEPS } from "./business-wizard";
 import { BasicSection } from "./sections/basic-section";
 import { CatalogSection } from "./sections/catalog-section";
 import { ContactsSection } from "./sections/contacts-section";
 import { HoursSection } from "./sections/hours-section";
 import { LocationSection } from "./sections/location-section";
 import { PhotosSection } from "./sections/photos-section";
+import { StatsSection } from "./sections/stats-section";
 import { StatusSection } from "./sections/status-section";
 import { BusinessStatusBadge } from "./status-badge";
 
-type Tab = BusinessSection;
+type Tab = EditorTab;
 
 export function BusinessEditor({ id, initialTab }: { id: string; initialTab: Tab }) {
   const t = useTranslations("Admin");
@@ -76,7 +76,7 @@ export function BusinessEditor({ id, initialTab }: { id: string; initialTab: Tab
       <Tabs value={tab} onValueChange={changeTab}>
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <TabsList aria-label={t("edit.sections")} className="w-max">
-            {WIZARD_STEPS.map((step) => (
+            {EDITOR_TABS.map((step) => (
               <TabsTrigger key={step} value={step} className="px-3">
                 {t(`steps.${step}`)}
               </TabsTrigger>
@@ -103,6 +103,9 @@ export function BusinessEditor({ id, initialTab }: { id: string; initialTab: Tab
         </TabsContent>
         <TabsContent value="status" className="pt-4">
           <StatusSection business={business} onDone={() => undefined} />
+        </TabsContent>
+        <TabsContent value="stats" className="pt-4">
+          <StatsSection business={business} />
         </TabsContent>
       </Tabs>
     </div>

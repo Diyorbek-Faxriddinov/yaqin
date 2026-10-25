@@ -24,11 +24,13 @@ export const BUSINESS_SECTIONS = [
 ] as const;
 export type BusinessSection = (typeof BUSINESS_SECTIONS)[number];
 
+/** Tahrirlash sahifasi tablari: usta bo'limlari + statistika (ustada yo'q) */
+export const EDITOR_TABS = [...BUSINESS_SECTIONS, "stats"] as const;
+export type EditorTab = (typeof EDITOR_TABS)[number];
+
 /** ?bolim= → tahrirlash sahifasidagi tab */
-export function parseTab(value: string | undefined): BusinessSection {
-  return (BUSINESS_SECTIONS as readonly string[]).includes(value ?? "")
-    ? (value as BusinessSection)
-    : "basic";
+export function parseTab(value: string | undefined): EditorTab {
+  return (EDITOR_TABS as readonly string[]).includes(value ?? "") ? (value as EditorTab) : "basic";
 }
 
 /** ?filtr= qiymati ruxsat etilganlar orasida bo'lsa — o'zi, aks holda standart (navbat) */

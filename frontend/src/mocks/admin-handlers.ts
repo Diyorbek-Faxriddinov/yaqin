@@ -12,6 +12,7 @@ import {
   readJson,
   revalidate,
   slugify,
+  toAdminMe,
   type Fields,
   type Lang,
 } from "./admin-common";
@@ -278,7 +279,8 @@ export const adminHandlers = [
     }
     const admin = demoState.admins.find((a) => a.username === username);
     // Login yoki parol — qaysi biri noto'g'riligini oshkor qilmaymiz
-    if (!admin || admin.password !== password) {
+    // O'chirilgan administrator ham "noto'g'ri" — holati oshkor qilinmaydi
+    if (!admin || !admin.isActive || admin.password !== password) {
       const count = (failures?.count ?? 0) + 1;
       demoState.loginFailures.set(username, {
         count: count >= MAX_LOGIN_FAILURES ? 0 : count,
@@ -331,8 +333,9 @@ export const adminHandlers = [
       "Set-Cookie",
       cookie(CSRF_COOKIE, csrfToken, SESSION_TTL / 1000, request, false),
     );
-    const { password: _p, totpCode: _t, ...me } = admin;
-    return HttpResponse.json(me, { headers });
+    admin.lastLoginAt = new Date().toISOString();
+    audit(admin, "auth.login", "auth", admin.id, `Kirdi: ${admin.username}`);
+    return HttpResponse.json(toAdminMe(admin), { headers });
   }),
 
   http.post(`${API}/admin/auth/logout`, ({ cookies, request }) => {
@@ -345,8 +348,7 @@ export const adminHandlers = [
   http.get(`${API}/admin/me`, ({ request, cookies }) => {
     const auth = authorize(request, cookies, null);
     if ("response" in auth) return auth.response;
-    const { password: _p, totpCode: _t, ...me } = auth.admin;
-    return HttpResponse.json(me);
+    return HttpResponse.json(toAdminMe(auth.admin));
   }),
 
   http.get(`${API}/admin/businesses`, ({ request, cookies }) => {

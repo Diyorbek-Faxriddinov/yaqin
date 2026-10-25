@@ -50,7 +50,8 @@
   --input: #928b86;
   --ring: #0d9488;
 
-  --chart-1: #0f766e;
+  /* teal-600: grafik palitrasi tekshiruvidan o'tgan (oq fonda kontrast ≥3:1, rang to'yinganligi yetarli) */
+  --chart-1: #0d9488;
   --chart-2: #14b8a6;
   --chart-3: #f59e0b;
   --chart-4: #78716c;

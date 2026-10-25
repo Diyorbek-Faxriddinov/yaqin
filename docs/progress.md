@@ -24,8 +24,8 @@ Oxirgi yangilanish: 2026-10-26
 | 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅                     |
 | 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅                     |
 | 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅                     |
-| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅ (tasdiq kutilmoqda) |
-| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ⏳                     |
+| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅                     |
+| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ✅ (tasdiq kutilmoqda) |
 | 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ⏳                     |
 
 ## 2.1 natijalari
@@ -182,6 +182,33 @@ Oxirgi yangilanish: 2026-10-26
 - Kategoriyalar tartibini oʻzgartirish yoʻq (yangisi oxiriga qoʻshiladi).
 - Demo kirish har safar yangi foydalanuvchi yaratadi, shuning uchun bloklashni faqat ochiq sessiyada sinash mumkin; haqiqiy Telegram/Google akkaunti qayta kira olmasligi — backend bilan.
 - Administratorlar, audit jurnalini koʻrish, statistika — 2.9.
+
+## 2.9 natijalari
+
+| Sahifa                                 | Ruxsat                                        | Imkoniyatlar                                                                                                                                                                                                                          |
+| -------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/admin/administratorlar`              | `staff.manage` (koʻrish), Root (oʻzgartirish) | Administrator qoʻshish (vaqtinchalik parol bir marta koʻrsatiladi), rollar va alohida ruxsatlar, **amaldagi ruxsatlar manbasi bilan**, parolni yangilash, oʻchirish (sessiyalar tugatiladi). Root'ni API orqali oʻzgartirib boʻlmaydi |
+| `/admin/administratorlar?bolim=rollar` | xuddi shu                                     | Tizim rollari (Moderator, Kontent menejeri, Tahlilchi) va oʻz rollaringiz; ishlatilayotgan yoki tizim rolini oʻchirib boʻlmaydi                                                                                                       |
+| `/admin/audit`                         | `audit.view`                                  | Barcha admin harakatlari (kirishlar bilan), tur boʻyicha filtr; faqat oʻqish                                                                                                                                                          |
+| `/admin/statistika`                    | `stats.view`                                  | 7/30/90 kun: koʻrishlar, qoʻngʻiroq, Telegram, yoʻnalish; kunlik grafik + jadval; eng koʻp koʻrilgan 10 biznes; yangi kontent                                                                                                         |
+| `/admin/sozlamalar`                    | `settings.manage`                             | Sharhlar oldindan moderatsiyasi (oʻchirilsa — darhol chiqadi), soʻrov formasi ochiq/yopiq, platforma kontaktlari                                                                                                                      |
+| Biznes → "Statistika" tab              | `business.view`                               | Biznes statistikasi; **egasi uchun hisobot havolasi** (yaratish, ulashish, bekor qilish — `business.edit`)                                                                                                                            |
+| `/hisobot/[token]`                     | ommaviy (maxfiy havola)                       | Egasi uchun: 30 kunlik koʻrishlar va bosishlar, shaxsiy maʼlumotsiz; `noindex`, `no-referrer`                                                                                                                                         |
+
+- Statistika hodisalari (`/api/v1/events`) endi saqlanadi: kunlik hisoblagichlar, faqat son.
+- Yangi ruxsat `stats.view`; moderator demo akkaunti: "Moderator" roli + alohida `business.view` (manba koʻrinishini koʻrsatish uchun).
+- Grafik rangi (`--chart-1`, teal-600) palitra tekshiruvidan oʻtkazildi: `#0f766e` rang toʻyinganligi boʻyicha oʻtmadi.
+- Testlar: 196 unit, 188 E2E (3 ekran; admin testlari 3 marta takrorlab ham oʻtdi).
+
+**Topilgan va tuzatilgan:** statistika jadvalining aylantiriladigan hududi klaviatura bilan ochilmasdi (axe, WCAG 2.1.1); telefonda jadval ustunlari sarlavhalari yopishib qolardi.
+
+**Hali ishlamaydi / mock:**
+
+- ⚠ Statistika demo rejimda **namunaviy** (fixture bizneslar uchun deterministik toʻqib chiqarilgan qiymatlar); saytdagi haqiqiy bosishlar ustiga qoʻshiladi. Sahifalarda ogohlantirish bor.
+- Yangi administrator: birinchi kirishda parolni almashtirish va shaxsiy TOTP (QR) sozlash — backend bilan (demo'da kod har doim `123456`).
+- Platforma kontaktlari saqlanadi va `GET /settings` qaytaradi, saytda koʻrsatish — 2.10 ("Aloqa" sahifasi).
+- Audit jurnalida administrator va sana boʻyicha filtr interfeysda yoʻq (API'da `adminId` bor).
+- Hisobot havolasi uchun IP boʻyicha cheklov — backend'da.
 
 ## Maʼlum cheklovlar
 

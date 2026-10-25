@@ -2,11 +2,14 @@ import type {
   AdminAttribute,
   AdminPermission,
   AdminPhoto,
+  AuditTargetType,
   BusinessRequestStatus,
   BusinessStatus,
   Consent,
   Item,
   Me,
+  PlatformSettings,
+  StatsTotals,
 } from "@/lib/api/types";
 import type { GeoPoint } from "@/lib/geo";
 import { BUSINESSES, type DemoBusiness } from "./fixtures/businesses";
@@ -44,30 +47,45 @@ export type DemoBusinessRecord = Omit<DemoBusiness, "location"> & {
 export type DemoAdmin = {
   id: string;
   username: string;
+  /** ⚠ Demo: ochiq matnda. Backendda — Argon2 xeshi */
   password: string;
+  /** ⚠ Demo: qat'iy kod. Backendda — har bir admin uchun TOTP maxfiy kaliti */
   totpCode: string;
   displayName: string;
   isRoot: boolean;
+  isActive: boolean;
+  roleIds: string[];
+  /** Roldan tashqari alohida berilgan ruxsatlar */
+  extraPermissions: AdminPermission[];
+  createdAt: string;
+  lastLoginAt: string | null;
+};
+
+export type DemoRole = {
+  id: string;
+  name: string;
+  description: string | null;
   permissions: AdminPermission[];
+  isBuiltIn: boolean;
 };
 
 export type AuditEntry = {
   id: string;
   at: string;
-  adminId: string;
+  /** null — tizim (masalan, muvaffaqiyatsiz kirish urinishi) */
+  adminId: string | null;
   action: string;
-  targetType:
-    | "business"
-    | "item"
-    | "photo"
-    | "review"
-    | "complaint"
-    | "category"
-    | "request"
-    | "user"
-    | "admin";
+  targetType: AuditTargetType;
   targetId: string;
   summary: string;
+};
+
+/** Hisobot havolasi: token o'zi saqlanmaydi, faqat SHA-256 xeshi (ADR-0007) */
+export type ReportLink = {
+  tokenHash: string;
+  createdAt: string;
+  lastViewedAt: string | null;
+  viewCount: number;
 };
 
 /** Kategoriya: slug o'zgarmaydi (URL'lar barqaror), shuning uchun ota-kategoriya slug orqali */
@@ -108,11 +126,17 @@ type DemoState = {
   photos: Map<string, AdminPhoto[]>;
   media: Map<string, { contentType: string; bytes: Uint8Array }>;
   admins: DemoAdmin[];
+  roles: DemoRole[];
   adminSessions: Map<string, { adminId: string; csrfToken: string; expiresAt: number }>;
   adminChallenges: Map<string, { adminId: string; expiresAt: number; attempts: number }>;
   loginFailures: Map<string, { count: number; blockedUntil: number }>;
   /** Faqat qo'shiladi (append-only) — ADR-0009 */
   audit: AuditEntry[];
+  settings: PlatformSettings;
+  /** businessId → havola */
+  reportLinks: Map<string, ReportLink>;
+  /** "businessId|YYYY-MM-DD" → haqiqiy hodisalar soni (demo asosiy qiymatlarga qo'shiladi) */
+  statsEvents: Map<string, StatsTotals>;
 };
 
 export const ALL_PERMISSIONS: AdminPermission[] = [
@@ -127,11 +151,43 @@ export const ALL_PERMISSIONS: AdminPermission[] = [
   "staff.manage",
   "audit.view",
   "settings.manage",
+  "stats.view",
+];
+
+const ROLE_IDS = {
+  moderator: "00000000-0000-4000-a000-0000000000b1",
+  content: "00000000-0000-4000-a000-0000000000b2",
+  analyst: "00000000-0000-4000-a000-0000000000b3",
+};
+
+/** Tizim rollari — o'chirilmaydi, ruxsatlarini Root o'zgartira oladi */
+const BUILT_IN_ROLES: DemoRole[] = [
+  {
+    id: ROLE_IDS.moderator,
+    name: "Moderator",
+    description: "Sharhlar va shikoyatlar, foydalanuvchilarni koʻrish",
+    permissions: ["review.moderate", "complaint.manage", "user.view"],
+    isBuiltIn: true,
+  },
+  {
+    id: ROLE_IDS.content,
+    name: "Kontent menejeri",
+    description: "Bizneslarni qoʻshish, tahrirlash va eʼlon qilish, kategoriyalar",
+    permissions: ["business.view", "business.edit", "business.publish", "category.manage"],
+    isBuiltIn: true,
+  },
+  {
+    id: ROLE_IDS.analyst,
+    name: "Tahlilchi",
+    description: "Statistika va audit jurnali (faqat koʻrish)",
+    permissions: ["business.view", "stats.view", "audit.view"],
+    isBuiltIn: true,
+  },
 ];
 
 // ⚠ Faqat demo uchun: kirish maʼlumotlari kirish sahifasida ochiq ko'rsatiladi.
 // Haqiqiy backendda parol Argon2 bilan xeshlanadi, TOTP — har bir admin uchun alohida maxfiy kalit.
-export const DEMO_ADMINS: DemoAdmin[] = [
+const DEMO_ADMINS: DemoAdmin[] = [
   {
     id: "00000000-0000-4000-a000-0000000000a1",
     username: "root",
@@ -139,7 +195,11 @@ export const DEMO_ADMINS: DemoAdmin[] = [
     totpCode: "123456",
     displayName: "Root (demo)",
     isRoot: true,
-    permissions: ALL_PERMISSIONS,
+    isActive: true,
+    roleIds: [],
+    extraPermissions: [],
+    createdAt: "2026-10-01T05:00:00.000Z",
+    lastLoginAt: null,
   },
   {
     id: "00000000-0000-4000-a000-0000000000a2",
@@ -148,9 +208,20 @@ export const DEMO_ADMINS: DemoAdmin[] = [
     totpCode: "123456",
     displayName: "Moderator (demo)",
     isRoot: false,
-    permissions: ["business.view", "review.moderate", "complaint.manage", "user.view"],
+    isActive: true,
+    roleIds: [ROLE_IDS.moderator],
+    // Rolda yo'q, alohida berilgan — "amaldagi ruxsatlar"da manbasi ko'rinadi
+    extraPermissions: ["business.view"],
+    createdAt: "2026-10-05T05:00:00.000Z",
+    lastLoginAt: null,
   },
 ];
+
+const DEFAULT_SETTINGS: PlatformSettings = {
+  reviewsPremoderation: true,
+  businessRequestsOpen: true,
+  contacts: { telegram: null, email: null, phone: null },
+};
 
 function seedBusinesses(): DemoBusinessRecord[] {
   return BUSINESSES.map((business) => ({
@@ -184,18 +255,31 @@ function createState(): DemoState {
     items: new Map(),
     photos: new Map(),
     media: new Map(),
-    admins: DEMO_ADMINS,
+    admins: structuredClone(DEMO_ADMINS),
+    roles: structuredClone(BUILT_IN_ROLES),
     adminSessions: new Map(),
     adminChallenges: new Map(),
     loginFailures: new Map(),
     audit: [],
+    settings: structuredClone(DEFAULT_SETTINGS),
+    reportLinks: new Map(),
+    statsEvents: new Map(),
   };
+}
+
+/** Amaldagi ruxsatlar: rollar + alohida ruxsatlar (Root — hammasi) */
+export function permissionsOf(admin: DemoAdmin): AdminPermission[] {
+  if (admin.isRoot) return ALL_PERMISSIONS;
+  const fromRoles = demoState.roles
+    .filter((role) => admin.roleIds.includes(role.id))
+    .flatMap((role) => role.permissions);
+  return ALL_PERMISSIONS.filter((p) => fromRoles.includes(p) || admin.extraPermissions.includes(p));
 }
 
 const globalStore = globalThis as typeof globalThis & { __yaqinDemoState?: DemoState };
 
 // Eski shakldagi holat (dev rejimida kod o'zgarganda) bo'lsa — qayta yaratamiz
-if (!globalStore.__yaqinDemoState?.categories) globalStore.__yaqinDemoState = createState();
+if (!globalStore.__yaqinDemoState?.roles) globalStore.__yaqinDemoState = createState();
 
 export const demoState: DemoState = globalStore.__yaqinDemoState;
 
