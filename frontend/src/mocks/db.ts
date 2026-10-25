@@ -7,12 +7,17 @@ import type {
   CategoryNode,
   CategoryRef,
   District,
+  Item,
+  MapMarker,
+  ReviewPage,
   SearchSuggestions,
 } from "@/lib/api/types";
 import { distanceMeters, type GeoPoint } from "@/lib/geo";
 import { computeOpenStatus } from "@/lib/open-status";
 import { matchesQuery, normalizeForSearch } from "@/lib/text/normalize";
-import { BUSINESSES, type DemoBusiness } from "./fixtures/businesses";
+import { BASE_DATE, BUSINESSES, type DemoBusiness } from "./fixtures/businesses";
+import { itemsFor } from "./fixtures/items";
+import { reviewsFor } from "./fixtures/reviews";
 import { CATEGORIES, type DemoCategory } from "./fixtures/categories";
 import { DISTRICTS } from "./fixtures/districts";
 
@@ -229,4 +234,47 @@ export function suggest(q: string, lang: Lang): SearchSuggestions {
         categoryName: categoryBySlug.get(b.categorySlug)?.name[lang] ?? "",
       })),
   };
+}
+
+function findBusiness(slug: string): DemoBusiness | undefined {
+  return BUSINESSES.find((b) => b.slug === slug);
+}
+
+export function listItems(slug: string): Item[] | null {
+  const business = findBusiness(slug);
+  return business ? itemsFor(business) : null;
+}
+
+export function getItem(slug: string, itemSlug: string): Item | null {
+  return listItems(slug)?.find((item) => item.slug === itemSlug) ?? null;
+}
+
+export function listReviews(slug: string, page = 1, pageSize = 20): ReviewPage | null {
+  const business = findBusiness(slug);
+  if (!business) return null;
+  const all = reviewsFor(business, BASE_DATE);
+  const start = (page - 1) * pageSize;
+  return { items: all.slice(start, start + pageSize), total: all.length, page, pageSize };
+}
+
+export type ListMarkersParams = {
+  lang: Lang;
+  category?: string;
+  district?: string;
+  openNow?: boolean;
+  now?: Date;
+};
+
+export function listMarkers(params: ListMarkersParams): MapMarker[] {
+  // Ro'yxat bilan bir xil filtrlar; xarita uchun sahifalashsiz
+  const page = listBusinesses({ ...params, pageSize: 1000 });
+  return page.items.map(({ id, slug, name, location, category, rating, schedule }) => ({
+    id,
+    slug,
+    name,
+    location,
+    category,
+    rating,
+    schedule,
+  }));
 }

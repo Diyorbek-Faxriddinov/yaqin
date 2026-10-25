@@ -20,8 +20,8 @@ Oxirgi yangilanish: 2026-10-25
 | 2.1   | Poydevor: Next.js, TS, ESLint/Prettier, Tailwind, next-intl, Vitest, Playwright, CI, README, ADR | ✅                     |
 | 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅                     |
 | 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅                     |
-| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅ (tasdiq kutilmoqda) |
-| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ⏳                     |
+| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅                     |
+| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅ (tasdiq kutilmoqda) |
 | 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ⏳                     |
 | 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ⏳                     |
 | 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ⏳                     |
@@ -80,11 +80,31 @@ Oxirgi yangilanish: 2026-10-25
 - "аптека" kabi soʻz oxiri farq qiladigan qidiruvlar topilmasdi.
 - MSW'ning `Math.random()` prerender ogohlantirishi — `connection()` bilan.
 
-**Hali ishlamaydi:** biznes profili (`/biznes/...` — 2.5), xarita (2.5), kirish/profil/sevimlilar (2.6), admin panel (2.7–2.9), statik sahifalar va "Biznes qoʻshish" formasi (2.10).
+**Hali ishlamaydi:** kirish/profil/sevimlilar (2.6), admin panel (2.7–2.9), statik sahifalar va "Biznes qoʻshish" formasi (2.10).
+
+## 2.5 natijalari
+
+| Sahifa                    | Imkoniyatlar                                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/biznes/[slug]`          | Ish holati, reyting, narxlar (boʻlimlar, davomiylik, "...dan", "soʻrov boʻyicha"), haftalik ish vaqti (bugun belgilangan), manzil + moʻljal + xarita, sharhlar (oxirgi 5), JSON-LD |
+| `/biznes/[slug]/sharhlar` | Barcha sharhlar, sahifalash                                                                                                                                                        |
+| `/biznes/[slug]/[item]`   | Mahsulot/xizmat: narx, davomiylik, atributlar, biznes bilan bogʻlanish                                                                                                             |
+| `/xarita`                 | MapLibre + OpenFreeMap, klasterlar, kategoriya va "hozir ochiq" filtri, roʻyxat, tanlangan biznes kartasi, "mening joylashuvim"                                                    |
+
+- Bogʻlanish: qoʻngʻiroq (`tel:`), Telegram, Yandex/Google xaritada yoʻl, ulashish.
+- Statistika hodisalari (`profile_view`, `call_click`, `direction_click`, `telegram_click`) — `/api/v1/events`, shaxsiy maʼlumotsiz.
+- `/api/v1/*` route handler — brauzer soʻrovlari uchun (demo rejimda mock).
+- API kontrakti kengaytirildi: items, reviews, map markers.
+- MapLibre 6.13.0 (aniq versiya, 2 haftadan eski); worker `public/vendor` ga build oldidan koʻchiriladi.
+- Testlar: 115 unit, 102 E2E.
+
+**Topilgan va tuzatilgan:** xarita konteyneri balandligi 0 edi (MapLibre `position: relative` beradi); "soʻm dan" → "soʻmdan"; telefonda ish vaqti/manzil sahifa oxirida edi; tanlangan karta pastki menyu ostida qolardi; kichik xaritani manbalar yozuvi yopib qoʻyardi.
 
 ## Maʼlum cheklovlar
 
 - Docker kompyuterda oʻrnatilmagan — 3-bosqichda (PostgreSQL uchun) kerak boʻladi.
-- Biznes kartalari, "Xarita", "Kirish", "Profil", "Sevimlilar" va footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
+- "Kirish", "Profil", "Sevimlilar" va footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
 - Build'da maʼlum boʻlmagan kategoriya slug'i baʼzan 404 oʻrniga 200 + `noindex` qaytaradi (Next 16 oqimli render xususiyati); qidiruv tizimlari indekslamaydi.
 - Partial Prefetching'ning bitta prefetch soʻrovi baʼzan ochiq qoladi (foydalanuvchiga taʼsiri yoʻq); kuzatib boriladi.
+- Xarita yorliqlari OpenStreetMap maʼlumotlaridan (koʻpincha lotin/ingliz yozuvida) — tile provayderi bilan bogʻliq.
+- Demo bizneslarda Telegram yoʻq (mavjud boʻlishi mumkin boʻlgan akkauntlarni ishlatmaslik uchun) — tugma maʼlumot boʻlganda chiqadi.

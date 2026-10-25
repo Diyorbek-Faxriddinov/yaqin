@@ -66,7 +66,16 @@
       "6": "Sh",
       "7": "Ya"
     },
-    "verified": "Joyida tekshirilgan"
+    "verified": "Joyida tekshirilgan",
+    "weekdaysLong": {
+      "1": "Dushanba",
+      "2": "Seshanba",
+      "3": "Chorshanba",
+      "4": "Payshanba",
+      "5": "Juma",
+      "6": "Shanba",
+      "7": "Yakshanba"
+    }
   },
   "States": {
     "emptyTitle": "Hech narsa topilmadi",
@@ -144,5 +153,77 @@
     "title": "Qidiruv",
     "resultsFor": "“{q}” boʻyicha natijalar",
     "hint": "Doʻkon, xizmat yoki mahsulot nomini yozing — lotin yoki kirill yozuvida."
+  },
+  "BusinessPage": {
+    "call": "Qoʻngʻiroq qilish",
+    "telegram": "Telegram",
+    "directions": "Yoʻl koʻrsatish",
+    "directionsYandex": "Yandex Xaritada",
+    "directionsGoogle": "Google Xaritada",
+    "share": "Ulashish",
+    "linkCopied": "Havola nusxalandi",
+    "contacts": "Aloqa",
+    "sections": {
+      "prices": "Narxlar",
+      "hours": "Ish vaqti",
+      "location": "Manzil",
+      "reviews": "Sharhlar",
+      "about": "Biznes haqida"
+    },
+    "noItems": "Narxlar hali qoʻshilmagan.",
+    "otherGroup": "Boshqa",
+    "unavailable": "Hozir mavjud emas",
+    "price": {
+      "from": "{price}dan",
+      "onRequest": "Narxi soʻrov boʻyicha"
+    },
+    "dayOff": "Dam olish kuni",
+    "allDay": "Kecha-kunduz",
+    "everyDay": "Har kuni",
+    "today": "Bugun",
+    "hoursUnknown": "Ish vaqti hali koʻrsatilmagan. Borishdan oldin qoʻngʻiroq qilib aniqlang.",
+    "landmark": "Moʻljal: {landmark}",
+    "openOnMap": "Katta xaritada ochish",
+    "mapLabel": "{name} — xaritada",
+    "reviewsEmpty": "Hali sharh yoʻq.",
+    "showAllReviews": "Barcha sharhlar ({count})",
+    "businessReply": "Biznes javobi",
+    "verifiedNote": "Maʼlumotlar Yaqin jamoasi tomonidan joyida tekshirilgan",
+    "reviewsPageTitle": "{name} — sharhlar",
+    "backToBusiness": "{name} sahifasiga qaytish",
+    "metaDescription": "{name} — {category}, {district}. Narxlar, ish vaqti, manzil va sharhlar.",
+    "item": {
+      "product": "Mahsulot",
+      "service": "Xizmat",
+      "duration": "Davomiyligi",
+      "details": "Tafsilotlar",
+      "offeredBy": "Taklif qiluvchi",
+      "metaDescription": "{item} — {business}, {district}. Narxi va tafsilotlari."
+    }
+  },
+  "MapPage": {
+    "title": "Xarita",
+    "description": "Toshkentdagi doʻkon va xizmatlar xaritada.",
+    "count": "{count, plural, other {# ta joy}}",
+    "mapLabel": "Bizneslar xaritasi",
+    "loading": "Xarita yuklanmoqda…",
+    "error": "Xaritani yuklab boʻlmadi. Internet aloqasini tekshirib, sahifani yangilang.",
+    "showList": "Roʻyxat",
+    "showMap": "Xarita",
+    "details": "Batafsil",
+    "locate": "Mening joylashuvim",
+    "controls": {
+      "zoomIn": "Yaqinlashtirish",
+      "zoomOut": "Uzoqlashtirish",
+      "resetBearing": "Shimolga qaytarish",
+      "findMyLocation": "Mening joylashuvim",
+      "locationNotAvailable": "Joylashuv mavjud emas",
+      "toggleAttribution": "Manbalar",
+      "mapFeedback": "Xarita haqida fikr",
+      "windowsHelp": "Xaritani kattalashtirish uchun Ctrl + gʻildirakdan foydalaning",
+      "macHelp": "Xaritani kattalashtirish uchun ⌘ + gʻildirakdan foydalaning",
+      "mobileHelp": "Xaritani surish uchun ikki barmoqdan foydalaning",
+      "mapTitle": "Xarita"
+    }
   }
 }

@@ -38,4 +38,5 @@ e2e/                Playwright testlari (375 / 768 / 1280 px)
 - Ichki havolalar uchun `next/link` emas, `@/i18n/navigation` dagi `Link` ishlatiladi.
 - Oʻzbekcha matnlarda `ʻ` (U+02BB) va `ʼ` (U+02BC) belgilari ishlatiladi.
 - Narxlar tiyinda, butun son. Formatlash — `src/lib/format/price.ts`.
+- MapLibre worker `predev`/`prebuild` da `public/vendor/` ga koʻchiriladi (`scripts/copy-vendor.mjs`) — bu papka Git'ga kirmaydi.
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.

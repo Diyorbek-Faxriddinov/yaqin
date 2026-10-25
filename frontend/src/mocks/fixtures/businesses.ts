@@ -139,7 +139,7 @@ function slugify(name: string): string {
 }
 
 // Demo yaratilgan sanalar uchun qat'iy boshlang'ich nuqta — testlar sanaga bog'liq bo'lmasligi uchun
-const BASE_DATE = Date.UTC(2026, 9, 25, 7, 0, 0);
+export const BASE_DATE = Date.UTC(2026, 9, 25, 7, 0, 0);
 
 export const BUSINESSES: DemoBusiness[] = ROWS.map(
   (

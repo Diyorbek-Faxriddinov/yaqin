@@ -66,7 +66,16 @@
       "6": "сб",
       "7": "вс"
     },
-    "verified": "Проверено на месте"
+    "verified": "Проверено на месте",
+    "weekdaysLong": {
+      "1": "Понедельник",
+      "2": "Вторник",
+      "3": "Среда",
+      "4": "Четверг",
+      "5": "Пятница",
+      "6": "Суббота",
+      "7": "Воскресенье"
+    }
   },
   "States": {
     "emptyTitle": "Ничего не найдено",
@@ -144,5 +153,77 @@
     "title": "Поиск",
     "resultsFor": "Результаты по запросу «{q}»",
     "hint": "Введите название магазина, услуги или товара — латиницей или кириллицей."
+  },
+  "BusinessPage": {
+    "call": "Позвонить",
+    "telegram": "Telegram",
+    "directions": "Маршрут",
+    "directionsYandex": "В Яндекс Картах",
+    "directionsGoogle": "В Google Картах",
+    "share": "Поделиться",
+    "linkCopied": "Ссылка скопирована",
+    "contacts": "Контакты",
+    "sections": {
+      "prices": "Цены",
+      "hours": "Часы работы",
+      "location": "Адрес",
+      "reviews": "Отзывы",
+      "about": "О компании"
+    },
+    "noItems": "Цены пока не добавлены.",
+    "otherGroup": "Другое",
+    "unavailable": "Сейчас нет в наличии",
+    "price": {
+      "from": "от {price}",
+      "onRequest": "Цена по запросу"
+    },
+    "dayOff": "Выходной",
+    "allDay": "Круглосуточно",
+    "everyDay": "Ежедневно",
+    "today": "Сегодня",
+    "hoursUnknown": "Часы работы пока не указаны. Уточните по телефону перед визитом.",
+    "landmark": "Ориентир: {landmark}",
+    "openOnMap": "Открыть на большой карте",
+    "mapLabel": "{name} на карте",
+    "reviewsEmpty": "Пока нет отзывов.",
+    "showAllReviews": "Все отзывы ({count})",
+    "businessReply": "Ответ компании",
+    "verifiedNote": "Данные проверены командой Yaqin на месте",
+    "reviewsPageTitle": "{name} — отзывы",
+    "backToBusiness": "Вернуться на страницу «{name}»",
+    "metaDescription": "{name} — {category}, {district}. Цены, часы работы, адрес и отзывы.",
+    "item": {
+      "product": "Товар",
+      "service": "Услуга",
+      "duration": "Длительность",
+      "details": "Подробности",
+      "offeredBy": "Предлагает",
+      "metaDescription": "{item} — {business}, {district}. Цена и подробности."
+    }
+  },
+  "MapPage": {
+    "title": "Карта",
+    "description": "Магазины и услуги Ташкента на карте.",
+    "count": "{count, plural, one {# место} few {# места} many {# мест} other {# места}}",
+    "mapLabel": "Карта компаний",
+    "loading": "Загружаем карту…",
+    "error": "Не удалось загрузить карту. Проверьте подключение и обновите страницу.",
+    "showList": "Список",
+    "showMap": "Карта",
+    "details": "Подробнее",
+    "locate": "Моё местоположение",
+    "controls": {
+      "zoomIn": "Приблизить",
+      "zoomOut": "Отдалить",
+      "resetBearing": "Повернуть на север",
+      "findMyLocation": "Моё местоположение",
+      "locationNotAvailable": "Местоположение недоступно",
+      "toggleAttribution": "Источники",
+      "mapFeedback": "Отзыв о карте",
+      "windowsHelp": "Для масштабирования используйте Ctrl + колесо мыши",
+      "macHelp": "Для масштабирования используйте ⌘ + колесо мыши",
+      "mobileHelp": "Перемещайте карту двумя пальцами",
+      "mapTitle": "Карта"
+    }
   }
 }

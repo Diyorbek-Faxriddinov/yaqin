@@ -4,9 +4,13 @@ import { isValidPoint } from "@/lib/geo";
 import {
   getBusiness,
   getCategory,
+  getItem,
   listBusinesses,
   listCategories,
   listDistricts,
+  listItems,
+  listMarkers,
+  listReviews,
   suggest,
   ValidationError,
   type Lang,
@@ -112,6 +116,48 @@ export const handlers = [
     const lang = langOf(new URL(request.url));
     const business = getBusiness(String(params.slug), lang);
     return business ? HttpResponse.json(business) : notFound(lang);
+  }),
+
+  http.get(`${API}/businesses/:slug/items`, ({ request, params }) => {
+    const lang = langOf(new URL(request.url));
+    const items = listItems(String(params.slug));
+    return items ? HttpResponse.json(items) : notFound(lang);
+  }),
+
+  http.get(`${API}/businesses/:slug/items/:itemSlug`, ({ request, params }) => {
+    const lang = langOf(new URL(request.url));
+    const item = getItem(String(params.slug), String(params.itemSlug));
+    return item ? HttpResponse.json(item) : notFound(lang);
+  }),
+
+  http.get(`${API}/businesses/:slug/reviews`, ({ request, params }) => {
+    const url = new URL(request.url);
+    const lang = langOf(url);
+    const page = optionalNumber(url.searchParams.get("page")) ?? 1;
+    const pageSize = optionalNumber(url.searchParams.get("pageSize")) ?? 20;
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      !Number.isInteger(pageSize) ||
+      pageSize < 1 ||
+      pageSize > 50
+    ) {
+      return error(400, { code: "validation_error", message: MESSAGES.invalid[lang] });
+    }
+    const reviews = listReviews(String(params.slug), page, pageSize);
+    return reviews ? HttpResponse.json(reviews) : notFound(lang);
+  }),
+
+  http.get(`${API}/map/markers`, ({ request }) => {
+    const url = new URL(request.url);
+    return HttpResponse.json(
+      listMarkers({
+        lang: langOf(url),
+        category: url.searchParams.get("category") || undefined,
+        district: url.searchParams.get("district") || undefined,
+        openNow: url.searchParams.get("openNow") === "true",
+      }),
+    );
   }),
 
   http.get(`${API}/search/suggest`, ({ request }) => {

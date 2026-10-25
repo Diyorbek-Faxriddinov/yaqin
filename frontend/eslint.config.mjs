@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ko'chirilgan tashqi fayllar (scripts/copy-vendor.mjs)
+    "public/vendor/**",
   ]),
 ]);
 

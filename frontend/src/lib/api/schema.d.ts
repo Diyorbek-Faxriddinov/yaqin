@@ -94,6 +94,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/businesses/{slug}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biznesning mahsulot va xizmatlari (narxlar)
+         * @description Tartib — biznes belgilagan guruh va tartib bo'yicha. Sahifalanmaydi (maksimum 300).
+         */
+        get: operations["listBusinessItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/businesses/{slug}/items/{itemSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bitta mahsulot yoki xizmat */
+        get: operations["getBusinessItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/businesses/{slug}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biznes sharhlari (yangilari birinchi)
+         * @description Faqat moderatsiyadan o'tgan sharhlar.
+         */
+        get: operations["listBusinessReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/map/markers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Xarita uchun yengil biznes nuqtalari
+         * @description Sahifalanmaydi; maksimum 1000 ta. Filtrlar /businesses bilan bir xil.
+         */
+        get: operations["listMapMarkers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/suggest": {
         parameters: {
             query?: never;
@@ -281,6 +358,74 @@ export interface components {
             website: string | null;
             gallery: components["schemas"]["Image"][];
         };
+        /**
+         * @description - fixed — aniq narx (`min`);
+         *     - from — "... dan" (`min`);
+         *     - range — oraliq (`min`–`max`);
+         *     - on_request — narx so'rov bo'yicha (`min`, `max` — null).
+         */
+        ItemPrice: {
+            /** @enum {string} */
+            type: "fixed" | "from" | "range" | "on_request";
+            min: components["schemas"]["Money"] | null;
+            max: components["schemas"]["Money"] | null;
+        };
+        ItemAttribute: {
+            key: string;
+            name: string;
+            /** @description Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha") */
+            value: string;
+        };
+        Item: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            /** @enum {string} */
+            kind: "product" | "service";
+            name: string;
+            /** @description Biznes ichidagi boʻlim ("Soch turmagi", "Ichimliklar") */
+            group: string | null;
+            description: string | null;
+            price: components["schemas"]["ItemPrice"];
+            /** @description Faqat xizmatlar uchun */
+            durationMinutes: number | null;
+            attributes: components["schemas"]["ItemAttribute"][];
+            images: components["schemas"]["Image"][];
+            /** @description Hozir mavjud / koʻrsatiladi */
+            isAvailable: boolean;
+        };
+        Review: {
+            /** Format: uuid */
+            id: string;
+            /** @description Koʻrsatiladigan ism (masalan "Aziz T."); toʻliq ism va kontaktlar qaytarilmaydi */
+            authorName: string;
+            rating: number;
+            text: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Biznes javobi */
+            reply: {
+                text: string;
+                /** Format: date-time */
+                createdAt: string;
+            } | null;
+        };
+        ReviewPage: {
+            items: components["schemas"]["Review"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        MapMarker: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            location: components["schemas"]["GeoPoint"];
+            category: components["schemas"]["CategoryRef"];
+            rating: components["schemas"]["RatingSummary"];
+            schedule: components["schemas"]["WeeklySchedule"] | null;
+        };
         SearchSuggestions: {
             categories: components["schemas"]["CategoryRef"][];
             businesses: {
@@ -454,6 +599,108 @@ export interface operations {
                 };
             };
             404: components["responses"]["NotFound"];
+        };
+    };
+    listBusinessItems: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mahsulot va xizmatlar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"][];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getBusinessItem: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                itemSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mahsulot yoki xizmat */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listBusinessReviews: {
+        parameters: {
+            query?: {
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sharhlar sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewPage"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listMapMarkers: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+                category?: string;
+                district?: string;
+                openNow?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Nuqtalar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapMarker"][];
+                };
+            };
         };
     };
     searchSuggest: {

@@ -143,6 +143,96 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /businesses/{slug}/items:
+    get:
+      tags: [businesses]
+      operationId: listBusinessItems
+      summary: Biznesning mahsulot va xizmatlari (narxlar)
+      description: Tartib — biznes belgilagan guruh va tartib bo'yicha. Sahifalanmaydi (maksimum 300).
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Mahsulot va xizmatlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /businesses/{slug}/items/{itemSlug}:
+    get:
+      tags: [businesses]
+      operationId: getBusinessItem
+      summary: Bitta mahsulot yoki xizmat
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - name: itemSlug
+          in: path
+          required: true
+          schema: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 120 }
+        - $ref: "#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Mahsulot yoki xizmat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /businesses/{slug}/reviews:
+    get:
+      tags: [businesses]
+      operationId: listBusinessReviews
+      summary: Biznes sharhlari (yangilari birinchi)
+      description: Faqat moderatsiyadan o'tgan sharhlar.
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Sharhlar sahifasi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewPage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /map/markers:
+    get:
+      tags: [businesses]
+      operationId: listMapMarkers
+      summary: Xarita uchun yengil biznes nuqtalari
+      description: Sahifalanmaydi; maksimum 1000 ta. Filtrlar /businesses bilan bir xil.
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: district
+          in: query
+          schema: { type: string }
+        - name: openNow
+          in: query
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: Nuqtalar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MapMarker"
+
   /search/suggest:
     get:
       tags: [businesses]
@@ -480,6 +570,123 @@ components:
             gallery:
               type: array
               items: { $ref: "#/components/schemas/Image" }
+
+    ItemPrice:
+      type: object
+      required: [type, min, max]
+      description: |
+        - fixed — aniq narx (`min`);
+        - from — "... dan" (`min`);
+        - range — oraliq (`min`–`max`);
+        - on_request — narx so'rov bo'yicha (`min`, `max` — null).
+      properties:
+        type:
+          type: string
+          enum: [fixed, from, range, on_request]
+        min:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        max:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+
+    ItemAttribute:
+      type: object
+      required: [key, name, value]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        value:
+          type: string
+          description: Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha")
+
+    Item:
+      type: object
+      required:
+        - id
+        - slug
+        - kind
+        - name
+        - group
+        - description
+        - price
+        - durationMinutes
+        - attributes
+        - images
+        - isAvailable
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        kind:
+          type: string
+          enum: [product, service]
+        name: { type: string }
+        group:
+          type: [string, "null"]
+          description: Biznes ichidagi boʻlim ("Soch turmagi", "Ichimliklar")
+        description: { type: [string, "null"] }
+        price: { $ref: "#/components/schemas/ItemPrice" }
+        durationMinutes:
+          type: [integer, "null"]
+          description: Faqat xizmatlar uchun
+        attributes:
+          type: array
+          items: { $ref: "#/components/schemas/ItemAttribute" }
+        images:
+          type: array
+          items: { $ref: "#/components/schemas/Image" }
+        isAvailable:
+          type: boolean
+          description: Hozir mavjud / koʻrsatiladi
+
+    Review:
+      type: object
+      required: [id, authorName, rating, text, createdAt, reply]
+      properties:
+        id: { type: string, format: uuid }
+        authorName:
+          type: string
+          description: Koʻrsatiladigan ism (masalan "Aziz T."); toʻliq ism va kontaktlar qaytarilmaydi
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        reply:
+          description: Biznes javobi
+          oneOf:
+            - type: object
+              required: [text, createdAt]
+              properties:
+                text: { type: string }
+                createdAt: { type: string, format: date-time }
+            - type: "null"
+
+    ReviewPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Review" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    MapMarker:
+      type: object
+      required: [id, slug, name, location, category, rating, schedule]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        location: { $ref: "#/components/schemas/GeoPoint" }
+        category: { $ref: "#/components/schemas/CategoryRef" }
+        rating: { $ref: "#/components/schemas/RatingSummary" }
+        schedule:
+          oneOf:
+            - $ref: "#/components/schemas/WeeklySchedule"
+            - type: "null"
 
     SearchSuggestions:
       type: object

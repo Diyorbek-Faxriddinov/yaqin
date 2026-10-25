@@ -7,3 +7,4 @@ package-lock.json
 next-env.d.ts
 AGENTS.md
 src/lib/api/schema.d.ts
+public/vendor

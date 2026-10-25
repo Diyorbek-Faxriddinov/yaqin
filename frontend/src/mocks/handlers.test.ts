@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { BusinessPage, CategoryDetail, CategoryNode } from "@/lib/api/types";
+import type {
+  BusinessPage,
+  CategoryDetail,
+  CategoryNode,
+  Item,
+  MapMarker,
+  ReviewPage,
+} from "@/lib/api/types";
 import { mockFetch } from "./fetch";
 
 const BASE = "http://demo.test/api/v1";
@@ -84,5 +91,38 @@ describe("demo API (kontraktga moslik)", () => {
 
   it("noma'lum endpoint — 404, tarmoqqa chiqmaydi", async () => {
     expect((await get("/yoq")).status).toBe(404);
+  });
+
+  it("mahsulot va xizmatlar: narx turi va davomiylik", async () => {
+    const { status, body } = await get<Item[]>("/businesses/ustoz-sartaroshxonasi/items");
+    expect(status).toBe(200);
+    expect(body.length).toBeGreaterThan(0);
+    const haircut = body.find((i) => i.slug === "erkaklar-soch-turmagi");
+    expect(haircut?.kind).toBe("service");
+    expect(haircut?.durationMinutes).toBe(40);
+    expect(haircut?.price.type).toBe("fixed");
+    expect(haircut?.price.min?.amount ?? 0).toBeGreaterThan(0);
+  });
+
+  it("bitta mahsulot; noma'lum — 404", async () => {
+    const ok = await get<Item>("/businesses/ustoz-sartaroshxonasi/items/erkaklar-soch-turmagi");
+    expect(ok.body.name).toBe("Erkaklar soch turmagi");
+    expect((await get("/businesses/ustoz-sartaroshxonasi/items/yoq")).status).toBe(404);
+    expect((await get("/businesses/yoq/items")).status).toBe(404);
+  });
+
+  it("sharhlar soni biznes reytingi soniga teng, yangilari birinchi", async () => {
+    const { body } = await get<ReviewPage>("/businesses/ustoz-sartaroshxonasi/reviews?pageSize=10");
+    expect(body.total).toBe(37);
+    expect(body.items).toHaveLength(10);
+    const dates = body.items.map((r) => r.createdAt);
+    expect([...dates].sort().reverse()).toEqual(dates);
+  });
+
+  it("xarita nuqtalari filtrlar bilan", async () => {
+    const all = await get<MapMarker[]>("/map/markers");
+    const beauty = await get<MapMarker[]>("/map/markers?category=gozallik");
+    expect(all.body.length).toBeGreaterThan(beauty.body.length);
+    expect(beauty.body.every((m) => typeof m.location.lat === "number")).toBe(true);
   });
 });
