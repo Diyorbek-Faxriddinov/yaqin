@@ -21,8 +21,8 @@ Oxirgi yangilanish: 2026-10-25
 | 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅                     |
 | 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅                     |
 | 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅                     |
-| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅ (tasdiq kutilmoqda) |
-| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ⏳                     |
+| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅                     |
+| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅ (tasdiq kutilmoqda) |
 | 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ⏳                     |
 | 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ⏳                     |
 | 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ⏳                     |
@@ -80,7 +80,7 @@ Oxirgi yangilanish: 2026-10-25
 - "аптека" kabi soʻz oxiri farq qiladigan qidiruvlar topilmasdi.
 - MSW'ning `Math.random()` prerender ogohlantirishi — `connection()` bilan.
 
-**Hali ishlamaydi:** kirish/profil/sevimlilar (2.6), admin panel (2.7–2.9), statik sahifalar va "Biznes qoʻshish" formasi (2.10).
+**Hali ishlamaydi:** admin panel (2.7–2.9), statik sahifalar va "Biznes qoʻshish" formasi (2.10).
 
 ## 2.5 natijalari
 
@@ -100,11 +100,32 @@ Oxirgi yangilanish: 2026-10-25
 
 **Topilgan va tuzatilgan:** xarita konteyneri balandligi 0 edi (MapLibre `position: relative` beradi); "soʻm dan" → "soʻmdan"; telefonda ish vaqti/manzil sahifa oxirida edi; tanlangan karta pastki menyu ostida qolardi; kichik xaritani manbalar yozuvi yopib qoʻyardi.
 
+## 2.6 natijalari
+
+| Sahifa / imkoniyat   | Tafsilot                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `/kirish`            | Demo kirish; Telegram/Google — faol emas (backend bilan 4-bosqichda), `?next=` bilan qaytish |
+| Header               | Foydalanuvchi menyusi (profil, sevimlilar, sharhlarim, xabarlarim, chiqish)                  |
+| `/profil`            | Ismni o'zgartirish, chiqish, akkauntni o'chirish (tasdiqlash bilan)                          |
+| `/profil/sevimlilar` | Saqlangan bizneslar; yurakcha — kartalarda va profilda (optimistik yangilanish)              |
+| `/profil/sharhlar`   | Holati bilan (moderatsiyada / chop etilgan / rad etilgan), o'chirish                         |
+| `/profil/xabarlar`   | Noto'g'ri maʼlumot haqidagi xabarlar va holati                                               |
+| Biznes profili       | "Sharh yozish" (1–5 yulduz, izoh, moderatsiya), "Maʼlumot notoʻgʻrimi? Xabar bering"         |
+
+- Xavfsizlik: httpOnly sessiya, CSRF double-submit, himoyalangan sahifalar (proxy + server tekshiruvi), open redirect himoyasi — ADR-0012.
+- Kutubxonalar (aniq versiyalar, ≥2 hafta): TanStack Query 5.104.1, React Hook Form 7.89.0, Zod 4.6.6 (4.6.5 dagi yuqori darajali zaiflik tufayli), @hookform/resolvers 5.9.1.
+- CI'ga `npm audit --audit-level=high` qo'shildi.
+- Testlar: 139 unit, 131 E2E.
+
+**Topilgan va tuzatilgan:** reyting tanlansa ham forma "Bahoni tanlang" derdi (RHF `valueAsNumber` radio'da ishlamaydi); profil sahifalarida `Math.random` prerender ogohlantirishi; telefondagi kartada uzun nom yurakcha ostiga kirardi; "Saqlash" tugmasining ekran o'quvchi nomi ko'rinadigan matnga mos emas edi (WCAG 2.5.3).
+
 ## Maʼlum cheklovlar
 
 - Docker kompyuterda oʻrnatilmagan — 3-bosqichda (PostgreSQL uchun) kerak boʻladi.
-- "Kirish", "Profil", "Sevimlilar" va footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
+- Footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
 - Build'da maʼlum boʻlmagan kategoriya slug'i baʼzan 404 oʻrniga 200 + `noindex` qaytaradi (Next 16 oqimli render xususiyati); qidiruv tizimlari indekslamaydi.
 - Partial Prefetching'ning bitta prefetch soʻrovi baʼzan ochiq qoladi (foydalanuvchiga taʼsiri yoʻq); kuzatib boriladi.
 - Xarita yorliqlari OpenStreetMap maʼlumotlaridan (koʻpincha lotin/ingliz yozuvida) — tile provayderi bilan bogʻliq.
 - Demo bizneslarda Telegram yoʻq (mavjud boʻlishi mumkin boʻlgan akkauntlarni ishlatmaslik uchun) — tugma maʼlumot boʻlganda chiqadi.
+- Demo foydalanuvchilar, sevimlilar, sharhlar va xabarlar server xotirasida — qayta ishga tushganda o'chadi.
+- Telegram/Google orqali kirish — backend bilan birga (4-bosqich).

@@ -225,5 +225,125 @@
       "mobileHelp": "Xaritani surish uchun ikki barmoqdan foydalaning",
       "mapTitle": "Xarita"
     }
+  },
+  "Auth": {
+    "title": "Kirish",
+    "description": "Sharh qoldirish, sevimlilarni saqlash va xabar yuborish uchun kiring. Koʻrish va qidirish uchun kirish shart emas.",
+    "telegram": "Telegram orqali kirish",
+    "google": "Google orqali kirish",
+    "providersPending": "Telegram va Google orqali kirish backend ulanganda ishlaydi.",
+    "or": "yoki",
+    "demo": "Demo foydalanuvchi sifatida kirish",
+    "demoNote": "Demo rejim: haqiqiy akkaunt yaratilmaydi. Maʼlumotlaringiz (sevimlilar, sharhlar) server qayta ishga tushganda oʻchadi.",
+    "consent": "Kirish orqali siz <terms>Foydalanish shartlari</terms> va <privacy>Maxfiylik siyosati</privacy>ga rozilik bildirasiz.",
+    "loginError": "Kirib boʻlmadi. Qayta urinib koʻring.",
+    "logout": "Chiqish",
+    "userMenu": "Foydalanuvchi menyusi"
+  },
+  "Profile": {
+    "title": "Profil",
+    "nav": {
+      "profile": "Profil",
+      "favorites": "Sevimlilar",
+      "reviews": "Sharhlarim",
+      "complaints": "Xabarlarim"
+    },
+    "displayName": "Ismingiz",
+    "displayNameHint": "Sharhlaringiz yonida shu ism koʻrinadi.",
+    "save": "Saqlash",
+    "saved": "Saqlandi",
+    "provider": {
+      "telegram": "Telegram orqali",
+      "google": "Google orqali",
+      "demo": "Demo akkaunt"
+    },
+    "dangerZone": "Akkauntni oʻchirish",
+    "deleteDescription": "Ismingiz, sevimlilaringiz va xabarlaringiz oʻchiriladi. Bu amalni bekor qilib boʻlmaydi.",
+    "deleteButton": "Akkauntni oʻchirish",
+    "deleteConfirmTitle": "Akkauntni oʻchirasizmi?",
+    "deleteConfirm": "Ha, oʻchirish",
+    "cancel": "Bekor qilish",
+    "deleted": "Akkaunt oʻchirildi",
+    "validation": {
+      "displayName": "Ism 2–40 belgidan iborat boʻlsin"
+    }
+  },
+  "Favorites": {
+    "add": "{name} — sevimlilarga qoʻshish",
+    "remove": "{name} — sevimlilardan olib tashlash",
+    "added": "Sevimlilarga qoʻshildi",
+    "removed": "Sevimlilardan olib tashlandi",
+    "emptyTitle": "Hali sevimlilar yoʻq",
+    "emptyDescription": "Yoqqan joylarni yurakcha tugmasi bilan saqlang — ular shu yerda turadi.",
+    "browse": "Kategoriyalarni koʻrish",
+    "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+    "save": "Saqlash",
+    "saved": "Saqlangan"
+  },
+  "ReviewForm": {
+    "trigger": "Sharh yozish",
+    "title": "{name} haqida sharh",
+    "ratingLegend": "Bahoyingiz",
+    "star": "{count, plural, other {# yulduz}}",
+    "text": "Sharh (ixtiyoriy)",
+    "textPlaceholder": "Xizmat, narx, navbat haqida fikringiz…",
+    "counter": "{count} / 1000",
+    "submit": "Yuborish",
+    "success": "Rahmat! Sharhingiz moderatsiyadan soʻng chiqadi.",
+    "exists": "Siz bu biznesga allaqachon sharh qoldirgansiz.",
+    "error": "Yuborib boʻlmadi. Qayta urinib koʻring.",
+    "rules": "Haqoratli, reklama yoki shaxsiy maʼlumot boʻlgan sharhlar chop etilmaydi.",
+    "validation": {
+      "rating": "Bahoni tanlang",
+      "textMax": "Koʻpi bilan 1000 belgi"
+    }
+  },
+  "MyReviews": {
+    "emptyTitle": "Hali sharh qoldirmagansiz",
+    "emptyDescription": "Borgan joylaringiz haqida fikr bildiring — bu boshqalarga tanlashda yordam beradi.",
+    "status": {
+      "pending": "Moderatsiyada",
+      "published": "Chop etilgan",
+      "rejected": "Rad etilgan"
+    },
+    "rejectionReason": "Sabab: {reason}",
+    "delete": "Oʻchirish",
+    "deleteConfirmTitle": "Sharhni oʻchirasizmi?",
+    "deleted": "Sharh oʻchirildi"
+  },
+  "Complaint": {
+    "trigger": "Maʼlumot notoʻgʻrimi? Xabar bering",
+    "title": "{name} haqida xabar",
+    "reasonLegend": "Nima notoʻgʻri?",
+    "reasons": {
+      "wrong_info": "Narx, telefon yoki ish vaqti notoʻgʻri",
+      "closed_permanently": "Butunlay yopilgan",
+      "wrong_location": "Manzil yoki xaritadagi joy notoʻgʻri",
+      "fake_reviews": "Soxta sharhlar",
+      "fraud": "Firibgarlik",
+      "other": "Boshqa"
+    },
+    "text": "Izoh",
+    "textHintOther": "Kamida 10 belgi",
+    "textPlaceholder": "Nima notoʻgʻri ekanini qisqacha yozing…",
+    "submit": "Yuborish",
+    "success": "Xabaringiz qabul qilindi. Rahmat!",
+    "error": "Yuborib boʻlmadi. Qayta urinib koʻring.",
+    "validation": {
+      "reason": "Sababni tanlang",
+      "textOther": "Iltimos, kamida 10 belgi yozing",
+      "textMax": "Koʻpi bilan 1000 belgi"
+    }
+  },
+  "MyComplaints": {
+    "emptyTitle": "Hali xabar yubormagansiz",
+    "emptyDescription": "Biznes sahifasida notoʻgʻri maʼlumotni koʻrsangiz, “Xabar bering” tugmasidan foydalaning.",
+    "status": {
+      "open": "Qabul qilindi",
+      "in_review": "Koʻrib chiqilmoqda",
+      "resolved": "Hal qilindi",
+      "rejected": "Rad etildi"
+    },
+    "resolution": "Javob: {note}"
   }
 }

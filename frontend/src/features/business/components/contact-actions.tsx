@@ -5,6 +5,7 @@ import { ChevronDown, Navigation, Phone, Send, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,6 +103,8 @@ export function ContactActions({ id, name, phones, telegram, location }: Props) 
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <FavoriteButton businessId={id} businessName={name} variant="button" />
 
       <Button size="lg" variant="outline" onClick={share}>
         <Share2 aria-hidden="true" />

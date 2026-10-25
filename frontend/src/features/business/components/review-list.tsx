@@ -1,16 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Review } from "@/lib/api/types";
+import { formatDate } from "@/lib/format/date";
 import { RatingStars } from "./rating";
-
-/** Sana faqat serverda formatlanadi — hydration farqi bo'lmaydi */
-function formatDate(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Asia/Tashkent",
-  }).format(new Date(iso));
-}
 
 export async function ReviewList({ reviews }: { reviews: Review[] }) {
   const locale = await getLocale();

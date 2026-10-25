@@ -14,4 +14,4 @@ async function handle(request: Request): Promise<Response> {
   return mockFetch(request);
 }
 
-export { handle as GET, handle as POST };
+export { handle as GET, handle as POST, handle as PUT, handle as PATCH, handle as DELETE };

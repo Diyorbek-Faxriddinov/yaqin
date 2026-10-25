@@ -15,5 +15,6 @@ Har bir muhim qaror qisqa hujjat sifatida yoziladi: **kontekst → qaror → oqi
 | 0009 | [Ruxsatlar modeli](0009-ruxsatlar-modeli.md)                               | Qabul qilingan |
 | 0010 | [Maʼlumot va matn kelishuvlari](0010-malumot-kelishuvlari.md)              | Qabul qilingan |
 | 0011 | [Mock qatlam: jarayon ichidagi MSW](0011-mock-qatlam.md)                   | Qabul qilingan |
+| 0012 | [Sessiya, CSRF va foydalanuvchi holati](0012-sessiya-va-csrf.md)           | Qabul qilingan |
 
 Shablon: [0000-shablon.md](0000-shablon.md).

@@ -22,6 +22,10 @@ tags:
     description: Bizneslar, qidiruv
   - name: stats
     description: Statistika hodisalari
+  - name: auth
+    description: Kirish va chiqish (ADR-0006, ADR-0012)
+  - name: me
+    description: Joriy foydalanuvchi — profil, sevimlilar, sharhlar, shikoyatlar
 
 paths:
   /categories:
@@ -206,6 +210,38 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+    post:
+      tags: [me]
+      operationId: createReview
+      summary: Sharh qoldirish
+      description: |
+        Bitta foydalanuvchi bitta biznesga bitta sharh (aks holda 409). Sharh moderatsiyadan
+        so'ng chiqadi (`status: pending`). Rate limiting backendda.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviewInput" }
+      responses:
+        "201":
+          description: Yaratildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MyReview" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
   /map/markers:
     get:
       tags: [businesses]
@@ -232,6 +268,268 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/MapMarker"
+
+  /auth/telegram:
+    post:
+      tags: [auth]
+      operationId: loginTelegram
+      summary: Telegram Login Widget orqali kirish
+      description: |
+        Backend Telegram maʼlumotlarini bot tokeni bilan imzo (hash) bo'yicha tekshiradi va
+        `auth_date` eskirmaganini nazorat qiladi. Muvaffaqiyatli bo'lsa sessiya cookie'si o'rnatiladi.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelegramAuth"
+      responses:
+        "200":
+          $ref: "#/components/responses/LoggedIn"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/google:
+    post:
+      tags: [auth]
+      operationId: loginGoogle
+      summary: Google Identity Services orqali kirish (ID token)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credential]
+              properties:
+                credential: { type: string, description: Google ID token (JWT) }
+      responses:
+        "200":
+          $ref: "#/components/responses/LoggedIn"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/demo:
+    post:
+      tags: [auth]
+      operationId: loginDemo
+      summary: Demo foydalanuvchi sifatida kirish
+      description: Faqat demo/ishlab chiqish muhitida. Productionda bu endpoint mavjud emas (404).
+      responses:
+        "200":
+          $ref: "#/components/responses/LoggedIn"
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Chiqish (sessiya bekor qilinadi)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204":
+          description: Chiqildi
+
+  /me:
+    get:
+      tags: [me]
+      operationId: getMe
+      summary: Joriy foydalanuvchi
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Foydalanuvchi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags: [me]
+      operationId: updateMe
+      summary: Profilni tahrirlash
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName]
+              properties:
+                displayName: { type: string, minLength: 2, maxLength: 40 }
+      responses:
+        "200":
+          description: Yangilangan foydalanuvchi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      tags: [me]
+      operationId: deleteMe
+      summary: Akkauntni o'chirish
+      description: Shaxsiy maʼlumotlar o'chiriladi; sharhlar "O'chirilgan foydalanuvchi" nomi bilan qoladi.
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /me/favorites:
+    get:
+      tags: [me]
+      operationId: listFavorites
+      summary: Sevimli bizneslar (oxirgi qo'shilgani birinchi)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Bizneslar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BusinessSummary" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/favorites/ids:
+    get:
+      tags: [me]
+      operationId: listFavoriteIds
+      summary: Sevimli bizneslar ID'lari (yurakcha holati uchun)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: ID'lar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: string, format: uuid }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/favorites/{businessId}:
+    parameters:
+      - name: businessId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [me]
+      operationId: addFavorite
+      summary: Sevimlilarga qo'shish (idempotent)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204":
+          description: Qo'shildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [me]
+      operationId: removeFavorite
+      summary: Sevimlilardan olib tashlash (idempotent)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204":
+          description: Olib tashlandi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /me/reviews:
+    get:
+      tags: [me]
+      operationId: listMyReviews
+      summary: Mening sharhlarim (holati bilan)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Sharhlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MyReview" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/reviews/{reviewId}:
+    delete:
+      tags: [me]
+      operationId: deleteMyReview
+      summary: O'z sharhini o'chirish
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "204":
+          description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /complaints:
+    post:
+      tags: [me]
+      operationId: createComplaint
+      summary: Biznes haqida shikoyat yoki noto'g'ri maʼlumot xabari
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ComplaintInput" }
+      responses:
+        "201":
+          description: Qabul qilindi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Complaint" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /me/complaints:
+    get:
+      tags: [me]
+      operationId: listMyComplaints
+      summary: Mening shikoyatlarim (holati bilan)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Shikoyatlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Complaint" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /search/suggest:
     get:
@@ -271,6 +569,16 @@ paths:
           $ref: "#/components/responses/BadRequest"
 
 components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: |
+        httpOnly, Secure, SameSite=Lax sessiya cookie'si. O'zgartiruvchi so'rovlar (POST/PUT/PATCH/DELETE)
+        qo'shimcha ravishda `X-CSRFToken` sarlavhasini talab qiladi — qiymati `csrftoken` cookie'sidan
+        (double-submit, Django CSRF bilan mos). Qarang: ADR-0012.
+
   parameters:
     Lang:
       name: lang
@@ -304,6 +612,30 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Kirilmagan yoki sessiya eskirgan
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Ruxsat yoʻq yoki CSRF token notoʻgʻri
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Holat ziddiyati (masalan, sharh allaqachon mavjud)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    LoggedIn:
+      description: Kirildi; `sessionid` (httpOnly) va `csrftoken` cookie'lari o'rnatiladi
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Me"
 
   schemas:
     Locale:
@@ -687,6 +1019,91 @@ components:
           oneOf:
             - $ref: "#/components/schemas/WeeklySchedule"
             - type: "null"
+
+    TelegramAuth:
+      type: object
+      description: Telegram Login Widget qaytaradigan maydonlar (o'zgartirilmasdan)
+      required: [id, first_name, auth_date, hash]
+      properties:
+        id: { type: integer }
+        first_name: { type: string }
+        last_name: { type: string }
+        username: { type: string }
+        photo_url: { type: string, format: uri }
+        auth_date: { type: integer }
+        hash: { type: string }
+
+    Me:
+      type: object
+      required: [id, displayName, avatarUrl, provider, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        avatarUrl: { type: [string, "null"], format: uri }
+        provider:
+          type: string
+          enum: [telegram, google, demo]
+        createdAt: { type: string, format: date-time }
+
+    ReviewInput:
+      type: object
+      required: [rating]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: [string, "null"], maxLength: 1000 }
+
+    MyReview:
+      type: object
+      required: [id, business, rating, text, status, rejectionReason, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        business:
+          type: object
+          required: [slug, name]
+          properties:
+            slug: { type: string }
+            name: { type: string }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [pending, published, rejected]
+        rejectionReason: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+
+    ComplaintReason:
+      type: string
+      enum: [wrong_info, closed_permanently, wrong_location, fake_reviews, fraud, other]
+
+    ComplaintInput:
+      type: object
+      required: [businessId, reason]
+      properties:
+        businessId: { type: string, format: uuid }
+        reason: { $ref: "#/components/schemas/ComplaintReason" }
+        text:
+          type: [string, "null"]
+          maxLength: 1000
+          description: "`other` uchun majburiy (kamida 10 belgi)"
+
+    Complaint:
+      type: object
+      required: [id, business, reason, text, status, resolutionNote, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        business:
+          type: object
+          required: [slug, name]
+          properties:
+            slug: { type: string }
+            name: { type: string }
+        reason: { $ref: "#/components/schemas/ComplaintReason" }
+        text: { type: [string, "null"] }
+        status:
+          type: string
+          enum: [open, in_review, resolved, rejected]
+        resolutionNote: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
 
     SearchSuggestions:
       type: object

@@ -144,7 +144,12 @@ export interface paths {
          */
         get: operations["listBusinessReviews"];
         put?: never;
-        post?: never;
+        /**
+         * Sharh qoldirish
+         * @description Bitta foydalanuvchi bitta biznesga bitta sharh (aks holda 409). Sharh moderatsiyadan
+         *     so'ng chiqadi (`status: pending`). Rate limiting backendda.
+         */
+        post: operations["createReview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -163,6 +168,225 @@ export interface paths {
          * @description Sahifalanmaydi; maksimum 1000 ta. Filtrlar /businesses bilan bir xil.
          */
         get: operations["listMapMarkers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/telegram": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Telegram Login Widget orqali kirish
+         * @description Backend Telegram maʼlumotlarini bot tokeni bilan imzo (hash) bo'yicha tekshiradi va
+         *     `auth_date` eskirmaganini nazorat qiladi. Muvaffaqiyatli bo'lsa sessiya cookie'si o'rnatiladi.
+         */
+        post: operations["loginTelegram"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Google Identity Services orqali kirish (ID token) */
+        post: operations["loginGoogle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Demo foydalanuvchi sifatida kirish
+         * @description Faqat demo/ishlab chiqish muhitida. Productionda bu endpoint mavjud emas (404).
+         */
+        post: operations["loginDemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chiqish (sessiya bekor qilinadi) */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Joriy foydalanuvchi */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        /**
+         * Akkauntni o'chirish
+         * @description Shaxsiy maʼlumotlar o'chiriladi; sharhlar "O'chirilgan foydalanuvchi" nomi bilan qoladi.
+         */
+        delete: operations["deleteMe"];
+        options?: never;
+        head?: never;
+        /** Profilni tahrirlash */
+        patch: operations["updateMe"];
+        trace?: never;
+    };
+    "/me/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sevimli bizneslar (oxirgi qo'shilgani birinchi) */
+        get: operations["listFavorites"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/favorites/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sevimli bizneslar ID'lari (yurakcha holati uchun) */
+        get: operations["listFavoriteIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/favorites/{businessId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Sevimlilarga qo'shish (idempotent) */
+        put: operations["addFavorite"];
+        post?: never;
+        /** Sevimlilardan olib tashlash (idempotent) */
+        delete: operations["removeFavorite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mening sharhlarim (holati bilan) */
+        get: operations["listMyReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** O'z sharhini o'chirish */
+        delete: operations["deleteMyReview"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/complaints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Biznes haqida shikoyat yoki noto'g'ri maʼlumot xabari */
+        post: operations["createComplaint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/complaints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mening shikoyatlarim (holati bilan) */
+        get: operations["listMyComplaints"];
         put?: never;
         post?: never;
         delete?: never;
@@ -426,6 +650,71 @@ export interface components {
             rating: components["schemas"]["RatingSummary"];
             schedule: components["schemas"]["WeeklySchedule"] | null;
         };
+        /** @description Telegram Login Widget qaytaradigan maydonlar (o'zgartirilmasdan) */
+        TelegramAuth: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            /** Format: uri */
+            photo_url?: string;
+            auth_date: number;
+            hash: string;
+        };
+        Me: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            /** Format: uri */
+            avatarUrl: string | null;
+            /** @enum {string} */
+            provider: "telegram" | "google" | "demo";
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ReviewInput: {
+            rating: number;
+            text?: string | null;
+        };
+        MyReview: {
+            /** Format: uuid */
+            id: string;
+            business: {
+                slug: string;
+                name: string;
+            };
+            rating: number;
+            text: string | null;
+            /** @enum {string} */
+            status: "pending" | "published" | "rejected";
+            rejectionReason: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /** @enum {string} */
+        ComplaintReason: "wrong_info" | "closed_permanently" | "wrong_location" | "fake_reviews" | "fraud" | "other";
+        ComplaintInput: {
+            /** Format: uuid */
+            businessId: string;
+            reason: components["schemas"]["ComplaintReason"];
+            /** @description `other` uchun majburiy (kamida 10 belgi) */
+            text?: string | null;
+        };
+        Complaint: {
+            /** Format: uuid */
+            id: string;
+            business: {
+                slug: string;
+                name: string;
+            };
+            reason: components["schemas"]["ComplaintReason"];
+            text: string | null;
+            /** @enum {string} */
+            status: "open" | "in_review" | "resolved" | "rejected";
+            resolutionNote: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
         SearchSuggestions: {
             categories: components["schemas"]["CategoryRef"][];
             businesses: {
@@ -458,6 +747,42 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Kirilmagan yoki sessiya eskirgan */
+        Unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Ruxsat yoʻq yoki CSRF token notoʻgʻri */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Holat ziddiyati (masalan, sharh allaqachon mavjud) */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Kirildi; `sessionid` (httpOnly) va `csrftoken` cookie'lari o'rnatiladi */
+        LoggedIn: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Me"];
             };
         };
     };
@@ -678,6 +1003,37 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    createReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Yaratildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyReview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     listMapMarkers: {
         parameters: {
             query?: {
@@ -701,6 +1057,324 @@ export interface operations {
                     "application/json": components["schemas"]["MapMarker"][];
                 };
             };
+        };
+    };
+    loginTelegram: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TelegramAuth"];
+            };
+        };
+        responses: {
+            200: components["responses"]["LoggedIn"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    loginGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Google ID token (JWT) */
+                    credential: string;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["LoggedIn"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    loginDemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["LoggedIn"];
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Chiqildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Foydalanuvchi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    displayName: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Yangilangan foydalanuvchi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listFavorites: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bizneslar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessSummary"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listFavoriteIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ID'lar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    addFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Qo'shildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    removeFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Olib tashlandi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listMyReviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sharhlar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyReview"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteMyReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createComplaint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComplaintInput"];
+            };
+        };
+        responses: {
+            /** @description Qabul qilindi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Complaint"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listMyComplaints: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shikoyatlar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Complaint"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     searchSuggest: {

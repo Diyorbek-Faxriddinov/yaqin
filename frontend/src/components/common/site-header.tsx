@@ -1,6 +1,7 @@
-import { LayoutGrid, LogIn, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Map as MapIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/features/auth/components/user-menu";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher";
 import { Logo } from "./logo";
@@ -39,12 +40,7 @@ export async function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <LanguageSwitcher />
-          <Button asChild variant="outline" className="hidden md:inline-flex">
-            <Link href="/kirish">
-              <LogIn aria-hidden="true" />
-              {t("login")}
-            </Link>
-          </Button>
+          <UserMenu />
         </div>
       </div>
     </header>

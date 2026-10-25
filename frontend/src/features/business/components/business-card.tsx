@@ -3,6 +3,7 @@ import { BadgeCheck, MapPin } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryIcon } from "@/features/category/category-icon";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import type { BusinessSummary } from "@/lib/api/types";
@@ -23,11 +24,14 @@ const LAYOUT = {
     root: "flex-col",
     media: "aspect-[4/3] w-full",
     icon: "size-10",
+    body: "",
   },
   responsive: {
     root: "flex-row sm:flex-col",
     media: "w-28 shrink-0 self-stretch sm:aspect-[4/3] sm:w-full sm:self-auto",
     icon: "size-8 sm:size-10",
+    // Telefonda yurakcha matn ustunining burchagida — uzun nom uning ostiga kirmasin
+    body: "pr-12 sm:pr-3",
   },
 } as const;
 
@@ -84,8 +88,13 @@ export function BusinessCard({
       )}
     >
       <CardMedia business={business} layout={layout} />
+      <FavoriteButton
+        businessId={business.id}
+        businessName={business.name}
+        className="absolute top-2 right-2"
+      />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
+      <div className={cn("flex min-w-0 flex-1 flex-col gap-1.5 p-3", LAYOUT[layout].body)}>
         <h3 className="flex items-center gap-1 font-semibold">
           {/* Butun karta bosiladigan, lekin havola nomi qisqa qoladi (stretched link) */}
           <Link

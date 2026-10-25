@@ -14,8 +14,10 @@ import { ReviewList } from "@/features/business/components/review-list";
 import { WeeklyHours } from "@/features/business/components/weekly-hours";
 import { getBusiness, getBusinessItems, getBusinessReviews } from "@/features/business/queries";
 import { CategoryIcon } from "@/features/category/category-icon";
+import { ComplaintDialog } from "@/features/complaints/components/complaint-dialog";
 import { getCategory } from "@/features/category/queries";
 import { MapWhenVisible } from "@/features/map/components/lazy-map";
+import { ReviewFormDialog } from "@/features/reviews/components/review-form-dialog";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { formatDecimal } from "@/lib/format/number";
@@ -214,14 +216,17 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
             id="reviews"
             title={t("sections.reviews")}
             aside={
-              reviews && reviews.total > reviews.items.length ? (
-                <Link
-                  href={`/biznes/${slug}/sharhlar`}
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  {t("showAllReviews", { count: reviews.total })}
-                </Link>
-              ) : undefined
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                {reviews && reviews.total > reviews.items.length && (
+                  <Link
+                    href={`/biznes/${slug}/sharhlar`}
+                    className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    {t("showAllReviews", { count: reviews.total })}
+                  </Link>
+                )}
+                <ReviewFormDialog slug={slug} businessName={business.name} />
+              </div>
             }
           >
             <ReviewList reviews={reviews?.items ?? []} />
@@ -232,6 +237,8 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
               <p className="whitespace-pre-line">{business.description}</p>
             </Section>
           )}
+
+          <ComplaintDialog businessId={business.id} businessName={business.name} />
         </div>
       </div>
     </div>
