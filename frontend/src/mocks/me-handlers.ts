@@ -7,10 +7,10 @@ import {
   CSRF_HEADER,
   deleteDemoUser,
   demoState,
+  publicBusinesses,
   SESSION_COOKIE,
   type DemoSession,
 } from "./demo-state";
-import { BUSINESSES } from "./fixtures/businesses";
 
 /**
  * Demo autentifikatsiya va "men" endpointlari. Backend (Django) xatti-harakatini takrorlaydi:
@@ -74,7 +74,7 @@ async function readJson(request: Request): Promise<Record<string, unknown> | nul
 }
 
 function businessRef(businessId: string) {
-  const business = BUSINESSES.find((b) => b.id === businessId);
+  const business = demoState.businesses.find((b) => b.id === businessId);
   return business ? { slug: business.slug, name: business.name } : null;
 }
 
@@ -166,7 +166,9 @@ export const meHandlers = [
     const auth = authenticate(request, cookies);
     if ("response" in auth) return auth.response;
     const businessId = String(params.businessId);
-    if (!BUSINESSES.some((b) => b.id === businessId)) return error(404, "not_found", "Topilmadi");
+    if (!publicBusinesses().some((b) => b.id === businessId)) {
+      return error(404, "not_found", "Topilmadi");
+    }
     const ids = demoState.favorites.get(auth.session.userId) ?? [];
     if (!ids.includes(businessId))
       demoState.favorites.set(auth.session.userId, [...ids, businessId]);

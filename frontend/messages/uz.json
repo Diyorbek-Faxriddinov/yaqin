@@ -345,5 +345,247 @@
       "rejected": "Rad etildi"
     },
     "resolution": "Javob: {note}"
+  },
+  "Admin": {
+    "meta": {
+      "title": "Admin panel"
+    },
+    "nav": {
+      "label": "Admin navigatsiyasi",
+      "dashboard": "Bosh panel",
+      "businesses": "Bizneslar",
+      "newBusiness": "Biznes qoʻshish",
+      "backToSite": "Saytga qaytish",
+      "menu": "Menyu",
+      "logout": "Chiqish"
+    },
+    "login": {
+      "title": "Admin panelga kirish",
+      "username": "Login",
+      "password": "Parol",
+      "submit": "Davom etish",
+      "codeTitle": "Ikki bosqichli tasdiqlash",
+      "codeDescription": "Autentifikator ilovasidagi 6 xonali kodni kiriting.",
+      "code": "Kod",
+      "verify": "Kirish",
+      "back": "Orqaga",
+      "demoHint": "Demo: login <b>root</b> (yoki cheklangan ruxsatli <b>moderator</b>), parol <b>yaqin-demo</b>, kod <b>123456</b>.",
+      "errors": {
+        "invalid": "Login yoki parol notoʻgʻri",
+        "code": "Kod notoʻgʻri",
+        "expired": "Vaqt tugadi. Qaytadan kiring.",
+        "tooMany": "Juda koʻp urinish. Bir daqiqadan soʻng qayta urinib koʻring.",
+        "generic": "Kirib boʻlmadi. Qayta urinib koʻring.",
+        "required": "Login va parolni kiriting",
+        "codeFormat": "6 ta raqam"
+      }
+    },
+    "dashboard": {
+      "title": "Bosh panel",
+      "greeting": "Xush kelibsiz, {name}",
+      "stats": {
+        "published": "Eʼlon qilingan",
+        "draft": "Qoralamalar",
+        "hidden": "Yashirilgan",
+        "noConsent": "Rozilik qayd etilmagan"
+      },
+      "quickAdd": "Yangi biznes qoʻshish",
+      "quickAddHint": "Doʻkonda turib, telefondan bir necha qadamda"
+    },
+    "status": {
+      "draft": "Qoralama",
+      "published": "Eʼlon qilingan",
+      "hidden": "Yashirilgan"
+    },
+    "list": {
+      "title": "Bizneslar",
+      "search": "Nomi boʻyicha qidirish",
+      "filters": {
+        "label": "Holat boʻyicha",
+        "all": "Hammasi",
+        "draft": "Qoralama",
+        "published": "Eʼlon qilingan",
+        "hidden": "Yashirilgan",
+        "noConsent": "Rozilik yoʻq"
+      },
+      "empty": "Bizneslar topilmadi",
+      "photos": "{count, plural, other {# rasm}}",
+      "items": "{count, plural, other {# narx}}",
+      "noConsent": "Rozilik yoʻq",
+      "loadMore": "Yana koʻrsatish",
+      "count": "{count, plural, other {# ta biznes}}"
+    },
+    "wizard": {
+      "title": "Yangi biznes",
+      "step": "{current}/{total}-qadam",
+      "next": "Keyingi",
+      "back": "Orqaga",
+      "skip": "Oʻtkazib yuborish",
+      "finish": "Tugatish",
+      "draftNote": "Har bir qadam avtomatik saqlanadi — internet uzilsa ham maʼlumot yoʻqolmaydi."
+    },
+    "steps": {
+      "basic": "Asosiy",
+      "location": "Joylashuv",
+      "photos": "Rasmlar",
+      "hours": "Ish vaqti",
+      "contacts": "Aloqa va rozilik",
+      "catalog": "Narxlar",
+      "status": "Holat"
+    },
+    "basic": {
+      "name": "Biznes nomi",
+      "namePlaceholder": "Masalan: Baraka sartaroshxonasi",
+      "category": "Kategoriya",
+      "categoryPlaceholder": "Kategoriyani tanlang",
+      "district": "Tuman",
+      "districtPlaceholder": "Tumanni tanlang",
+      "description": "Tavsif (ixtiyoriy)",
+      "create": "Yaratish va davom etish"
+    },
+    "location": {
+      "gps": "Hozirgi joylashuvim",
+      "gpsLocating": "Aniqlanmoqda…",
+      "gpsAccuracy": "Aniqlik: ±{meters} m",
+      "gpsDenied": "Joylashuvga ruxsat berilmadi. Brauzer sozlamalarida ruxsat bering yoki xaritadan tanlang.",
+      "gpsUnavailable": "Joylashuvni aniqlab boʻlmadi. Xaritadan tanlang.",
+      "mapHint": "Xaritani bosing yoki belgini suring",
+      "notSet": "Joylashuv hali tanlanmagan",
+      "address": "Manzil",
+      "addressPlaceholder": "Koʻcha, uy raqami",
+      "landmark": "Moʻljal (ixtiyoriy)",
+      "landmarkPlaceholder": "Masalan: Chorsu bozori yonida",
+      "mapLabel": "Joylashuvni tanlash xaritasi"
+    },
+    "photos": {
+      "add": "Rasm qoʻshish",
+      "addHint": "Kamera yoki galereya. Rasmlar yuklashdan oldin kichraytiriladi, GPS maʼlumotlari olib tashlanadi.",
+      "cover": "Muqova",
+      "moveUp": "Oldinga",
+      "moveDown": "Orqaga",
+      "delete": "Oʻchirish",
+      "uploading": "Yuklanmoqda…",
+      "uploadError": "Rasmni yuklab boʻlmadi",
+      "empty": "Hali rasm yoʻq",
+      "limit": "Koʻpi bilan 12 ta rasm",
+      "alt": "{name} — {index}-rasm"
+    },
+    "hours": {
+      "presets": "Tez tanlash",
+      "daily": "Har kuni 09–21",
+      "weekdays": "Du–Sh 09–18",
+      "always": "24/7",
+      "alwaysLabel": "Kecha-kunduz ishlaydi",
+      "open": "Ochiq",
+      "from": "Ochilish",
+      "to": "Yopilish",
+      "addBreak": "Tanaffus",
+      "removeInterval": "Oraliqni olib tashlash",
+      "copyToAll": "Hamma kunlarga nusxalash",
+      "unknown": "Ish vaqti nomaʼlum",
+      "errors": {
+        "format": "Vaqt formati notoʻgʻri",
+        "same": "Ochilish va yopilish bir xil"
+      }
+    },
+    "contacts": {
+      "phones": "Telefon raqamlari",
+      "phonePlaceholder": "90 123 45 67",
+      "addPhone": "Raqam qoʻshish",
+      "removePhone": "Raqamni olib tashlash",
+      "phoneInvalid": "Raqam notoʻgʻri. Namuna: 90 123 45 67",
+      "telegram": "Telegram (ixtiyoriy)",
+      "telegramPlaceholder": "foydalanuvchi_nomi",
+      "instagram": "Instagram (ixtiyoriy)"
+    },
+    "consent": {
+      "title": "Egasining roziligi",
+      "description": "Maʼlumotlarni eʼlon qilishdan oldin biznes egasining roziligini oling va qayd eting.",
+      "givenBy": "Kim rozilik berdi",
+      "givenByPlaceholder": "Masalan: Aziz aka, egasi",
+      "givenAt": "Sana",
+      "note": "Izoh (ixtiyoriy)",
+      "recorded": "Rozilik qayd etilgan: {name}, {date}",
+      "record": "Rozilikni qayd etish",
+      "remove": "Rozilikni bekor qilish"
+    },
+    "catalog": {
+      "add": "Qoʻshish",
+      "empty": "Hali narxlar yoʻq",
+      "edit": "Tahrirlash",
+      "delete": "Oʻchirish",
+      "deleteConfirm": "{name} — oʻchirilsinmi?",
+      "dialogNew": "Yangi mahsulot yoki xizmat",
+      "dialogEdit": "Tahrirlash",
+      "kind": "Turi",
+      "product": "Mahsulot",
+      "service": "Xizmat",
+      "name": "Nomi",
+      "group": "Boʻlim (ixtiyoriy)",
+      "groupPlaceholder": "Masalan: Soch turmagi",
+      "priceType": "Narx turi",
+      "priceTypes": {
+        "fixed": "Aniq narx",
+        "from": "…dan",
+        "range": "Oraliq",
+        "on_request": "Soʻrov boʻyicha"
+      },
+      "min": "Narx, soʻm",
+      "max": "Gacha, soʻm",
+      "duration": "Davomiyligi, daqiqa",
+      "available": "Hozir mavjud",
+      "unavailable": "Mavjud emas",
+      "attributes": "Xususiyatlar (ixtiyoriy)",
+      "attrName": "Nomi",
+      "attrValue": "Qiymati",
+      "addAttribute": "Xususiyat qoʻshish",
+      "removeAttribute": "Olib tashlash",
+      "save": "Saqlash"
+    },
+    "publish": {
+      "current": "Hozirgi holat",
+      "requirements": "Eʼlon qilish uchun majburiy",
+      "recommended": "Tavsiya etiladi",
+      "required": {
+        "location": "Xaritada joylashuv",
+        "address": "Manzil",
+        "consent": "Egasining roziligi"
+      },
+      "recommendedItems": {
+        "photos": "Kamida bitta rasm",
+        "hours": "Ish vaqti",
+        "phones": "Telefon raqami",
+        "items": "Narxlar"
+      },
+      "publish": "Eʼlon qilish",
+      "hide": "Saytdan yashirish",
+      "toDraft": "Qoralamaga qaytarish",
+      "published": "Eʼlon qilindi",
+      "hidden": "Yashirildi",
+      "drafted": "Qoralamaga qaytarildi",
+      "viewOnSite": "Saytda koʻrish",
+      "cannotPublish": "Avval majburiy maydonlarni toʻldiring"
+    },
+    "edit": {
+      "saved": "Saqlandi",
+      "save": "Saqlash",
+      "saveError": "Saqlab boʻlmadi. Maydonlarni tekshiring.",
+      "readOnly": "Sizda faqat koʻrish ruxsati bor.",
+      "back": "Bizneslar roʻyxati",
+      "sections": "Boʻlimlar"
+    },
+    "validation": {
+      "nameLength": "2–120 belgi",
+      "category": "Kategoriyani tanlang",
+      "district": "Tumanni tanlang",
+      "address": "Manzilni kiriting",
+      "price": "Narxni kiriting",
+      "priceRange": "Yuqori chegara pastkisidan katta boʻlsin",
+      "duration": "5–1440 daqiqa",
+      "givenBy": "Kamida 2 belgi",
+      "telegram": "Lotin harflari, raqamlar va _ (5–32 belgi)",
+      "instagram": "Lotin harflari, raqamlar, _ va . (30 belgigacha)",
+      "tooLong": "Juda uzun"
+    }
   }
 }

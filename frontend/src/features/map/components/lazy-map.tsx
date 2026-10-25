@@ -14,6 +14,12 @@ export const MapView = dynamic(() => import("./map-view").then((m) => m.MapView)
   loading: () => <Skeleton className="absolute inset-0 rounded-none" />,
 });
 
+/** Admin: joylashuv tanlash xaritasi (faqat brauzerda) */
+export const LocationPicker = dynamic(
+  () => import("./location-picker").then((m) => m.LocationPicker),
+  { ssr: false, loading: () => <Skeleton className="h-72 rounded-xl" /> },
+);
+
 /** Xarita ekranga yaqinlashgandagina yuklanadi (biznes profilidagi kichik xarita uchun) */
 export function MapWhenVisible({ className, ...props }: MapViewProps) {
   const ref = useRef<HTMLDivElement>(null);

@@ -26,6 +26,8 @@ tags:
     description: Kirish va chiqish (ADR-0006, ADR-0012)
   - name: me
     description: Joriy foydalanuvchi — profil, sevimlilar, sharhlar, shikoyatlar
+  - name: admin
+    description: Admin panel — har bir endpoint ruxsatni backendda tekshiradi (ADR-0009)
 
 paths:
   /categories:
@@ -531,6 +533,371 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /admin/auth/login:
+    post:
+      tags: [admin]
+      operationId: adminLogin
+      summary: Admin kirishi — 1-qadam (login va parol)
+      description: |
+        Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — 2FA uchun qisqa muddatli `challengeToken`
+        qaytadi. Ketma-ket muvaffaqiyatsiz urinishlar cheklanadi (429).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, maxLength: 64 }
+                password: { type: string, maxLength: 256 }
+      responses:
+        "200":
+          description: 2FA kodi kerak
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challengeToken]
+                properties:
+                  challengeToken: { type: string }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /admin/auth/2fa:
+    post:
+      tags: [admin]
+      operationId: adminVerify2fa
+      summary: Admin kirishi — 2-qadam (TOTP kodi)
+      description: |
+        Muvaffaqiyatli bo'lsa `adminsessionid` (HttpOnly, Secure, SameSite=Strict, 8 soat) va
+        `csrftoken` cookie'lari o'rnatiladi. Admin sessiyasi mijoz sessiyasidan alohida.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challengeToken, code]
+              properties:
+                challengeToken: { type: string }
+                code: { type: string, pattern: "^\\d{6}$" }
+      responses:
+        "200":
+          description: Kirildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminMe" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /admin/auth/logout:
+    post:
+      tags: [admin]
+      operationId: adminLogout
+      summary: Admin sessiyasini tugatish
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: Chiqildi
+
+  /admin/me:
+    get:
+      tags: [admin]
+      operationId: getAdminMe
+      summary: Joriy administrator va amaldagi ruxsatlari
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Administrator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminMe" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /admin/businesses:
+    get:
+      tags: [admin]
+      operationId: adminListBusinesses
+      summary: Bizneslar (barcha holatlar) — ruxsat business.view
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/BusinessStatus" }
+        - name: missingConsent
+          in: query
+          description: Faqat rozilik qayd etilmaganlar
+          schema: { type: boolean }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Bizneslar sahifasi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusinessPage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [admin]
+      operationId: adminCreateBusiness
+      summary: Yangi biznes (qoralama) — ruxsat business.edit
+      description: Platforma boshqaruvidagi qoralama sifatida yaratiladi (ADR-0007).
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminBusinessCreate" }
+      responses:
+        "201":
+          description: Yaratildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusiness" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/businesses/{businessId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminGetBusiness
+      summary: Biznesni tahrirlash uchun to'liq maʼlumot
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Biznes
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusiness" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [admin]
+      operationId: adminUpdateBusiness
+      summary: Biznesni qisman yangilash — ruxsat business.edit (holat — business.publish)
+      description: |
+        `status: published` faqat nomi, kategoriyasi, joylashuvi, manzili va rozilik qayd
+        etilgan bo'lsa (aks holda 400, `fields` da yetishmaganlar). Har bir o'zgarish audit
+        jurnaliga yoziladi.
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminBusinessUpdate" }
+      responses:
+        "200":
+          description: Yangilandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusiness" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/photos:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    post:
+      tags: [admin]
+      operationId: adminUploadPhoto
+      summary: Rasm yuklash — ruxsat business.edit
+      description: |
+        JPEG, PNG yoki WebP, ko'pi bilan 5 MB. Backend rasmni qayta kodlaydi (EXIF, jumladan
+        GPS, olib tashlanadi) va o'lchamlarini tekshiradi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string, maxLength: 200 }
+      responses:
+        "201":
+          description: Yuklandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminPhoto" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          description: Fayl juda katta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/businesses/{businessId}/photos/order:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    put:
+      tags: [admin]
+      operationId: adminReorderPhotos
+      summary: Rasmlar tartibi (birinchisi — muqova)
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photoIds]
+              properties:
+                photoIds:
+                  type: array
+                  items: { type: string, format: uuid }
+      responses:
+        "204":
+          description: Saqlandi
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/businesses/{businessId}/photos/{photoId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: photoId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [admin]
+      operationId: adminDeletePhoto
+      summary: Rasmni o'chirish
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/items:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminListItems
+      summary: Biznes katalogi (mavjud bo'lmaganlari bilan)
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Mahsulot va xizmatlar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Item" }
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [admin]
+      operationId: adminCreateItem
+      summary: Mahsulot yoki xizmat qo'shish
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ItemInput" }
+      responses:
+        "201":
+          description: Qo'shildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Item" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/businesses/{businessId}/items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [admin]
+      operationId: adminUpdateItem
+      summary: Mahsulot yoki xizmatni yangilash
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ItemInput" }
+      responses:
+        "200":
+          description: Yangilandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Item" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [admin]
+      operationId: adminDeleteItem
+      summary: Mahsulot yoki xizmatni o'chirish
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /search/suggest:
     get:
       tags: [businesses]
@@ -579,7 +946,20 @@ components:
         qo'shimcha ravishda `X-CSRFToken` sarlavhasini talab qiladi — qiymati `csrftoken` cookie'sidan
         (double-submit, Django CSRF bilan mos). Qarang: ADR-0012.
 
+    adminSessionCookie:
+      type: apiKey
+      in: cookie
+      name: adminsessionid
+      description: |
+        Admin sessiyasi — mijoz sessiyasidan alohida: HttpOnly, Secure, SameSite=Strict, 8 soat.
+        Kirish ikki bosqichli (parol + TOTP). CSRF qoidalari sessionCookie bilan bir xil.
+
   parameters:
+    BusinessId:
+      name: businessId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     Lang:
       name: lang
       in: query
@@ -620,6 +1000,12 @@ components:
             $ref: "#/components/schemas/Error"
     Forbidden:
       description: Ruxsat yoʻq yoki CSRF token notoʻgʻri
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Juda ko'p urinish — keyinroq qayta urinib ko'ring
       content:
         application/json:
           schema:
@@ -1104,6 +1490,208 @@ components:
           enum: [open, in_review, resolved, rejected]
         resolutionNote: { type: [string, "null"] }
         createdAt: { type: string, format: date-time }
+
+    AdminPermission:
+      type: string
+      description: Atomar ruxsat (ADR-0009). Root barcha ruxsatlarga ega.
+      enum:
+        - business.view
+        - business.edit
+        - business.publish
+        - category.manage
+        - review.moderate
+        - complaint.manage
+        - user.view
+        - staff.manage
+        - audit.view
+        - settings.manage
+
+    AdminMe:
+      type: object
+      required: [id, username, displayName, isRoot, permissions]
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        displayName: { type: string }
+        isRoot: { type: boolean }
+        permissions:
+          type: array
+          description: Amaldagi (rollar va alohida ruxsatlardan hisoblangan) ruxsatlar
+          items: { $ref: "#/components/schemas/AdminPermission" }
+
+    BusinessStatus:
+      type: string
+      description: draft — qoralama (saytda yo'q), published — e'lon qilingan, hidden — vaqtincha yashirilgan
+      enum: [draft, published, hidden]
+
+    Consent:
+      type: object
+      required: [givenBy, givenAt, note]
+      description: Biznes egasining maʼlumotlarni e'lon qilishga roziligi (ADR-0007)
+      properties:
+        givenBy: { type: string, maxLength: 100, description: Kim rozilik berdi (ism, lavozim) }
+        givenAt: { type: string, format: date-time }
+        note: { type: [string, "null"], maxLength: 500 }
+
+    AdminPhoto:
+      allOf:
+        - $ref: "#/components/schemas/Image"
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+
+    AdminBusinessListItem:
+      type: object
+      required: [id, slug, name, category, district, status, hasConsent, photosCount, itemsCount, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        category: { $ref: "#/components/schemas/CategoryRef" }
+        district: { $ref: "#/components/schemas/DistrictRef" }
+        status: { $ref: "#/components/schemas/BusinessStatus" }
+        hasConsent: { type: boolean }
+        photosCount: { type: integer }
+        itemsCount: { type: integer }
+        updatedAt: { type: string, format: date-time }
+
+    AdminBusinessPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminBusinessListItem" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    AdminBusiness:
+      type: object
+      required:
+        - id
+        - slug
+        - name
+        - description
+        - category
+        - district
+        - address
+        - location
+        - phones
+        - telegram
+        - instagram
+        - schedule
+        - status
+        - consent
+        - photos
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        category: { $ref: "#/components/schemas/CategoryRef" }
+        district: { $ref: "#/components/schemas/DistrictRef" }
+        address:
+          type: object
+          required: [text, landmark]
+          properties:
+            text: { type: string }
+            landmark: { type: [string, "null"] }
+        location:
+          oneOf:
+            - $ref: "#/components/schemas/GeoPoint"
+            - type: "null"
+        phones:
+          type: array
+          items: { $ref: "#/components/schemas/Phone" }
+        telegram: { type: [string, "null"] }
+        instagram: { type: [string, "null"] }
+        schedule:
+          oneOf:
+            - $ref: "#/components/schemas/WeeklySchedule"
+            - type: "null"
+        status: { $ref: "#/components/schemas/BusinessStatus" }
+        consent:
+          oneOf:
+            - $ref: "#/components/schemas/Consent"
+            - type: "null"
+        photos:
+          type: array
+          items: { $ref: "#/components/schemas/AdminPhoto" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AdminBusinessCreate:
+      type: object
+      required: [name, categorySlug, districtSlug]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        categorySlug: { type: string, description: Ichki (oxirgi darajadagi) kategoriya }
+        districtSlug: { type: string }
+
+    AdminBusinessUpdate:
+      type: object
+      description: Faqat yuborilgan maydonlar yangilanadi
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        description: { type: [string, "null"], maxLength: 2000 }
+        categorySlug: { type: string }
+        districtSlug: { type: string }
+        address:
+          type: object
+          required: [text, landmark]
+          properties:
+            text: { type: string, maxLength: 300 }
+            landmark: { type: [string, "null"], maxLength: 200 }
+        location:
+          oneOf:
+            - $ref: "#/components/schemas/GeoPoint"
+            - type: "null"
+        phones:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/Phone" }
+        telegram:
+          type: [string, "null"]
+          pattern: "^[A-Za-z0-9_]{5,32}$"
+        instagram:
+          type: [string, "null"]
+          pattern: "^[A-Za-z0-9_.]{1,30}$"
+        schedule:
+          oneOf:
+            - $ref: "#/components/schemas/WeeklySchedule"
+            - type: "null"
+        consent:
+          oneOf:
+            - $ref: "#/components/schemas/Consent"
+            - type: "null"
+        status: { $ref: "#/components/schemas/BusinessStatus" }
+
+    ItemInput:
+      type: object
+      required: [kind, name, group, description, price, durationMinutes, attributes, isAvailable]
+      properties:
+        kind:
+          type: string
+          enum: [product, service]
+        name: { type: string, minLength: 2, maxLength: 120 }
+        group: { type: [string, "null"], maxLength: 60 }
+        description: { type: [string, "null"], maxLength: 1000 }
+        price: { $ref: "#/components/schemas/ItemPrice" }
+        durationMinutes: { type: [integer, "null"], minimum: 5, maximum: 1440 }
+        attributes:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [name, value]
+            properties:
+              name: { type: string, maxLength: 40 }
+              value: { type: string, maxLength: 120 }
+        isAvailable: { type: boolean }
 
     SearchSuggestions:
       type: object

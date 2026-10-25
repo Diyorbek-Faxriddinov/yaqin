@@ -7,6 +7,7 @@ import { FavoriteButton } from "@/features/favorites/components/favorite-button"
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import type { BusinessSummary } from "@/lib/api/types";
+import { isDemoMode } from "@/lib/env";
 import { formatDistance } from "@/lib/format/distance";
 import { cn } from "@/lib/utils";
 import { BusinessOpenStatus } from "./business-open-status";
@@ -53,6 +54,9 @@ function CardMedia({
           src={business.coverImage.url}
           alt=""
           fill
+          // Demo rasmlar server xotirasida — optimallashtirgich ularni ko'rmaydi; ular brauzerda
+          // allaqachon siqilgan. Productionda CDN + optimallashtirish (5-bosqich).
+          unoptimized={isDemoMode}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 112px"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />

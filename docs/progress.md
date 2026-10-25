@@ -1,6 +1,6 @@
 # Ish holati
 
-Oxirgi yangilanish: 2026-10-25
+Oxirgi yangilanish: 2026-10-26
 
 ## Bosqichlar
 
@@ -22,8 +22,8 @@ Oxirgi yangilanish: 2026-10-25
 | 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅                     |
 | 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅                     |
 | 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅                     |
-| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅ (tasdiq kutilmoqda) |
-| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ⏳                     |
+| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅                     |
+| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅ (tasdiq kutilmoqda) |
 | 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ⏳                     |
 | 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ⏳                     |
 | 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ⏳                     |
@@ -118,6 +118,39 @@ Oxirgi yangilanish: 2026-10-25
 - Testlar: 139 unit, 131 E2E.
 
 **Topilgan va tuzatilgan:** reyting tanlansa ham forma "Bahoni tanlang" derdi (RHF `valueAsNumber` radio'da ishlamaydi); profil sahifalarida `Math.random` prerender ogohlantirishi; telefondagi kartada uzun nom yurakcha ostiga kirardi; "Saqlash" tugmasining ekran o'quvchi nomi ko'rinadigan matnga mos emas edi (WCAG 2.5.3).
+
+## 2.7 natijalari
+
+| Sahifa / imkoniyat       | Tafsilot                                                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `/admin/kirish`          | Login + parol → 6 xonali kod (TOTP, mock). 5 xato urinish → 60 s blok; kod 5 daqiqa amal qiladi                                     |
+| Admin layout             | Desktop — chap panel, telefon — yuqori panel + menyu; telefonda "Biznes qoʻshish" tugmasi (bosh panel va roʻyxatda)                 |
+| `/admin`                 | Bosh panel: eʼlon qilingan, qoralama, yashirilgan, rozilik qayd etilmagan bizneslar soni                                            |
+| `/admin/bizneslar`       | Qidiruv, holat filtri (`?filtr=`), rasm va narxlar soni, "Yana koʻrsatish"                                                          |
+| `/admin/bizneslar/yangi` | 7 qadamli usta: asosiy → joylashuv (GPS yoki xaritada belgilash) → rasmlar (kamera) → ish vaqti → aloqa + rozilik → katalog → eʼlon |
+| `/admin/bizneslar/[id]`  | Xuddi shu boʻlimlar tablarda (`?bolim=`); oʻzgarish saqlangach ommaviy sahifa keshi yangilanadi                                     |
+
+- Ruxsatlar backend/mock'da tekshiriladi (ADR-0009): demo `moderator` bizneslarni koʻradi, lekin tahrirlay olmaydi.
+- Eʼlon qilish uchun joylashuv, manzil va egasining roziligi majburiy (ADR-0007).
+- Rasmlar: brauzerda qayta siqiladi (EXIF, jumladan GPS, olib tashlanadi), JPEG/PNG/WebP, 5 MB gacha, 12 tagacha, tartibini oʻzgartirish va oʻchirish.
+- Har bir oʻzgarish audit jurnaliga yoziladi (koʻrish sahifasi — 2.9).
+- Production uchun `/api/revalidate` webhook'i (Bearer `REVALIDATE_SECRET`, vaqtga chidamli taqqoslash) — backend 3-bosqichda ishlatadi.
+- Testlar: 167 unit, 152 E2E (3 ekran; admin testlari 4 marta takrorlab ham oʻtdi).
+
+**Topilgan va tuzatilgan:**
+
+- Sahifa toʻliq yuklanishidan oldin kiritilgan login/parol yoʻqolardi; JavaScript yuklanmay turib yuborilsa, parol URL'ga tushishi mumkin edi. Endi maydonlar boshqarilmaydi, forma `method="post"`, tugma sahifa tayyor boʻlguncha faolsiz.
+- shadcn `Alert` har doim `role="alert"` berardi — statik maslahatlar ekran oʻquvchida favqulodda xabar kabi oʻqilardi.
+- Demo rejimda yuklangan rasmlar `next/image` optimizatorida 404 berardi (server xotirasida) — demo'da optimizatsiyasiz.
+- "Biznes qoʻshish" tugmasi forma sahifalarida formaning oʻz tugmalarini toʻsardi.
+- Server sahifalaridan client moduldagi funksiyalar chaqirilardi — `admin-params.ts` ga ajratildi.
+
+**Hali ishlamaydi / mock:**
+
+- 2FA — har doim `123456`; haqiqiy TOTP (kalit yaratish, QR) backend bilan (3-bosqich).
+- Login cheklovi faqat login boʻyicha; backend'da IP + login boʻyicha boʻladi (ADR-0006).
+- Rasmlar va barcha admin oʻzgarishlari server xotirasida — qayta ishga tushganda oʻchadi.
+- Kategoriyalar, moderatsiya, shikoyatlar (2.8), administratorlar, audit koʻrish, statistika (2.9) — hali yoʻq.
 
 ## Maʼlum cheklovlar
 

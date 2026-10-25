@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { googleDirectionsUrl, yandexDirectionsUrl } from "../directions";
 import { formatDuration } from "./duration";
-import { formatPhone, telHref } from "./phone";
+import { formatPhone, normalizeUzPhone, telHref } from "./phone";
 
 const NBSP = " ";
 
@@ -42,5 +42,17 @@ describe("yo'l ko'rsatish havolalari", () => {
     expect(googleDirectionsUrl(point)).toBe(
       "https://www.google.com/maps/dir/?api=1&destination=41.311,69.28",
     );
+  });
+});
+
+describe("normalizeUzPhone", () => {
+  it.each([
+    ["90 123 45 67", "+998901234567"],
+    ["+998 (90) 123-45-67", "+998901234567"],
+    ["998901234567", "+998901234567"],
+    ["12345", null],
+    ["+7 912 345 67 89", null],
+  ])("%s → %s", (input, expected) => {
+    expect(normalizeUzPhone(input)).toBe(expected);
   });
 });

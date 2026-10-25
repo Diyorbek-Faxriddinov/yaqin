@@ -28,6 +28,12 @@ const csrfMiddleware: Middleware = {
   },
 };
 
+/** Multipart (fayl yuklash) kabi openapi-fetch'dan tashqari so'rovlar uchun CSRF sarlavhasi */
+export function csrfHeaders(): Record<string, string> {
+  const token = readCookie(CSRF_COOKIE);
+  return token ? { "X-CSRFToken": token } : {};
+}
+
 export const browserApi = createClient<paths>({ baseUrl: "/api/v1", credentials: "same-origin" });
 browserApi.use(csrfMiddleware);
 

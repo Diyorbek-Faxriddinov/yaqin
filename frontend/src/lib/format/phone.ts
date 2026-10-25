@@ -15,3 +15,14 @@ export function formatPhone(e164: string): string {
 export function telHref(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
+
+/**
+ * Kiritilgan raqamni E.164 ga keltiradi: "90 123 45 67", "+998 (90) 123-45-67", "998901234567"
+ * → "+998901234567". O'zbekiston raqami bo'lmasa — null.
+ */
+export function normalizeUzPhone(input: string): string | null {
+  const digits = input.replace(/\D/g, "");
+  if (/^998\d{9}$/.test(digits)) return `+${digits}`;
+  if (/^\d{9}$/.test(digits)) return `+998${digits}`;
+  return null;
+}

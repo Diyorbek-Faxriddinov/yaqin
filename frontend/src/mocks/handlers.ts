@@ -15,6 +15,7 @@ import {
   ValidationError,
   type Lang,
 } from "./db";
+import { adminHandlers } from "./admin-handlers";
 import { meHandlers } from "./me-handlers";
 
 // Handler'lar har qanday host'dagi /api/v1 yo'lini ushlaydi (API_URL qanday bo'lishidan qat'i nazar)
@@ -47,6 +48,7 @@ function optionalNumber(value: string | null): number | undefined {
 
 export const handlers = [
   ...meHandlers,
+  ...adminHandlers,
   http.get(`${API}/categories`, ({ request }) => {
     return HttpResponse.json(listCategories(langOf(new URL(request.url))));
   }),

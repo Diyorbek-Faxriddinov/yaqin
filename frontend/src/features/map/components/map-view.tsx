@@ -5,16 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import {
   AttributionControl,
   GeolocateControl,
-  getVersion,
   Map as MapLibreMap,
   NavigationControl,
-  setWorkerUrl,
   type GeoJSONSource,
   type MapLayerMouseEvent,
 } from "maplibre-gl";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { MAP_STYLE_URL, TASHKENT_CENTER, type MapPoint } from "../config";
+import { collapseAttribution, configureWorker, controlsLocale } from "../maplibre-setup";
 
 export type MapViewProps = {
   points: MapPoint[];
@@ -28,14 +27,6 @@ export type MapViewProps = {
   label: string;
   className?: string;
 };
-
-// Worker bundle'dan tashqarida (scripts/copy-vendor.mjs) — bir marta sozlanadi
-let workerConfigured = false;
-function configureWorker() {
-  if (workerConfigured) return;
-  setWorkerUrl(`/vendor/maplibre-gl-worker-${getVersion()}.mjs`);
-  workerConfigured = true;
-}
 
 const SOURCE_ID = "businesses";
 
@@ -87,20 +78,7 @@ export function MapView({
       attributionControl: false,
       cooperativeGestures: cooperative,
       maxZoom: 18,
-      // Boshqaruv tugmalari va maslahatlar (ekran o'quvchilar uchun ham) tanlangan tilda
-      locale: {
-        "NavigationControl.ZoomIn": t("controls.zoomIn"),
-        "NavigationControl.ZoomOut": t("controls.zoomOut"),
-        "NavigationControl.ResetBearing": t("controls.resetBearing"),
-        "GeolocateControl.FindMyLocation": t("controls.findMyLocation"),
-        "GeolocateControl.LocationNotAvailable": t("controls.locationNotAvailable"),
-        "AttributionControl.ToggleAttribution": t("controls.toggleAttribution"),
-        "AttributionControl.MapFeedback": t("controls.mapFeedback"),
-        "CooperativeGesturesHandler.WindowsHelpText": t("controls.windowsHelp"),
-        "CooperativeGesturesHandler.MacHelpText": t("controls.macHelp"),
-        "CooperativeGesturesHandler.MobileHelpText": t("controls.mobileHelp"),
-        "Map.Title": t("controls.mapTitle"),
-      },
+      locale: controlsLocale(t),
     });
     mapRef.current = map;
 
@@ -206,11 +184,8 @@ export function MapView({
         map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
       }
 
-      // Manbalar yozuvi (OSM litsenziyasi talabi) yig'iq holatda boshlanadi — kichik xaritani
-      // yopib qo'ymasligi uchun; "i" tugmasi bilan ochiladi
-      const attribution = container.querySelector(".maplibregl-ctrl-attrib");
-      attribution?.classList.remove("maplibregl-compact-show");
-      attribution?.removeAttribute("open");
+      // Kichik xaritani yopib qo'ymasligi uchun; "i" tugmasi bilan ochiladi
+      collapseAttribution(container);
 
       setLoaded(true);
     });

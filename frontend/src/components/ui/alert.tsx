@@ -23,14 +23,9 @@ function Alert({
   variant,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
-  return (
-    <div
-      data-slot="alert"
-      role="alert"
-      className={cn(alertVariants({ variant }), className)}
-      {...props}
-    />
-  );
+  // shadcn standartida role="alert" bor edi — statik maʼlumot bloki sahifa ochilganda ekran
+  // o'quvchida favqulodda xabar kabi o'qilardi. Dinamik xato uchun role="alert" ni aniq bering.
+  return <div data-slot="alert" className={cn(alertVariants({ variant }), className)} {...props} />;
 }
 
 function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {

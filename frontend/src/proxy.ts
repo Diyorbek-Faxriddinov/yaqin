@@ -4,9 +4,12 @@ import { routing } from "./i18n/routing";
 
 const intl = createMiddleware(routing);
 
-// Kirish talab qilinadigan bo'limlar (tilsiz yo'l)
-const PROTECTED = ["/profil"];
-const SESSION_COOKIE = "sessionid";
+// Kirish talab qilinadigan bo'limlar (tilsiz yo'l) va ularning sessiya cookie'si
+const PROTECTED: Array<{ prefix: string; cookie: string; login: string }> = [
+  { prefix: "/profil", cookie: "sessionid", login: "/kirish" },
+  // Admin sessiyasi mijoz sessiyasidan alohida (ADR-0012)
+  { prefix: "/admin", cookie: "adminsessionid", login: "/admin/kirish" },
+];
 
 /**
  * 1) Himoyalangan sahifaga sessiya cookie'siz kirilsa — /kirish?next=... ga yo'naltiradi.
@@ -19,10 +22,12 @@ export default function proxy(request: NextRequest) {
   const localePrefix = /^\/ru(?=\/|$)/.test(pathname) ? "/ru" : "";
   const path = pathname.slice(localePrefix.length) || "/";
 
-  const isProtected = PROTECTED.some((p) => path === p || path.startsWith(`${p}/`));
-  if (isProtected && !request.cookies.has(SESSION_COOKIE)) {
+  const area = PROTECTED.find(
+    ({ prefix, login }) => (path === prefix || path.startsWith(`${prefix}/`)) && path !== login,
+  );
+  if (area && !request.cookies.has(area.cookie)) {
     const url = request.nextUrl.clone();
-    url.pathname = `${localePrefix}/kirish`;
+    url.pathname = `${localePrefix}${area.login}`;
     url.search = `?next=${encodeURIComponent(`${path}${search}`)}`;
     return NextResponse.redirect(url);
   }

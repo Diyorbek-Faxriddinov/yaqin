@@ -395,6 +395,231 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Admin kirishi — 1-qadam (login va parol)
+         * @description Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — 2FA uchun qisqa muddatli `challengeToken`
+         *     qaytadi. Ketma-ket muvaffaqiyatsiz urinishlar cheklanadi (429).
+         */
+        post: operations["adminLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/auth/2fa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Admin kirishi — 2-qadam (TOTP kodi)
+         * @description Muvaffaqiyatli bo'lsa `adminsessionid` (HttpOnly, Secure, SameSite=Strict, 8 soat) va
+         *     `csrftoken` cookie'lari o'rnatiladi. Admin sessiyasi mijoz sessiyasidan alohida.
+         */
+        post: operations["adminVerify2fa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin sessiyasini tugatish */
+        post: operations["adminLogout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Joriy administrator va amaldagi ruxsatlari */
+        get: operations["getAdminMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bizneslar (barcha holatlar) — ruxsat business.view */
+        get: operations["adminListBusinesses"];
+        put?: never;
+        /**
+         * Yangi biznes (qoralama) — ruxsat business.edit
+         * @description Platforma boshqaruvidagi qoralama sifatida yaratiladi (ADR-0007).
+         */
+        post: operations["adminCreateBusiness"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Biznesni tahrirlash uchun to'liq maʼlumot */
+        get: operations["adminGetBusiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Biznesni qisman yangilash — ruxsat business.edit (holat — business.publish)
+         * @description `status: published` faqat nomi, kategoriyasi, joylashuvi, manzili va rozilik qayd
+         *     etilgan bo'lsa (aks holda 400, `fields` da yetishmaganlar). Har bir o'zgarish audit
+         *     jurnaliga yoziladi.
+         */
+        patch: operations["adminUpdateBusiness"];
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rasm yuklash — ruxsat business.edit
+         * @description JPEG, PNG yoki WebP, ko'pi bilan 5 MB. Backend rasmni qayta kodlaydi (EXIF, jumladan
+         *     GPS, olib tashlanadi) va o'lchamlarini tekshiradi.
+         */
+        post: operations["adminUploadPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Rasmlar tartibi (birinchisi — muqova) */
+        put: operations["adminReorderPhotos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Rasmni o'chirish */
+        delete: operations["adminDeletePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Biznes katalogi (mavjud bo'lmaganlari bilan) */
+        get: operations["adminListItems"];
+        put?: never;
+        /** Mahsulot yoki xizmat qo'shish */
+        post: operations["adminCreateItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Mahsulot yoki xizmatni yangilash */
+        put: operations["adminUpdateItem"];
+        post?: never;
+        /** Mahsulot yoki xizmatni o'chirish */
+        delete: operations["adminDeleteItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/suggest": {
         parameters: {
             query?: never;
@@ -715,6 +940,120 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        /**
+         * @description Atomar ruxsat (ADR-0009). Root barcha ruxsatlarga ega.
+         * @enum {string}
+         */
+        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "staff.manage" | "audit.view" | "settings.manage";
+        AdminMe: {
+            /** Format: uuid */
+            id: string;
+            username: string;
+            displayName: string;
+            isRoot: boolean;
+            /** @description Amaldagi (rollar va alohida ruxsatlardan hisoblangan) ruxsatlar */
+            permissions: components["schemas"]["AdminPermission"][];
+        };
+        /**
+         * @description draft — qoralama (saytda yo'q), published — e'lon qilingan, hidden — vaqtincha yashirilgan
+         * @enum {string}
+         */
+        BusinessStatus: "draft" | "published" | "hidden";
+        /** @description Biznes egasining maʼlumotlarni e'lon qilishga roziligi (ADR-0007) */
+        Consent: {
+            /** @description Kim rozilik berdi (ism */
+            givenBy: string;
+            /** Format: date-time */
+            givenAt: string;
+            note: string | null;
+        };
+        AdminPhoto: components["schemas"]["Image"] & {
+            /** Format: uuid */
+            id: string;
+        };
+        AdminBusinessListItem: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            category: components["schemas"]["CategoryRef"];
+            district: components["schemas"]["DistrictRef"];
+            status: components["schemas"]["BusinessStatus"];
+            hasConsent: boolean;
+            photosCount: number;
+            itemsCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminBusinessPage: {
+            items: components["schemas"]["AdminBusinessListItem"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AdminBusiness: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            description: string | null;
+            category: components["schemas"]["CategoryRef"];
+            district: components["schemas"]["DistrictRef"];
+            address: {
+                text: string;
+                landmark: string | null;
+            };
+            location: components["schemas"]["GeoPoint"] | null;
+            phones: components["schemas"]["Phone"][];
+            telegram: string | null;
+            instagram: string | null;
+            schedule: components["schemas"]["WeeklySchedule"] | null;
+            status: components["schemas"]["BusinessStatus"];
+            consent: components["schemas"]["Consent"] | null;
+            photos: components["schemas"]["AdminPhoto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminBusinessCreate: {
+            name: string;
+            /** @description Ichki (oxirgi darajadagi) kategoriya */
+            categorySlug: string;
+            districtSlug: string;
+        };
+        /** @description Faqat yuborilgan maydonlar yangilanadi */
+        AdminBusinessUpdate: {
+            name?: string;
+            description?: string | null;
+            categorySlug?: string;
+            districtSlug?: string;
+            address?: {
+                text: string;
+                landmark: string | null;
+            };
+            location?: components["schemas"]["GeoPoint"] | null;
+            phones?: components["schemas"]["Phone"][];
+            telegram?: string | null;
+            instagram?: string | null;
+            schedule?: components["schemas"]["WeeklySchedule"] | null;
+            consent?: components["schemas"]["Consent"] | null;
+            status?: components["schemas"]["BusinessStatus"];
+        };
+        ItemInput: {
+            /** @enum {string} */
+            kind: "product" | "service";
+            name: string;
+            group: string | null;
+            description: string | null;
+            price: components["schemas"]["ItemPrice"];
+            durationMinutes: number | null;
+            attributes: {
+                name: string;
+                value: string;
+            }[];
+            isAvailable: boolean;
+        };
         SearchSuggestions: {
             categories: components["schemas"]["CategoryRef"][];
             businesses: {
@@ -767,6 +1106,15 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description Juda ko'p urinish — keyinroq qayta urinib ko'ring */
+        TooManyRequests: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Holat ziddiyati (masalan, sharh allaqachon mavjud) */
         Conflict: {
             headers: {
@@ -787,6 +1135,7 @@ export interface components {
         };
     };
     parameters: {
+        BusinessId: string;
         Lang: components["schemas"]["Locale"];
         Slug: string;
         Page: number;
@@ -1375,6 +1724,421 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    adminLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    username: string;
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 2FA kodi kerak */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        challengeToken: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminVerify2fa: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    challengeToken: string;
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Kirildi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMe"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminLogout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Chiqildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getAdminMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Administrator */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMe"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    adminListBusinesses: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+                q?: string;
+                status?: components["schemas"]["BusinessStatus"];
+                /** @description Faqat rozilik qayd etilmaganlar */
+                missingConsent?: boolean;
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bizneslar sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateBusiness: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBusinessCreate"];
+            };
+        };
+        responses: {
+            /** @description Yaratildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusiness"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetBusiness: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biznes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusiness"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateBusiness: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBusinessUpdate"];
+            };
+        };
+        responses: {
+            /** @description Yangilandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusiness"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUploadPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    alt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Yuklandi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPhoto"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Fayl juda katta */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminReorderPhotos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    photoIds: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminDeletePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mahsulot va xizmatlar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"][];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminCreateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemInput"];
+            };
+        };
+        responses: {
+            /** @description Qo'shildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemInput"];
+            };
+        };
+        responses: {
+            /** @description Yangilandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeleteItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     searchSuggest: {

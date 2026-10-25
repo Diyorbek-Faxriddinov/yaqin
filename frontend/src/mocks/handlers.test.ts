@@ -1,3 +1,5 @@
+// @vitest-environment node
+// Mock API serverda (Node) ishlaydi — jsdom Blob/FormData Node Request bilan mos emas
 import { describe, expect, it } from "vitest";
 import type {
   BusinessPage,

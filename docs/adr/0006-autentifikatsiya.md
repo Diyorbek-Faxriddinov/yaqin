@@ -17,6 +17,8 @@ Yuridik shaxs yoʻq — SMS provayderlar bilan shartnoma tuzish qiyin. Oʻzbekis
 
 - Sessiya — `httpOnly`, `Secure`, `SameSite=Lax` cookie + CSRF token. Token `localStorage` da saqlanmaydi.
 - Kirishga urinishlar soni cheklanadi (rate limiting), faol sessiyalarni koʻrish va bekor qilish mumkin.
+- Cheklov **IP + login** juftligi boʻyicha (va IP boʻyicha umumiy chegara) boʻladi. Faqat login boʻyicha bloklash begona odamga root'ni ataylab bloklab qoʻyish imkonini beradi (mock qatlami soddalik uchun faqat login boʻyicha cheklaydi — 2.7).
+- Admin sessiyasi alohida cookie'da (`adminsessionid`, `SameSite=Strict`, 8 soat) — mijoz sessiyasidan mustaqil.
 - Mock rejimida Telegram/Google oʻrniga "Demo foydalanuvchi sifatida kirish" tugmasi boʻladi.
 
 ## Oqibatlar
