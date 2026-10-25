@@ -96,6 +96,8 @@ export async function BusinessResults({
         </Alert>
       )}
 
+      {/* Kartalar sarlavhasi h3 — sarlavhalar tartibi uzilmasligi uchun (a11y) */}
+      <h2 className="sr-only">{t("heading")}</h2>
       <p role="status" className="text-sm text-muted-foreground">
         {t("count", { count: page.total })}
       </p>

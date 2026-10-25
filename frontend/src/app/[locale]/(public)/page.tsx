@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { ArrowRight, Store } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { SearchForm } from "@/components/common/search-form";
@@ -11,6 +12,7 @@ import { getCategoryTree, getDistricts } from "@/features/category/queries";
 import { NearbyButton } from "@/features/location/components/nearby-button";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { absoluteUrl, pageMetadata } from "@/lib/seo";
 
 function SectionHeader({
   id,
@@ -90,12 +92,39 @@ async function Districts({ locale }: { locale: AppLocale }) {
   );
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({ path: "/", locale: (await getLocale()) as AppLocale });
+}
+
+/** schema.org WebSite + SearchAction — qidiruv tizimida sayt ichida qidirish maydoni */
+function WebsiteJsonLd({ locale }: { locale: AppLocale }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Yaqin",
+    url: absoluteUrl("/", locale),
+    inLanguage: locale,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${absoluteUrl("/qidiruv", locale)}?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
+
 export default async function HomePage() {
   const locale = (await getLocale()) as AppLocale;
   const t = await getTranslations("HomePage");
 
   return (
     <>
+      <WebsiteJsonLd locale={locale} />
       <section className="border-b bg-gradient-to-b from-primary-soft to-background">
         <div className="mx-auto max-w-3xl px-4 pt-10 pb-12 text-center sm:pt-16 sm:pb-16">
           <h1 className="text-3xl font-bold sm:text-5xl">{t("title")}</h1>

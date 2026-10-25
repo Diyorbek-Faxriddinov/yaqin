@@ -348,7 +348,13 @@ export function deleteDemoUser(userId: string) {
   for (const [token, session] of demoState.sessions) {
     if (session.userId === userId) demoState.sessions.delete(token);
   }
-  // Sharhlar anonimlashtiriladi (kontraktdagi DELETE /me tavsifiga mos)
+  // Kontraktdagi DELETE /me: chop etilgan sharhlar "O'chirilgan foydalanuvchi" nomi bilan qoladi,
+  // qolgan shaxsiy yozuvlar (moderatsiyadagi sharhlar, shikoyatlar) o'chiriladi
   demoState.complaints = demoState.complaints.filter((c) => c.userId !== userId);
-  demoState.reviews = demoState.reviews.filter((r) => r.userId !== userId);
+  demoState.reviews = demoState.reviews
+    .filter((r) => r.userId !== userId || r.status === "published")
+    .map((r) => (r.userId === userId ? { ...r, userId: DELETED_USER_ID } : r));
 }
+
+/** Akkaunti o'chirilgan muallif (ommaviy sharhlarda) */
+export const DELETED_USER_ID = "deleted";

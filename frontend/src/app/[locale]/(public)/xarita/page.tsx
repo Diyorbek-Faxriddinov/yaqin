@@ -7,10 +7,17 @@ import { parseFilters } from "@/features/business/search-params";
 import { getCategoryTree } from "@/features/category/queries";
 import { MapExplorer } from "@/features/map/components/map-explorer";
 import type { AppLocale } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("MapPage");
-  return { title: t("title"), description: t("description") };
+  const locale = (await getLocale()) as AppLocale;
+  return pageMetadata({
+    path: "/xarita",
+    locale,
+    title: t("title"),
+    description: t("description"),
+  });
 }
 
 async function MapContent({

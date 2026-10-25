@@ -5,10 +5,17 @@ import { CategoryIcon } from "@/features/category/category-icon";
 import { getCategoryTree } from "@/features/category/queries";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("CategoriesPage");
-  return { title: t("title"), description: t("description") };
+  const locale = (await getLocale()) as AppLocale;
+  return pageMetadata({
+    path: "/kategoriyalar",
+    locale,
+    title: t("title"),
+    description: t("description"),
+  });
 }
 
 export default async function CategoriesPage() {

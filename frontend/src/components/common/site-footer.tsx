@@ -13,6 +13,7 @@ async function currentYear() {
 const LINKS = [
   { href: "/haqida", key: "about" },
   { href: "/biznes-qoshish", key: "addBusiness" },
+  { href: "/aloqa", key: "contact" },
   { href: "/shartlar", key: "terms" },
   { href: "/maxfiylik", key: "privacy" },
 ] as const;

@@ -58,9 +58,9 @@ export function StatsOverview({ series }: { series: StatsSeries }) {
 
       <section aria-labelledby="stats-chart-title" className="space-y-2 rounded-xl border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 id="stats-chart-title" className="font-medium">
+          <h2 id="stats-chart-title" className="font-medium">
             {t("chartTitle", { metric: t(`metrics.${metric}`) })}
-          </h3>
+          </h2>
           <Button
             variant="ghost"
             size="sm"

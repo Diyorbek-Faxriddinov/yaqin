@@ -13,6 +13,7 @@ import { CategoryIcon } from "@/features/category/category-icon";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { formatDuration } from "@/lib/format/duration";
+import { pageMetadata } from "@/lib/seo";
 
 /** Ota layout har bir biznes uchun chaqiradi — bu yerda faqat mahsulot slug'lari */
 export async function generateStaticParams({ params }: { params: { slug: string } }) {
@@ -30,14 +31,16 @@ export async function generateMetadata({
   ]);
   if (!business || !item) return {};
   const t = await getTranslations("BusinessPage.item");
-  return {
+  return pageMetadata({
+    path: `/biznes/${slug}/${itemSlug}`,
+    locale,
     title: `${item.name} — ${business.name}`,
     description: t("metaDescription", {
       item: item.name,
       business: business.name,
       district: business.district.name,
     }),
-  };
+  });
 }
 
 export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[slug]/[item]">) {

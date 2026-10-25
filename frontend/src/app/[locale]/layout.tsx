@@ -5,6 +5,8 @@ import { QueryProvider } from "@/components/common/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { routing } from "@/i18n/routing";
+import { isDemoMode } from "@/lib/env";
+import { siteUrl } from "@/lib/seo";
 import { inter } from "../fonts";
 import "../globals.css";
 
@@ -16,9 +18,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
 
   return {
+    metadataBase: new URL(siteUrl()),
     title: { default: t("title"), template: t("titleTemplate") },
     description: t("description"),
     applicationName: "Yaqin",
+    openGraph: {
+      type: "website",
+      siteName: "Yaqin",
+      title: t("title"),
+      description: t("description"),
+    },
+    twitter: { card: "summary_large_image" },
+    // Demo maʼlumotlar to'qib chiqarilgan — qidiruv tizimlariga tushmasligi kerak
+    ...(isDemoMode ? { robots: { index: false, follow: false } } : {}),
   };
 }
 

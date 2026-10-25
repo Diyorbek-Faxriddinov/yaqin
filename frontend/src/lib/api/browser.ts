@@ -34,6 +34,14 @@ export function csrfHeaders(): Record<string, string> {
   return token ? { "X-CSRFToken": token } : {};
 }
 
+/**
+ * Sessiya bo'lishi mumkinmi: csrftoken (httpOnly emas) kirishda o'rnatiladi, chiqishda o'chiriladi.
+ * Yo'q bo'lsa — mehmon: /me so'rovi yuborilmaydi (ortiqcha so'rov va konsoldagi 401 xatosi).
+ */
+export function mayHaveSession(): boolean {
+  return readCookie(CSRF_COOKIE) !== null;
+}
+
 export const browserApi = createClient<paths>({ baseUrl: "/api/v1", credentials: "same-origin" });
 browserApi.use(csrfMiddleware);
 

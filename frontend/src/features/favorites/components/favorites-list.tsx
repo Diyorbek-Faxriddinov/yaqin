@@ -38,5 +38,11 @@ export function FavoritesList() {
       />
     );
   }
-  return <BusinessGrid businesses={data} />;
+  return (
+    <>
+      {/* Kartalar sarlavhasi h3 — sarlavhalar tartibi uzilmasligi uchun (a11y) */}
+      <h2 className="sr-only">{t("listHeading")}</h2>
+      <BusinessGrid businesses={data} />
+    </>
+  );
 }

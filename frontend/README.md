@@ -25,12 +25,26 @@ src/
 ├── components/
 │   ├── ui/         shadcn/Radix asosiy komponentlari
 │   └── common/     umumiy: karkas, holatlar, til almashtirgich
-├── features/       soha komponentlari: business, category, ...
+├── content/        uzun matnlar (foydalanish shartlari, maxfiylik siyosati)
+├── features/       soha modullari: admin, business, category, reviews, stats, ...
 ├── i18n/           til sozlamalari (next-intl)
-└── lib/            yordamchi funksiyalar (formatlash va h.k.)
+├── lib/            yordamchi funksiyalar: API klient, formatlash, SEO
+└── mocks/          demo API (MSW): handler'lar, demo holat, fixtures, testlar
 messages/           tarjimalar: uz.json, ru.json
 e2e/                Playwright testlari (375 / 768 / 1280 px)
 ```
+
+## Muhit oʻzgaruvchilari
+
+Namuna — [`.env.example`](.env.example).
+
+| Oʻzgaruvchi                 | Vazifasi                                                                   |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`      | Ommaviy manzil: canonical, sitemap, Open Graph                             |
+| `NEXT_PUBLIC_DEMO_MODE`     | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq |
+| `API_URL`                   | Backend manzili (server tomoni, demo oʻchganda)                            |
+| `NEXT_PUBLIC_MAP_STYLE_URL` | Xarita uslubi (standart — OpenFreeMap)                                     |
+| `REVALIDATE_SECRET`         | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                  |
 
 ## Muhim kelishuvlar
 
@@ -39,4 +53,6 @@ e2e/                Playwright testlari (375 / 768 / 1280 px)
 - Oʻzbekcha matnlarda `ʻ` (U+02BB) va `ʼ` (U+02BC) belgilari ishlatiladi.
 - Narxlar tiyinda, butun son. Formatlash — `src/lib/format/price.ts`.
 - MapLibre worker `predev`/`prebuild` da `public/vendor/` ga koʻchiriladi (`scripts/copy-vendor.mjs`) — bu papka Git'ga kirmaydi.
+- API tiplari `docs/api/openapi.yaml` dan: `npm run api:types` (`src/lib/api/schema.d.ts` ni qoʻlda tahrirlamang).
+- Har bir oʻzgaruvchi admin harakati kesh teglarini yangilaydi (`businesses`, `business:{slug}`, `categories`, `settings` ...).
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.

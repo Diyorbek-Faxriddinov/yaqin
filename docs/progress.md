@@ -4,14 +4,14 @@ Oxirgi yangilanish: 2026-10-26
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat           |
-| ------- | --------------------------------- | --------------- |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan |
-| 2       | Frontend ishlab chiqish           | 🔄 Jarayonda    |
-| 3       | Backend                           | ⏳              |
-| 4       | Integratsiya va yakuniy tekshiruv | ⏳              |
-| 5       | Hosting va domen                  | ⏳              |
+| Bosqich | Mazmuni                           | Holat                  |
+| ------- | --------------------------------- | ---------------------- |
+| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan        |
+| 1       | Frontend rejasi                   | ✅ Tasdiqlangan        |
+| 2       | Frontend ishlab chiqish           | ✅ (tasdiq kutilmoqda) |
+| 3       | Backend                           | ⏳                     |
+| 4       | Integratsiya va yakuniy tekshiruv | ⏳                     |
+| 5       | Hosting va domen                  | ⏳                     |
 
 ## 2-bosqich qadamlari
 
@@ -25,8 +25,8 @@ Oxirgi yangilanish: 2026-10-26
 | 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅                     |
 | 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅                     |
 | 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅                     |
-| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ✅ (tasdiq kutilmoqda) |
-| 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ⏳                     |
+| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ✅                     |
+| 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ✅ (tasdiq kutilmoqda) |
 
 ## 2.1 natijalari
 
@@ -210,13 +210,59 @@ Oxirgi yangilanish: 2026-10-26
 - Audit jurnalida administrator va sana boʻyicha filtr interfeysda yoʻq (API'da `adminId` bor).
 - Hisobot havolasi uchun IP boʻyicha cheklov — backend'da.
 
+## 2.10 natijalari
+
+| Sahifa / imkoniyat        | Tafsilot                                                                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/haqida`                 | Platforma qanday ishlaydi, bizneslar uchun shartlar (bepul, joyida, rozilik bilan, hisobot), tamoyillar                                                                         |
+| `/aloqa`                  | Admin sozlamalaridagi kontaktlar (Telegram, telefon, email); boʻsh boʻlsa — soʻrov formasiga yoʻllanma                                                                          |
+| `/biznes-qoshish`         | Kirishsiz soʻrov formasi: tekshiruv, shaxsiy maʼlumotga rozilik, raqam E.164 ga keltiriladi; forma yopiq boʻlsa — xabar. Soʻrov admin "Soʻrovlar" navbatiga tushadi             |
+| `/shartlar`, `/maxfiylik` | Ikki tilda, mundarija bilan; **loyiha sifatida belgilangan** (huquqshunos tekshiruvi kerak)                                                                                     |
+| SEO                       | canonical, hreflang (uz/ru/x-default), Open Graph + OG rasm (`/opengraph-image`), `sitemap.xml` (≈700 manzil, hreflang bilan), `robots.txt`, `WebSite` + `SearchAction` JSON-LD |
+| Demo rejim                | `robots.txt` — `Disallow: /`, sahifalarda `noindex`: toʻqib chiqarilgan maʼlumotlar qidiruvga tushmaydi                                                                         |
+
+- Footer'ga "Aloqa" havolasi qoʻshildi; barcha footer havolalari endi ishlaydi.
+- [docs/backend-handoff.md](backend-handoff.md) — 3-bosqich uchun barcha talablar bir joyda (auth, cheklovlar, RBAC, rasmlar, kesh teglari, maxfiylik vaʼdalari).
+- README'lar yangilandi: imkoniyatlar, demo kirish, arxitektura, muhit oʻzgaruvchilari.
+- Testlar: 200 unit, 221 E2E (3 ekran).
+
+**Lighthouse** (telefon emulyatsiyasi, CPU 4× sekinlashtirilgan, production build, lokal server). Qavs ichida — optimizatsiyadan oldin:
+
+| Sahifa          |  Tezlik | Accessibility | Best practices | SEO\* |         LCP |          TBT |  CLS |
+| --------------- | ------: | ------------: | -------------: | ----: | ----------: | -----------: | ---: |
+| Bosh sahifa     | 77 (60) |           100 |             96 |    58 | 3,7 s (5,1) | 490 ms (890) |    0 |
+| Biznes profili  | 70 (62) |           100 |            100 |    58 | 4,1 s (4,9) | 680 ms (770) |    0 |
+| Kategoriya (ru) | 72 (65) |      98 → 100 |            100 |    58 | 3,9 s (4,1) | 540 ms (750) |    0 |
+| Xarita          |      39 |           100 |             96 |    58 |       8,3 s |        4,2 s | 0,02 |
+
+\* SEO past — demo rejimdagi `noindex` va lokal portdagi canonical (`NEXT_PUBLIC_SITE_URL` boshqa port) sababli; production'da bu ikki band oʻtadi.
+
+**Topilgan va tuzatilgan:**
+
+- Shrift: `latin`, `latin-ext` va `cyrillic` toʻplamlari har sahifada oldindan yuklanardi. Oʻzbek lotin yozuvidagi ʻ ʼ `latin` da bor — endi faqat u oldindan yuklanadi, kirill kerak boʻlganda (`unicode-range`). Bu LCP va TBT'ni eng koʻp yaxshiladi.
+- Mehmon foydalanuvchi uchun har sahifada `/api/v1/me` soʻrovi yuborilib, konsolda 401 xatosi chiqardi — endi `csrftoken` cookie boʻlmasa soʻrov yuborilmaydi.
+- Sarlavhalar tartibi (`h1 → h3`) natijalar, sevimlilar va statistika sahifalarida buzilgan edi (Lighthouse `heading-order`).
+- Akkaunt oʻchirilganda mock chop etilgan sharhlarni ham oʻchirardi — kontraktdagidek "Oʻchirilgan foydalanuvchi" nomi bilan qoladigan qilindi (maxfiylik siyosati shunga mos).
+- Open Graph rasmi sahifalar oʻz openGraph'ini berganda meros qilinmasdi — har sahifaga aniq beriladi.
+
+**Hali ishlamaydi / qoldi:**
+
+- Xarita sahifasi ogʻir: MapLibre va WebGL; headless Chrome'da GPU yoʻqligi TBT'ni oshiradi. Keyinroq: xaritani foydalanuvchi harakatigacha kechiktirish yoki statik oldindan koʻrinish.
+- Hydration (React) TBT'ning asosiy qismi — server komponentlariga koʻproq koʻchirish keyingi optimizatsiya.
+- Soʻrov formasida spamga qarshi himoya (IP cheklovi, honeypot/captcha) — backend'da.
+- "Oʻchirilgan foydalanuvchi" yorligʻi mock'da faqat oʻzbekcha (backend `lang` bilan beradi).
+- Huquqiy matnlar huquqshunos tekshiruvidan oʻtmagan.
+
+## 2-bosqich yakuni
+
+Frontend toʻliq: ommaviy sayt, mijoz kabineti, admin panel (biznes qoʻshish, moderatsiya, ruxsatlar, audit, statistika), statik sahifalar va SEO — hammasi kontrakt va mock qatlam ustida. Keyingi qadam — **3-bosqich (Django backend)**, faqat tasdiqdan keyin. Boshlash nuqtasi: [docs/backend-handoff.md](backend-handoff.md).
+
 ## Maʼlum cheklovlar
 
 - Docker kompyuterda oʻrnatilmagan — 3-bosqichda (PostgreSQL uchun) kerak boʻladi.
-- Footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
 - Build'da maʼlum boʻlmagan kategoriya slug'i baʼzan 404 oʻrniga 200 + `noindex` qaytaradi (Next 16 oqimli render xususiyati); qidiruv tizimlari indekslamaydi.
 - Partial Prefetching'ning bitta prefetch soʻrovi baʼzan ochiq qoladi (foydalanuvchiga taʼsiri yoʻq); kuzatib boriladi.
 - Xarita yorliqlari OpenStreetMap maʼlumotlaridan (koʻpincha lotin/ingliz yozuvida) — tile provayderi bilan bogʻliq.
 - Demo bizneslarda Telegram yoʻq (mavjud boʻlishi mumkin boʻlgan akkauntlarni ishlatmaslik uchun) — tugma maʼlumot boʻlganda chiqadi.
-- Demo foydalanuvchilar, sevimlilar, sharhlar va xabarlar server xotirasida — qayta ishga tushganda o'chadi.
+- Demo foydalanuvchilar, sevimlilar, sharhlar, xabarlar, rasmlar va admin oʻzgarishlari server xotirasida — qayta ishga tushganda oʻchadi. Next.js sahifa keshi esa diskda qoladi: qayta ishga tushirilgandan keyin keshlangan sahifa yoʻqolgan rasmga havola qilishi mumkin (404). Faqat demo'ga xos — backend maʼlumotni saqlaydi.
 - Telegram/Google orqali kirish — backend bilan birga (4-bosqich).

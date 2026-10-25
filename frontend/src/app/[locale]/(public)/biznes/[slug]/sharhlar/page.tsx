@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReviewList } from "@/features/business/components/review-list";
 import { getBusiness, getBusinessReviews } from "@/features/business/queries";
 import type { AppLocale } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/seo";
 
 const PAGE_SIZE = 20;
 
@@ -15,10 +16,15 @@ export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/biznes/[slug]/sharhlar">): Promise<Metadata> {
   const { slug } = await params;
-  const business = await getBusiness(slug, (await getLocale()) as AppLocale);
+  const locale = (await getLocale()) as AppLocale;
+  const business = await getBusiness(slug, locale);
   if (!business) return {};
   const t = await getTranslations("BusinessPage");
-  return { title: t("reviewsPageTitle", { name: business.name }) };
+  return pageMetadata({
+    path: `/biznes/${slug}/sharhlar`,
+    locale,
+    title: t("reviewsPageTitle", { name: business.name }),
+  });
 }
 
 /** Sahifa raqami URL'da — so'rov vaqtida render qilinadi */

@@ -216,6 +216,24 @@ describe("sharhlar moderatsiyasi", () => {
     const mine = await json<MyReview[]>(call("/me/reviews", user));
     expect(mine[0]).toMatchObject({ status: "rejected", rejectionReason: "Reklama" });
   });
+
+  it("akkaunt o'chirilsa chop etilgan sharh muallifsiz qoladi (DELETE /me)", async () => {
+    const slug = BUSINESSES[6]!.slug;
+    const user = await userLogin();
+    const created = await send("POST", `/businesses/${slug}/reviews`, user, {
+      rating: 4,
+      text: "Oʻchiriladigan akkaunt sharhi",
+    });
+    const review = (await created.json()) as MyReview;
+    await send("PATCH", `/admin/reviews/${review.id}`, await adminLogin("moderator"), {
+      status: "published",
+    });
+    expect((await send("DELETE", "/me", user)).status).toBe(204);
+
+    const page = await json<ReviewPage>(call(`/businesses/${slug}/reviews`, null));
+    const kept = page.items.find((r) => r.id === review.id);
+    expect(kept?.authorName).toBe("Oʻchirilgan foydalanuvchi");
+  });
 });
 
 describe("shikoyatlar", () => {

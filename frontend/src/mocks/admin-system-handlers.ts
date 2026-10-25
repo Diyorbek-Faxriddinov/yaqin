@@ -20,6 +20,7 @@ import {
   paginate,
   randomToken,
   readJson,
+  revalidate,
   text,
   type Fields,
 } from "./admin-common";
@@ -435,7 +436,10 @@ export const adminSystemHandlers = [
       "platform",
       changed.join(", ") || "oʻzgarishsiz",
     );
-    return HttpResponse.json(demoState.settings);
+    // Ommaviy sahifalar (Aloqa, so'rov formasi) keshdan o'qiydi
+    return HttpResponse.json(demoState.settings, {
+      headers: revalidate(new Headers(), "settings"),
+    });
   }),
 
   // --- Statistika ---

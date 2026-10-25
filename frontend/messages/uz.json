@@ -37,7 +37,8 @@
     "addBusiness": "Biznesingizni qoʻshing",
     "terms": "Foydalanish shartlari",
     "privacy": "Maxfiylik siyosati",
-    "copyright": "© {year} Yaqin. Toshkent."
+    "copyright": "© {year} Yaqin. Toshkent.",
+    "contact": "Aloqa"
   },
   "Business": {
     "status": {
@@ -137,7 +138,8 @@
     "pagination": "Sahifalar",
     "prev": "Oldingi",
     "next": "Keyingi",
-    "pageOf": "{page} / {total}"
+    "pageOf": "{page} / {total}",
+    "heading": "Natijalar"
   },
   "CategoriesPage": {
     "title": "Kategoriyalar",
@@ -278,7 +280,8 @@
     "browse": "Kategoriyalarni koʻrish",
     "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
     "save": "Saqlash",
-    "saved": "Saqlangan"
+    "saved": "Saqlangan",
+    "listHeading": "Saqlangan bizneslar"
   },
   "ReviewForm": {
     "trigger": "Sharh yozish",
@@ -1114,5 +1117,130 @@
     "privacy": "Faqat sonlar koʻrsatiladi — kim koʻrgani yoki qoʻngʻiroq qilgani saqlanmaydi. Havolani boshqalarga bermang.",
     "notFoundTitle": "Havola topilmadi",
     "notFoundDescription": "Havola notoʻgʻri yoki bekor qilingan. Yangi havolani administratordan soʻrang."
+  },
+  "Static": {
+    "updated": "Yangilangan: {date}",
+    "legalDraft": "Loyiha matni: platforma ishga tushirilishidan oldin huquqshunos tomonidan tekshiriladi. Savollar boʻlsa — “Aloqa” sahifasi orqali yozing.",
+    "contents": "Mundarija"
+  },
+  "About": {
+    "title": "Biz haqimizda",
+    "lead": "Yaqin — Toshkentdagi hali internetda boʻlmagan doʻkon va xizmatlarni topish uchun. Mahalladagi usta, kichik doʻkon yoki salonni xaritada toping, narxi va ish vaqtini bilib oling.",
+    "how": {
+      "title": "Qanday ishlaydi",
+      "find": {
+        "title": "Toping",
+        "text": "Kategoriya, qidiruv yoki xarita orqali — oʻzingizga yaqin joyni."
+      },
+      "compare": {
+        "title": "Solishtiring",
+        "text": "Narxlar, ish vaqti, masofa va boshqa mijozlarning sharhlari."
+      },
+      "contact": {
+        "title": "Bogʻlaning",
+        "text": "Bir bosishda qoʻngʻiroq, Telegram yoki xaritada yoʻl."
+      }
+    },
+    "business": {
+      "title": "Bizneslar uchun",
+      "text": "Koʻp yaxshi doʻkon va ustalar internetda yoʻq — mijozlar ularni topa olmaydi. Biz ularni qoʻshib beramiz.",
+      "points": {
+        "free": "Bepul — roʻyxatdan oʻtish va saytni yuritish shart emas.",
+        "visit": "Jamoamiz oʻzi keladi: manzil, rasmlar, narxlar va ish vaqtini kiritadi.",
+        "consent": "Faqat egasining roziligi bilan eʼlon qilinadi; istalgan vaqtda oʻzgartirish yoki olib tashlash mumkin.",
+        "report": "Egasi maxsus havola orqali biznesi necha marta koʻrilgani va qoʻngʻiroqlar sonini koʻradi."
+      },
+      "cta": "Biznesingizni qoʻshing"
+    },
+    "principles": {
+      "title": "Tamoyillarimiz",
+      "honest": {
+        "title": "Halol sharhlar",
+        "text": "Har bir sharh moderatsiyadan oʻtadi: reklama, haqorat va soxta sharhlar chop etilmaydi."
+      },
+      "privacy": {
+        "title": "Kam maʼlumot",
+        "text": "Faqat kerakli maʼlumotni soʻraymiz. Joylashuvingiz serverda saqlanmaydi, statistika — faqat sonlar."
+      },
+      "local": {
+        "title": "Mahalliy",
+        "text": "Maʼlumotlar Oʻzbekistondagi serverlarda saqlanadi."
+      },
+      "fix": {
+        "title": "Tez tuzatamiz",
+        "text": "Notoʻgʻri maʼlumot koʻrsangiz, biznes sahifasidan xabar bering — tekshirib, tuzatamiz."
+      }
+    },
+    "more": "Batafsil: <privacy>maxfiylik siyosati</privacy> va <contact>aloqa</contact>."
+  },
+  "Contact": {
+    "title": "Aloqa",
+    "lead": "Savol, taklif yoki hamkorlik boʻyicha bogʻlaning.",
+    "channels": "Bogʻlanish",
+    "labels": {
+      "telegram": "Telegram",
+      "phone": "Telefon",
+      "email": "Email"
+    },
+    "noChannels": "Kontaktlar tez orada qoʻshiladi. Biznes qoʻshish uchun quyidagi “Soʻrov qoldiring” havolasidan foydalaning.",
+    "topics": "Koʻp soʻraladigan mavzular",
+    "addBusiness": {
+      "title": "Biznesingizni qoʻshmoqchimisiz?",
+      "text": "<link>Soʻrov qoldiring</link> — bogʻlanib, bepul qoʻshib beramiz."
+    },
+    "wrongInfo": {
+      "title": "Maʼlumot notoʻgʻrimi?",
+      "text": "Biznes sahifasidagi “Maʼlumot notoʻgʻrimi? Xabar bering” tugmasini bosing — javobni profilingizdagi “Xabarlarim” boʻlimida koʻrasiz."
+    }
+  },
+  "AddBusiness": {
+    "title": "Biznesingizni qoʻshing",
+    "lead": "Doʻkon, ustaxona yoki xizmatingizni Yaqin'ga qoʻshamiz — mijozlar sizni xaritada topadi.",
+    "points": {
+      "free": "Bepul",
+      "visit": "Jamoamiz siz bilan bogʻlanadi va kerak boʻlsa joyiga keladi",
+      "consent": "Maʼlumotlar faqat sizning roziligingiz bilan eʼlon qilinadi"
+    },
+    "business": "Biznes haqida",
+    "contact": "Siz bilan bogʻlanish",
+    "noDistrict": "Tanlanmagan",
+    "fields": {
+      "businessName": "Biznes nomi",
+      "activity": "Nima bilan shugʻullanadi (ixtiyoriy)",
+      "district": "Tuman (ixtiyoriy)",
+      "address": "Manzil (ixtiyoriy)",
+      "contactName": "Ismingiz",
+      "phone": "Telefon raqamingiz",
+      "note": "Izoh (ixtiyoriy)"
+    },
+    "placeholders": {
+      "businessName": "Masalan: Baraka sartaroshxonasi",
+      "activity": "Masalan: soch turmagi, soqol",
+      "address": "Koʻcha, uy, moʻljal",
+      "note": "Qachon qoʻngʻiroq qilish qulay va boshqalar"
+    },
+    "agree": "Ismim va telefon raqamim siz bilan bogʻlanish uchun ishlatilishiga roziman (<link>maxfiylik siyosati</link>).",
+    "submit": "Yuborish",
+    "success": {
+      "title": "Rahmat! Soʻrovingiz qabul qilindi",
+      "text": "Tez orada siz bilan bogʻlanamiz.",
+      "home": "Bosh sahifaga"
+    },
+    "closed": {
+      "title": "Hozircha soʻrovlar qabul qilinmayapti",
+      "text": "Keyinroq qayta urinib koʻring yoki “Aloqa” sahifasi orqali bogʻlaning."
+    },
+    "errors": {
+      "tooMany": "Juda koʻp soʻrov yuborildi. Birozdan soʻng qayta urinib koʻring.",
+      "closed": "Hozircha soʻrovlar qabul qilinmayapti.",
+      "generic": "Yuborib boʻlmadi. Qayta urinib koʻring."
+    },
+    "validation": {
+      "businessName": "Biznes nomini kiriting (kamida 2 belgi)",
+      "contactName": "Ismingizni kiriting",
+      "phone": "Raqam notoʻgʻri. Namuna: 90 123 45 67",
+      "agree": "Bogʻlanishimiz uchun rozilik kerak",
+      "tooLong": "Juda uzun"
+    }
   }
 }

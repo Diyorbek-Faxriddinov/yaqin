@@ -11,6 +11,7 @@ import { getCategory, getCategoryTree } from "@/features/category/queries";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { pageMetadata } from "@/lib/seo";
 
 /** Barcha kategoriya sahifalari build vaqtida tayyorlanadi; natijalar esa so'rov vaqtida */
 export async function generateStaticParams() {
@@ -26,10 +27,12 @@ export async function generateMetadata({
   const category = await getCategory(slug, locale);
   if (!category) return {};
   const t = await getTranslations("CategoryPage");
-  return {
+  return pageMetadata({
+    path: `/kategoriya/${slug}`,
+    locale,
     title: category.name,
     description: t("metaDescription", { name: category.name }),
-  };
+  });
 }
 
 export default async function CategoryPage({

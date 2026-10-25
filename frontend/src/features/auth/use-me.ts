@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
-import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
+import { browserApi, BrowserApiError, call, mayHaveSession } from "@/lib/api/browser";
 import type { Me } from "@/lib/api/types";
 
 export const meQueryKey = ["me"] as const;
@@ -12,6 +12,7 @@ export function useMe() {
   return useQuery({
     queryKey: meQueryKey,
     queryFn: async (): Promise<Me | null> => {
+      if (!mayHaveSession()) return null;
       try {
         return await call(browserApi.GET("/me"));
       } catch (error) {

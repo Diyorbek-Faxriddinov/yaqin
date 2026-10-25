@@ -152,7 +152,10 @@ function userReviews(businessId: string): Review[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((r) => ({
       id: r.id,
-      authorName: publicAuthorName(demoState.users.get(r.userId)?.displayName ?? "Mehmon"),
+      // Akkaunt o'chirilgan bo'lsa — muallif nomi ko'rsatilmaydi (DELETE /me)
+      authorName: demoState.users.get(r.userId)
+        ? publicAuthorName(demoState.users.get(r.userId)?.displayName ?? "")
+        : "Oʻchirilgan foydalanuvchi",
       rating: r.rating,
       text: r.text,
       createdAt: r.createdAt,

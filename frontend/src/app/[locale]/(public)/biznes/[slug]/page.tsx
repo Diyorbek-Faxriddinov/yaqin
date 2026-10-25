@@ -21,6 +21,7 @@ import { ReviewFormDialog } from "@/features/reviews/components/review-form-dial
 import { getPathname, Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { formatDecimal } from "@/lib/format/number";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -30,7 +31,9 @@ export async function generateMetadata({
   const business = await getBusiness(slug, locale);
   if (!business) return {};
   const t = await getTranslations("BusinessPage");
-  return {
+  return pageMetadata({
+    path: `/biznes/${slug}`,
+    locale,
     title: `${business.name} — ${business.category.name}`,
     description:
       business.description ??
@@ -39,7 +42,8 @@ export async function generateMetadata({
         category: business.category.name,
         district: business.district.name,
       }),
-  };
+    image: business.coverImage ?? undefined,
+  });
 }
 
 function Section({
