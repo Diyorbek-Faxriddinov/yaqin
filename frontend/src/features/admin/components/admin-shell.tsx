@@ -4,10 +4,15 @@ import { Suspense, useState } from "react";
 import {
   ArrowLeft,
   Building2,
+  FolderTree,
+  Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquareWarning,
   Plus,
+  Star,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -29,15 +34,30 @@ import { useAdminLogout, useAdminMe, useCan } from "../use-admin";
 
 type NavItem = {
   href: string;
-  key: "dashboard" | "businesses";
+  key: "dashboard" | "businesses" | "requests" | "reviews" | "complaints" | "categories" | "users";
   icon: LucideIcon;
   permission?: AdminPermission;
 };
 
-// Keyingi qadamlarda (2.8–2.9) moderatsiya, kategoriyalar, administratorlar, audit qo'shiladi
+// Keyingi qadamda (2.9) administratorlar, audit va statistika qo'shiladi
 const ITEMS: NavItem[] = [
   { href: "/admin", key: "dashboard", icon: LayoutDashboard },
   { href: "/admin/bizneslar", key: "businesses", icon: Building2, permission: "business.view" },
+  { href: "/admin/sorovlar", key: "requests", icon: Inbox, permission: "business.edit" },
+  { href: "/admin/sharhlar", key: "reviews", icon: Star, permission: "review.moderate" },
+  {
+    href: "/admin/shikoyatlar",
+    key: "complaints",
+    icon: MessageSquareWarning,
+    permission: "complaint.manage",
+  },
+  {
+    href: "/admin/kategoriyalar",
+    key: "categories",
+    icon: FolderTree,
+    permission: "category.manage",
+  },
+  { href: "/admin/foydalanuvchilar", key: "users", icon: Users, permission: "user.view" },
 ];
 
 function NavLinks({

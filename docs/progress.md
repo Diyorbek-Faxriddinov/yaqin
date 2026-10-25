@@ -23,8 +23,8 @@ Oxirgi yangilanish: 2026-10-26
 | 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅                     |
 | 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅                     |
 | 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅                     |
-| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅ (tasdiq kutilmoqda) |
-| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ⏳                     |
+| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅                     |
+| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅ (tasdiq kutilmoqda) |
 | 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ⏳                     |
 | 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ⏳                     |
 
@@ -151,6 +151,37 @@ Oxirgi yangilanish: 2026-10-26
 - Login cheklovi faqat login boʻyicha; backend'da IP + login boʻyicha boʻladi (ADR-0006).
 - Rasmlar va barcha admin oʻzgarishlari server xotirasida — qayta ishga tushganda oʻchadi.
 - Kategoriyalar, moderatsiya, shikoyatlar (2.8), administratorlar, audit koʻrish, statistika (2.9) — hali yoʻq.
+
+## 2.8 natijalari
+
+| Sahifa                      | Ruxsat             | Imkoniyatlar                                                                                                                                          |
+| --------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/admin/sorovlar`           | `business.edit`    | "Biznesingizni qoʻshing" soʻrovlari: qoʻngʻiroq, "Bogʻlanildi", rad etish (izoh bilan), **soʻrovdan qoralama** → usta joylashuv qadamidan davom etadi |
+| `/admin/sharhlar`           | `review.moderate`  | Navbat (eng eskisi birinchi), chop etish, sabab bilan rad etish (tayyor variantlar); chop etilgan sharh saytda va reytingda                           |
+| `/admin/shikoyatlar`        | `complaint.manage` | Koʻrib chiqishga olish, biznesni tahrirlashga oʻtish, javob bilan yopish — javob foydalanuvchiga koʻrinadi                                            |
+| `/admin/kategoriyalar`      | `category.manage`  | Yoʻnalish (ikonka bilan) va ichki kategoriya qoʻshish, nomlarni tahrirlash, boʻsh kategoriyani oʻchirish                                              |
+| `/admin/kategoriyalar/[id]` | `category.manage`  | Atributlar: matn, son (birlik), Ha/Yoʻq, bitta/bir nechta variant; tartib; katalog formasida tavsiya sifatida chiqadi                                 |
+| `/admin/foydalanuvchilar`   | `user.view`        | Qidiruv, bloklanganlar filtri; bloklash/blokdan chiqarish — `user.manage` (sessiyalar darhol tugatiladi)                                              |
+| `/admin`                    | —                  | "Navbatda": yangi soʻrovlar, moderatsiyadagi sharhlar, ochiq shikoyatlar (faqat ruxsat bor boʻlimlar)                                                 |
+
+- API kontrakti: kategoriyalar/atributlar, sharhlar, shikoyatlar, soʻrovlar (shu jumladan ommaviy `POST /business-requests` — 2.10 dagi forma uchun), foydalanuvchilar; yangi ruxsat `user.manage` (ADR-0009, 8-qoida).
+- Sharh va shikoyatlar biznesga ID orqali bogʻlanadi — biznes nomi (slug) oʻzgarsa ham uzilmaydi.
+- Kategoriya slug'i yaratilgandan keyin oʻzgarmaydi (URL'lar barqaror). Biznesi yoki ichki kategoriyasi bor kategoriyani oʻchirib boʻlmaydi.
+- Demo navbat: 4 ta sharh, 3 ta shikoyat, 3 ta soʻrov, 6 ta foydalanuvchi (`fixtures/moderation.ts`, toʻqib chiqarilgan).
+- Testlar: 187 unit, 173 E2E (3 ekran; admin testlari 3 marta takrorlab ham oʻtdi).
+
+**Topilgan va tuzatilgan:**
+
+- Brauzerda oʻzbekcha sana "2026 M10 25" koʻrinishida chiqardi (Chrome'ning ICU maʼlumotlarida `uz` oy nomlari yoʻq) — mijoz kabinetidagi sharh va xabarlar sanalariga ham taʼsir qilardi. Endi oy nomlari qoʻlda: "25-oktabr, 2026".
+- Mijozning sharh/shikoyati biznes nomi oʻzgarganda eski slug bilan qolib ketardi.
+
+**Hali ishlamaydi / mock:**
+
+- "Biznesingizni qoʻshing" ommaviy formasi — 2.10 da (endpoint va admin tomoni tayyor). Mock'da IP boʻyicha cheklov yoʻq — backend'da boʻladi.
+- Atributlar boʻyicha ommaviy filtrlar yoʻq (`filterable` belgisi kontraktda bor, interfeysda ishlatilmaydi).
+- Kategoriyalar tartibini oʻzgartirish yoʻq (yangisi oxiriga qoʻshiladi).
+- Demo kirish har safar yangi foydalanuvchi yaratadi, shuning uchun bloklashni faqat ochiq sessiyada sinash mumkin; haqiqiy Telegram/Google akkaunti qayta kira olmasligi — backend bilan.
+- Administratorlar, audit jurnalini koʻrish, statistika — 2.9.
 
 ## Maʼlum cheklovlar
 

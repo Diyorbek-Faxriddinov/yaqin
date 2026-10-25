@@ -1,5 +1,5 @@
 import { http, HttpResponse, type DefaultBodyType, type StrictRequest } from "msw";
-import type { ApiError, ComplaintReason } from "@/lib/api/types";
+import type { ApiError, Complaint, ComplaintReason, MyReview } from "@/lib/api/types";
 import { getBusiness, listBusinesses } from "./db";
 import {
   createDemoUser,
@@ -7,9 +7,13 @@ import {
   CSRF_HEADER,
   deleteDemoUser,
   demoState,
+  findBusinessRecord,
+  isUserBlocked,
   publicBusinesses,
   SESSION_COOKIE,
   type DemoSession,
+  type StoredComplaint,
+  type StoredReview,
 } from "./demo-state";
 
 /**
@@ -53,6 +57,10 @@ function authenticate(
   if (!session || !demoState.users.has(session.userId)) {
     return { response: error(401, "not_authenticated", "Avval tizimga kiring") };
   }
+  // Bloklashda sessiyalar o'chiriladi; bu — qo'shimcha himoya qatlami
+  if (isUserBlocked(session.userId)) {
+    return { response: error(403, "account_blocked", "Akkauntingiz bloklangan") };
+  }
   if (!["GET", "HEAD"].includes(request.method)) {
     const header = request.headers.get(CSRF_HEADER);
     if (!header || header !== cookies[CSRF_COOKIE] || header !== session.csrfToken) {
@@ -74,8 +82,33 @@ async function readJson(request: Request): Promise<Record<string, unknown> | nul
 }
 
 function businessRef(businessId: string) {
-  const business = demoState.businesses.find((b) => b.id === businessId);
+  const business = findBusinessRecord(businessId);
   return business ? { slug: business.slug, name: business.name } : null;
+}
+
+// Biznes nomi joriy holatdan olinadi — nomi o'zgartirilgan bo'lsa ham to'g'ri ko'rsatiladi
+function toMyReview(review: StoredReview): MyReview {
+  return {
+    id: review.id,
+    business: businessRef(review.businessId) ?? { slug: "", name: "—" },
+    rating: review.rating,
+    text: review.text,
+    status: review.status,
+    rejectionReason: review.rejectionReason,
+    createdAt: review.createdAt,
+  };
+}
+
+function toMyComplaint(complaint: StoredComplaint): Complaint {
+  return {
+    id: complaint.id,
+    business: businessRef(complaint.businessId) ?? { slug: "", name: "—" },
+    reason: complaint.reason,
+    text: complaint.text,
+    status: complaint.status,
+    resolutionNote: complaint.resolutionNote,
+    createdAt: complaint.createdAt,
+  };
 }
 
 export const meHandlers = [
@@ -204,25 +237,25 @@ export const meHandlers = [
       });
     }
     const exists = demoState.reviews.some(
-      (r) => r.userId === auth.session.userId && r.business.slug === business.slug,
+      (r) => r.userId === auth.session.userId && r.businessId === business.id,
     );
     if (exists) {
       return error(409, "review_exists", "Siz bu biznesga allaqachon sharh qoldirgansiz");
     }
 
-    const review = {
+    const review: StoredReview = {
       id: crypto.randomUUID(),
       userId: auth.session.userId,
-      business: { slug: business.slug, name: business.name },
+      businessId: business.id,
       rating,
       text: text || null,
-      status: "pending" as const,
+      status: "pending",
       rejectionReason: null,
       createdAt: new Date().toISOString(),
+      moderatedAt: null,
     };
     demoState.reviews.push(review);
-    const { userId: _userId, ...publicReview } = review;
-    return HttpResponse.json(publicReview, { status: 201 });
+    return HttpResponse.json(toMyReview(review), { status: 201 });
   }),
 
   http.get(`${API}/me/reviews`, ({ request, cookies }) => {
@@ -232,7 +265,7 @@ export const meHandlers = [
       demoState.reviews
         .filter((r) => r.userId === auth.session.userId)
         .reverse()
-        .map(({ userId: _userId, ...review }) => review),
+        .map(toMyReview),
     );
   }),
 
@@ -266,20 +299,20 @@ export const meHandlers = [
       return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", fields);
     }
 
-    const complaint = {
+    const now = new Date().toISOString();
+    const complaint: StoredComplaint = {
       id: crypto.randomUUID(),
       userId: auth.session.userId,
       businessId,
-      business,
       reason,
       text: text || null,
-      status: "open" as const,
+      status: "open",
       resolutionNote: null,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     demoState.complaints.push(complaint);
-    const { userId: _userId, businessId: _businessId, ...publicComplaint } = complaint;
-    return HttpResponse.json(publicComplaint, { status: 201 });
+    return HttpResponse.json(toMyComplaint(complaint), { status: 201 });
   }),
 
   http.get(`${API}/me/complaints`, ({ request, cookies }) => {
@@ -289,7 +322,7 @@ export const meHandlers = [
       demoState.complaints
         .filter((c) => c.userId === auth.session.userId)
         .reverse()
-        .map(({ userId: _userId, businessId: _businessId, ...complaint }) => complaint),
+        .map(toMyComplaint),
     );
   }),
 ];

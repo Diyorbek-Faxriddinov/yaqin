@@ -2,7 +2,7 @@
 // Mock API serverda (Node) ishlaydi — jsdom Blob/FormData Node Request bilan mos emas
 import { describe, expect, it } from "vitest";
 import type { AdminBusiness, AdminMe, AdminPhoto, BusinessPage, Item } from "@/lib/api/types";
-import { REVALIDATE_HEADER } from "./admin-handlers";
+import { REVALIDATE_HEADER } from "./admin-common";
 import { demoState } from "./demo-state";
 import { mockFetch } from "./fetch";
 

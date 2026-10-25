@@ -1,16 +1,25 @@
 import type {
+  AdminAttribute,
   AdminPermission,
   AdminPhoto,
+  BusinessRequestStatus,
   BusinessStatus,
-  Complaint,
   Consent,
   Item,
   Me,
-  MyReview,
 } from "@/lib/api/types";
 import type { GeoPoint } from "@/lib/geo";
 import { BUSINESSES, type DemoBusiness } from "./fixtures/businesses";
+import { CATEGORIES, CATEGORY_ATTRIBUTES, type DemoCategory } from "./fixtures/categories";
 import { itemsFor } from "./fixtures/items";
+import {
+  SEED_COMPLAINTS,
+  SEED_REQUESTS,
+  SEED_REVIEWS,
+  SEED_USERS,
+  type SeedComplaint,
+  type SeedReview,
+} from "./fixtures/moderation";
 
 /**
  * Demo rejimdagi o'zgaruvchan maʼlumotlar: bizneslar (admin tahrirlaydi), katalog, rasmlar,
@@ -47,20 +56,53 @@ export type AuditEntry = {
   at: string;
   adminId: string;
   action: string;
-  targetType: "business" | "item" | "photo" | "review" | "complaint" | "category" | "admin";
+  targetType:
+    | "business"
+    | "item"
+    | "photo"
+    | "review"
+    | "complaint"
+    | "category"
+    | "request"
+    | "user"
+    | "admin";
   targetId: string;
   summary: string;
 };
 
-type StoredReview = MyReview & { userId: string };
-type StoredComplaint = Complaint & { userId: string; businessId: string };
+/** Kategoriya: slug o'zgarmaydi (URL'lar barqaror), shuning uchun ota-kategoriya slug orqali */
+export type DemoCategoryRecord = DemoCategory & { attributes: AdminAttribute[] };
+
+/** Sharh va shikoyat biznesga ID orqali bog'lanadi — biznes nomi (slug) o'zgarsa ham uzilmaydi */
+export type StoredReview = SeedReview;
+export type StoredComplaint = SeedComplaint;
+
+export type StoredBusinessRequest = {
+  id: string;
+  businessName: string;
+  activity: string | null;
+  districtSlug: string | null;
+  address: string | null;
+  contactName: string;
+  phone: string;
+  note: string | null;
+  status: BusinessRequestStatus;
+  adminNote: string | null;
+  businessId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 type DemoState = {
   sessions: Map<string, DemoSession>;
   users: Map<string, Me>;
   favorites: Map<string, string[]>;
+  /** Bloklangan foydalanuvchilar: userId → sabab */
+  blockedUsers: Map<string, { reason: string; at: string }>;
   reviews: StoredReview[];
   complaints: StoredComplaint[];
+  requests: StoredBusinessRequest[];
+  categories: DemoCategoryRecord[];
   businesses: DemoBusinessRecord[];
   items: Map<string, Item[]>;
   photos: Map<string, AdminPhoto[]>;
@@ -81,6 +123,7 @@ export const ALL_PERMISSIONS: AdminPermission[] = [
   "review.moderate",
   "complaint.manage",
   "user.view",
+  "user.manage",
   "staff.manage",
   "audit.view",
   "settings.manage",
@@ -105,7 +148,7 @@ export const DEMO_ADMINS: DemoAdmin[] = [
     totpCode: "123456",
     displayName: "Moderator (demo)",
     isRoot: false,
-    permissions: ["business.view", "review.moderate", "complaint.manage"],
+    permissions: ["business.view", "review.moderate", "complaint.manage", "user.view"],
   },
 ];
 
@@ -123,10 +166,20 @@ function seedBusinesses(): DemoBusinessRecord[] {
 function createState(): DemoState {
   return {
     sessions: new Map(),
-    users: new Map(),
+    users: new Map(SEED_USERS.map((user) => [user.id, { ...user }])),
     favorites: new Map(),
-    reviews: [],
-    complaints: [],
+    blockedUsers: new Map(),
+    reviews: SEED_REVIEWS.map((review) => ({ ...review })),
+    complaints: SEED_COMPLAINTS.map((complaint) => ({ ...complaint })),
+    requests: SEED_REQUESTS.map((request) => ({
+      ...request,
+      businessId: null,
+      updatedAt: request.createdAt,
+    })),
+    categories: CATEGORIES.map((category) => ({
+      ...category,
+      attributes: structuredClone(CATEGORY_ATTRIBUTES[category.slug] ?? []),
+    })),
     businesses: seedBusinesses(),
     items: new Map(),
     photos: new Map(),
@@ -142,7 +195,7 @@ function createState(): DemoState {
 const globalStore = globalThis as typeof globalThis & { __yaqinDemoState?: DemoState };
 
 // Eski shakldagi holat (dev rejimida kod o'zgarganda) bo'lsa — qayta yaratamiz
-if (!globalStore.__yaqinDemoState?.businesses) globalStore.__yaqinDemoState = createState();
+if (!globalStore.__yaqinDemoState?.categories) globalStore.__yaqinDemoState = createState();
 
 export const demoState: DemoState = globalStore.__yaqinDemoState;
 
@@ -164,6 +217,18 @@ export function itemsOf(business: DemoBusinessRecord): Item[] {
     demoState.items.set(business.id, items);
   }
   return items;
+}
+
+export function findCategory(slug: string): DemoCategoryRecord | undefined {
+  return demoState.categories.find((c) => c.slug === slug);
+}
+
+export function findBusinessRecord(id: string): DemoBusinessRecord | undefined {
+  return demoState.businesses.find((b) => b.id === id);
+}
+
+export function isUserBlocked(userId: string): boolean {
+  return demoState.blockedUsers.has(userId);
 }
 
 export function photosOf(businessId: string): AdminPhoto[] {

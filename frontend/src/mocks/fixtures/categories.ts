@@ -1,15 +1,16 @@
+import type { AdminAttribute, CategoryIconKey } from "@/lib/api/types";
 import { demoId } from "./ids";
 
 export type DemoCategory = {
   id: string;
   slug: string;
   name: { uz: string; ru: string };
-  iconKey: string | null;
+  iconKey: CategoryIconKey | null;
   parentSlug: string | null;
 };
 
 type Leaf = [slug: string, uz: string, ru: string];
-type Root = [slug: string, iconKey: string, uz: string, ru: string, children: Leaf[]];
+type Root = [slug: string, iconKey: CategoryIconKey, uz: string, ru: string, children: Leaf[]];
 
 // 0-bosqichda kelishilgan 12 ta yuqori darajadagi kategoriya (ADR-0008)
 const TREE: Root[] = [
@@ -159,6 +160,84 @@ const TREE: Root[] = [
     ],
   ],
 ];
+
+/** Namunaviy atributlar — katalog formasida tayyor maydon sifatida taklif qilinadi (admin o'zgartiradi) */
+export const CATEGORY_ATTRIBUTES: Record<string, AdminAttribute[]> = {
+  "kiyim-kechak": [
+    {
+      key: "size",
+      name: { uz: "Oʻlcham", ru: "Размер" },
+      type: "multiselect",
+      unit: null,
+      options: ["XS", "S", "M", "L", "XL", "XXL"].map((size) => ({
+        value: size.toLowerCase(),
+        label: { uz: size, ru: size },
+      })),
+      filterable: true,
+    },
+    {
+      key: "material",
+      name: { uz: "Mato", ru: "Материал" },
+      type: "text",
+      unit: null,
+      options: [],
+      filterable: false,
+    },
+  ],
+  elektronika: [
+    {
+      key: "warranty",
+      name: { uz: "Kafolat", ru: "Гарантия" },
+      type: "number",
+      unit: "oy",
+      options: [],
+      filterable: false,
+    },
+    {
+      key: "condition",
+      name: { uz: "Holati", ru: "Состояние" },
+      type: "select",
+      unit: null,
+      options: [
+        { value: "new", label: { uz: "Yangi", ru: "Новый" } },
+        { value: "used", label: { uz: "Ishlatilgan", ru: "Б/у" } },
+      ],
+      filterable: true,
+    },
+  ],
+  avtomoyka: [
+    {
+      key: "car_type",
+      name: { uz: "Mashina turi", ru: "Тип автомобиля" },
+      type: "select",
+      unit: null,
+      options: [
+        { value: "sedan", label: { uz: "Yengil", ru: "Легковой" } },
+        { value: "suv", label: { uz: "Krossover", ru: "Кроссовер" } },
+        { value: "minivan", label: { uz: "Miniven", ru: "Минивэн" } },
+      ],
+      filterable: true,
+    },
+  ],
+  kafelar: [
+    {
+      key: "portion",
+      name: { uz: "Porsiya", ru: "Порция" },
+      type: "number",
+      unit: "g",
+      options: [],
+      filterable: false,
+    },
+    {
+      key: "halal",
+      name: { uz: "Halol", ru: "Халяль" },
+      type: "boolean",
+      unit: null,
+      options: [],
+      filterable: true,
+    },
+  ],
+};
 
 export const CATEGORIES: DemoCategory[] = TREE.flatMap(([slug, iconKey, uz, ru, children]) => [
   { id: demoId(`category:${slug}`), slug, name: { uz, ru }, iconKey, parentSlug: null },

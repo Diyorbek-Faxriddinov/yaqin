@@ -9,16 +9,24 @@ import type {
   District,
   Item,
   MapMarker,
+  Review,
   ReviewPage,
   SearchSuggestions,
 } from "@/lib/api/types";
 import { distanceMeters, type GeoPoint } from "@/lib/geo";
 import { computeOpenStatus } from "@/lib/open-status";
 import { matchesQuery, normalizeForSearch } from "@/lib/text/normalize";
-import { itemsOf, photosOf, publicBusinesses, type DemoBusinessRecord } from "./demo-state";
+import {
+  demoState,
+  findCategory,
+  itemsOf,
+  photosOf,
+  publicBusinesses,
+  type DemoBusinessRecord,
+  type DemoCategoryRecord,
+} from "./demo-state";
 import { BASE_DATE } from "./fixtures/businesses";
 import { reviewsFor } from "./fixtures/reviews";
-import { CATEGORIES, type DemoCategory } from "./fixtures/categories";
 import { DISTRICTS } from "./fixtures/districts";
 
 /**
@@ -28,10 +36,9 @@ import { DISTRICTS } from "./fixtures/districts";
 
 export type Lang = "uz" | "ru";
 
-const categoryBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
 const districtBySlug = new Map(DISTRICTS.map((d) => [d.slug, d]));
 
-function categoryRef(category: DemoCategory, lang: Lang): CategoryRef {
+export function categoryRef(category: DemoCategoryRecord, lang: Lang): CategoryRef {
   return {
     id: category.id,
     slug: category.slug,
@@ -43,7 +50,7 @@ function categoryRef(category: DemoCategory, lang: Lang): CategoryRef {
 /** Kategoriya va uning barcha ichki kategoriyalari slug'lari */
 function descendantSlugs(slug: string): Set<string> {
   const result = new Set([slug]);
-  for (const category of CATEGORIES) {
+  for (const category of demoState.categories) {
     if (category.parentSlug && result.has(category.parentSlug)) result.add(category.slug);
   }
   return result;
@@ -54,28 +61,37 @@ function countBusinesses(slug: string): number {
   return publicBusinesses().filter((b) => slugs.has(b.categorySlug)).length;
 }
 
-function categoryNode(category: DemoCategory, lang: Lang): CategoryNode {
+function categoryNode(category: DemoCategoryRecord, lang: Lang): CategoryNode {
   return {
     ...categoryRef(category, lang),
     businessCount: countBusinesses(category.slug),
-    children: CATEGORIES.filter((c) => c.parentSlug === category.slug).map((c) =>
-      categoryNode(c, lang),
-    ),
+    children: demoState.categories
+      .filter((c) => c.parentSlug === category.slug)
+      .map((c) => categoryNode(c, lang)),
   };
 }
 
 export function listCategories(lang: Lang): CategoryNode[] {
-  return CATEGORIES.filter((c) => c.parentSlug === null).map((c) => categoryNode(c, lang));
+  return demoState.categories
+    .filter((c) => c.parentSlug === null)
+    .map((c) => categoryNode(c, lang));
 }
 
 export function getCategory(slug: string, lang: Lang): CategoryDetail | null {
-  const category = categoryBySlug.get(slug);
+  const category = findCategory(slug);
   if (!category) return null;
-  const parent = category.parentSlug ? categoryBySlug.get(category.parentSlug) : undefined;
+  const parent = category.parentSlug ? findCategory(category.parentSlug) : undefined;
   return {
     ...categoryNode(category, lang),
     parent: parent ? categoryRef(parent, lang) : null,
-    attributes: [],
+    attributes: category.attributes.map((attribute) => ({
+      key: attribute.key,
+      name: attribute.name[lang],
+      type: attribute.type,
+      unit: attribute.unit,
+      options: attribute.options.map((o) => ({ value: o.value, label: o.label[lang] })),
+      filterable: attribute.filterable,
+    })),
   };
 }
 
@@ -100,7 +116,7 @@ function priceRangeFromItems(items: Item[]): BusinessSummary["priceRange"] {
 }
 
 function toSummary(business: PublicRecord, lang: Lang, origin: GeoPoint | null): BusinessSummary {
-  const category = categoryBySlug.get(business.categorySlug);
+  const category = findCategory(business.categorySlug);
   const district = districtBySlug.get(business.districtSlug);
   if (!category || !district) throw new Error(`Demo maʼlumot buzilgan: ${business.slug}`);
 
@@ -112,7 +128,7 @@ function toSummary(business: PublicRecord, lang: Lang, origin: GeoPoint | null):
     district: { slug: district.slug, name: district.name[lang] },
     location: business.location,
     coverImage: photosOf(business.id)[0] ?? null,
-    rating: business.rating,
+    rating: ratingOf(business),
     priceRange: business.priceRange
       ? { min: toMoney(business.priceRange.min), max: toMoney(business.priceRange.max) }
       : priceRangeFromItems(itemsOf(business)),
@@ -123,10 +139,44 @@ function toSummary(business: PublicRecord, lang: Lang, origin: GeoPoint | null):
   };
 }
 
+/** Ommaviy ism: "Malika Rahimova" → "Malika R." (to'liq ism ko'rsatilmaydi) */
+export function publicAuthorName(displayName: string): string {
+  const [first = "", second] = displayName.trim().split(/\s+/);
+  return second ? `${first} ${second.charAt(0).toUpperCase()}.` : first;
+}
+
+/** Moderatsiyadan o'tgan foydalanuvchi sharhlari (eng yangisi birinchi) */
+function userReviews(businessId: string): Review[] {
+  return demoState.reviews
+    .filter((r) => r.businessId === businessId && r.status === "published")
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((r) => ({
+      id: r.id,
+      authorName: publicAuthorName(demoState.users.get(r.userId)?.displayName ?? "Mehmon"),
+      rating: r.rating,
+      text: r.text,
+      createdAt: r.createdAt,
+      reply: null,
+    }));
+}
+
+/** Reyting: demo boshlang'ich qiymat + chop etilgan foydalanuvchi sharhlari */
+function ratingOf(business: DemoBusinessRecord): BusinessSummary["rating"] {
+  const extra = demoState.reviews.filter(
+    (r) => r.businessId === business.id && r.status === "published",
+  );
+  if (extra.length === 0) return business.rating;
+  const count = business.rating.count + extra.length;
+  const sum =
+    (business.rating.average ?? 0) * business.rating.count +
+    extra.reduce((total, r) => total + r.rating, 0);
+  return { average: Math.round((sum / count) * 10) / 10, count };
+}
+
 /** Qidiruv matni: nom, kategoriya (ikkala tilda, ota-kategoriya bilan), tuman */
 function searchText(business: DemoBusinessRecord): string {
-  const category = categoryBySlug.get(business.categorySlug);
-  const parent = category?.parentSlug ? categoryBySlug.get(category.parentSlug) : undefined;
+  const category = findCategory(business.categorySlug);
+  const parent = category?.parentSlug ? findCategory(category.parentSlug) : undefined;
   const district = districtBySlug.get(business.districtSlug);
   return [
     business.name,
@@ -235,11 +285,12 @@ export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {
 export function suggest(q: string, lang: Lang): SearchSuggestions {
   const normalized = normalizeForSearch(q);
   return {
-    categories: CATEGORIES.filter(
-      (c) =>
-        normalizeForSearch(c.name.uz).includes(normalized) ||
-        normalizeForSearch(c.name.ru).includes(normalized),
-    )
+    categories: demoState.categories
+      .filter(
+        (c) =>
+          normalizeForSearch(c.name.uz).includes(normalized) ||
+          normalizeForSearch(c.name.ru).includes(normalized),
+      )
       .slice(0, 5)
       .map((c) => categoryRef(c, lang)),
     businesses: publicBusinesses()
@@ -248,7 +299,7 @@ export function suggest(q: string, lang: Lang): SearchSuggestions {
       .map((b) => ({
         slug: b.slug,
         name: b.name,
-        categoryName: categoryBySlug.get(b.categorySlug)?.name[lang] ?? "",
+        categoryName: findCategory(b.categorySlug)?.name[lang] ?? "",
       })),
   };
 }
@@ -271,7 +322,7 @@ export function getItem(slug: string, itemSlug: string): Item | null {
 export function listReviews(slug: string, page = 1, pageSize = 20): ReviewPage | null {
   const business = findBusiness(slug);
   if (!business) return null;
-  const all = reviewsFor(business, BASE_DATE);
+  const all = [...userReviews(business.id), ...reviewsFor(business, BASE_DATE)];
   const start = (page - 1) * pageSize;
   return { items: all.slice(start, start + pageSize), total: all.length, page, pageSize };
 }

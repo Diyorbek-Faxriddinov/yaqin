@@ -12,9 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryIcon } from "@/features/category/category-icon";
 import { Link } from "@/i18n/navigation";
 import { browserApi, call } from "@/lib/api/browser";
-import { cn } from "@/lib/utils";
 import type { ListFilter } from "../admin-params";
 import { useCan } from "../use-admin";
+import { FilterChips } from "./filter-chips";
 import { BusinessStatusBadge } from "./status-badge";
 
 const FILTERS: ListFilter[] = ["all", "draft", "published", "hidden", "noConsent"];
@@ -86,28 +86,13 @@ export function AdminBusinessList({ initialFilter }: { initialFilter: ListFilter
         />
       </div>
 
-      <div
-        role="group"
-        aria-label={t("filters.label")}
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
-      >
-        {FILTERS.map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={filter === value}
-            onClick={() => setFilter(value)}
-            className={cn(
-              "inline-flex h-9 shrink-0 items-center rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-              filter === value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "hover:bg-muted",
-            )}
-          >
-            {t(`filters.${value}`)}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        label={t("filters.label")}
+        options={FILTERS}
+        value={filter}
+        onChange={setFilter}
+        getLabel={(value) => t(`filters.${value}`)}
+      />
 
       {total !== undefined && (
         <p role="status" className="text-sm text-muted-foreground">

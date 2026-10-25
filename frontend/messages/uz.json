@@ -357,7 +357,12 @@
       "newBusiness": "Biznes qoʻshish",
       "backToSite": "Saytga qaytish",
       "menu": "Menyu",
-      "logout": "Chiqish"
+      "logout": "Chiqish",
+      "requests": "Soʻrovlar",
+      "reviews": "Sharhlar",
+      "complaints": "Shikoyatlar",
+      "categories": "Kategoriyalar",
+      "users": "Foydalanuvchilar"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -390,7 +395,13 @@
         "noConsent": "Rozilik qayd etilmagan"
       },
       "quickAdd": "Yangi biznes qoʻshish",
-      "quickAddHint": "Doʻkonda turib, telefondan bir necha qadamda"
+      "quickAddHint": "Doʻkonda turib, telefondan bir necha qadamda",
+      "queues": {
+        "title": "Navbatda",
+        "requests": "Yangi soʻrovlar",
+        "reviews": "Moderatsiyadagi sharhlar",
+        "complaints": "Ochiq shikoyatlar"
+      }
     },
     "status": {
       "draft": "Qoralama",
@@ -540,7 +551,10 @@
       "attrValue": "Qiymati",
       "addAttribute": "Xususiyat qoʻshish",
       "removeAttribute": "Olib tashlash",
-      "save": "Saqlash"
+      "save": "Saqlash",
+      "suggested": "Tavsiya etilgan xususiyatlar",
+      "yes": "Ha",
+      "no": "Yoʻq"
     },
     "publish": {
       "current": "Hozirgi holat",
@@ -586,6 +600,229 @@
       "telegram": "Lotin harflari, raqamlar va _ (5–32 belgi)",
       "instagram": "Lotin harflari, raqamlar, _ va . (30 belgigacha)",
       "tooLong": "Juda uzun"
+    },
+    "common": {
+      "cancel": "Bekor qilish",
+      "optional": "ixtiyoriy",
+      "presets": "Tayyor variantlar",
+      "minLength": "Kamida {count} belgi yozing"
+    },
+    "reviews": {
+      "title": "Sharhlar",
+      "description": "Sharhlar moderatsiyadan keyin saytda chiqadi. Navbatda eng eskisi birinchi.",
+      "filterLabel": "Holat boʻyicha",
+      "filters": {
+        "pending": "Moderatsiyada",
+        "published": "Chop etilgan",
+        "rejected": "Rad etilgan"
+      },
+      "count": "{count, plural, other {# ta sharh}}",
+      "emptyQueue": "Navbat boʻsh — barcha sharhlar koʻrib chiqilgan",
+      "empty": "Sharhlar yoʻq",
+      "noText": "Izohsiz, faqat baho",
+      "reason": "Sabab: {reason}",
+      "publish": "Chop etish",
+      "reject": "Rad etish",
+      "rejectTitle": "Sharhni rad etish",
+      "rejectDescription": "Sabab muallifga “Mening sharhlarim” sahifasida koʻrinadi.",
+      "reasonLabel": "Sabab",
+      "presets": {
+        "offensive": "Haqoratli soʻzlar",
+        "ads": "Reklama yoki havola",
+        "unrelated": "Biznesga aloqasi yoʻq"
+      },
+      "publishedToast": "Sharh chop etildi",
+      "rejectedToast": "Sharh rad etildi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring."
+    },
+    "complaints": {
+      "title": "Shikoyatlar",
+      "description": "Notoʻgʻri maʼlumot haqidagi xabarlar. Biznesni tuzating va foydalanuvchiga javob yozing.",
+      "filterLabel": "Holat boʻyicha",
+      "count": "{count, plural, other {# ta shikoyat}}",
+      "emptyQueue": "Ochiq shikoyatlar yoʻq",
+      "empty": "Shikoyatlar yoʻq",
+      "answer": "Javob: {note}",
+      "editBusiness": "Biznesni tahrirlash",
+      "takeIntoReview": "Koʻrib chiqishga olish",
+      "resolve": "Hal qilindi",
+      "reject": "Rad etish",
+      "resolveTitle": "Shikoyatni yopish",
+      "rejectTitle": "Shikoyatni rad etish",
+      "answerDescription": "Javob xabar yuborgan foydalanuvchiga koʻrinadi.",
+      "answerLabel": "Javob",
+      "presets": {
+        "updated": "Rahmat! Maʼlumot yangilandi.",
+        "hidden": "Rahmat! Biznes saytdan yashirildi.",
+        "checkedCorrect": "Tekshirildi — maʼlumot toʻgʻri.",
+        "notEnough": "Tekshirish uchun maʼlumot yetarli emas."
+      },
+      "inReviewToast": "Koʻrib chiqishga olindi",
+      "closedToast": "Shikoyat yopildi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring."
+    },
+    "requests": {
+      "title": "Soʻrovlar",
+      "description": "“Biznesingizni qoʻshing” formasi orqali kelgan soʻrovlar. Bogʻlaning va biznesni joyida qoʻshing.",
+      "filterLabel": "Holat boʻyicha",
+      "status": {
+        "new": "Yangi",
+        "contacted": "Bogʻlanildi",
+        "converted": "Biznes yaratildi",
+        "rejected": "Rad etildi"
+      },
+      "count": "{count, plural, other {# ta soʻrov}}",
+      "emptyQueue": "Yangi soʻrovlar yoʻq",
+      "empty": "Soʻrovlar yoʻq",
+      "address": "Manzil",
+      "contact": "Aloqa",
+      "received": "Kelgan",
+      "adminNote": "Izoh: {note}",
+      "activity": "Faoliyati: {activity}",
+      "convert": "Biznes yaratish",
+      "markContacted": "Bogʻlanildi",
+      "reject": "Rad etish",
+      "openBusiness": "Biznesni ochish",
+      "reopen": "Qayta ochish",
+      "contactedTitle": "Bogʻlanildi deb belgilash",
+      "rejectTitle": "Soʻrovni rad etish",
+      "noteLabel": "Izoh (faqat administratorlarga koʻrinadi)",
+      "save": "Saqlash",
+      "presets": {
+        "outside": "Toshkentdan tashqarida",
+        "online": "Biznes allaqachon onlayn"
+      },
+      "savedToast": "Saqlandi",
+      "reopenedToast": "Soʻrov qayta ochildi",
+      "convertTitle": "Soʻrovdan biznes yaratish",
+      "convertDescription": "Qoralama yaratiladi: manzil va telefon soʻrovdan koʻchiriladi. Joylashuv, rasmlar va egasining roziligini joyiga borganda qoʻshasiz.",
+      "convertedToast": "Qoralama yaratildi — joylashuvni belgilang",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring."
+    },
+    "users": {
+      "title": "Foydalanuvchilar",
+      "description": "Faqat ism, kirish usuli va faollik koʻrsatiladi — kontakt maʼlumotlari yoʻq.",
+      "search": "Ism boʻyicha qidirish",
+      "filterLabel": "Holat boʻyicha",
+      "filters": {
+        "all": "Hammasi",
+        "blocked": "Bloklangan"
+      },
+      "count": "{count, plural, other {# ta foydalanuvchi}}",
+      "empty": "Foydalanuvchilar topilmadi",
+      "blocked": "Bloklangan",
+      "joined": "Roʻyxatdan oʻtgan: {date}",
+      "reviews": "{count, plural, other {# sharh}}",
+      "complaints": "{count, plural, other {# shikoyat}}",
+      "reason": "Sabab: {reason}",
+      "block": "Bloklash",
+      "unblock": "Blokdan chiqarish",
+      "blockTitle": "{name} — bloklash",
+      "blockDescription": "Foydalanuvchi tizimdan chiqariladi va sharh yoki shikoyat qoldira olmaydi. Mavjud sharhlari oʻzgarmaydi.",
+      "reasonLabel": "Sabab",
+      "presets": {
+        "spam": "Spam",
+        "offensive": "Haqoratli sharhlar",
+        "fake": "Soxta sharhlar"
+      },
+      "blockedToast": "{name} bloklandi",
+      "unblockedToast": "{name} blokdan chiqarildi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring."
+    },
+    "categories": {
+      "title": "Kategoriyalar",
+      "description": "Yoʻnalishlar va ichki kategoriyalar. Biznes ichki kategoriyaga biriktiriladi. Slug (URL) keyin oʻzgartirilmaydi.",
+      "addRoot": "Yoʻnalish qoʻshish",
+      "addChild": "Ichki kategoriya qoʻshish",
+      "businesses": "{count, plural, other {# ta biznes}}",
+      "attributes": "Atributlar",
+      "edit": "{name} — tahrirlash",
+      "delete": "{name} — oʻchirish",
+      "deleteConfirm": "{name} — oʻchirilsinmi?",
+      "deleteAction": "Oʻchirish",
+      "cancel": "Bekor qilish",
+      "deleted": "Kategoriya oʻchirildi",
+      "saved": "Saqlandi",
+      "error": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+      "editTitle": "Kategoriyani tahrirlash",
+      "newRootTitle": "Yangi yoʻnalish",
+      "newChildTitle": "Yangi ichki kategoriya",
+      "parentHint": "Yoʻnalish: {name}",
+      "nameUz": "Nomi (oʻzbekcha)",
+      "nameRu": "Nomi (ruscha)",
+      "slug": "Slug (URL)",
+      "slugHint": "Lotin harflari, raqamlar va chiziqcha. Keyin oʻzgartirib boʻlmaydi.",
+      "icon": "Ikonka",
+      "icons": {
+        "shopping": "Doʻkonlar",
+        "food": "Ovqatlanish",
+        "beauty": "Goʻzallik",
+        "home-services": "Maishiy xizmatlar",
+        "auto": "Avto",
+        "health": "Sogʻliq",
+        "education": "Taʼlim",
+        "sport": "Sport",
+        "travel": "Sayohat",
+        "events": "Tadbirlar",
+        "pets": "Uy hayvonlari",
+        "professional": "Professional xizmatlar"
+      },
+      "save": "Saqlash",
+      "validation": {
+        "name": "2–60 belgi",
+        "slug": "Lotin harflari, raqamlar va chiziqcha (2–60)",
+        "icon": "Ikonkani tanlang"
+      }
+    },
+    "attributes": {
+      "metaTitle": "Atributlar",
+      "title": "{name}: atributlar",
+      "description": "Shu kategoriyadagi mahsulot va xizmatlar uchun tayyor xususiyatlar — katalog formasida tavsiya sifatida chiqadi.",
+      "back": "Kategoriyalar",
+      "add": "Atribut qoʻshish",
+      "empty": "Hali atribut yoʻq",
+      "emptyDescription": "Masalan: oʻlcham, kafolat muddati, mashina turi.",
+      "notFound": "Kategoriya topilmadi",
+      "types": {
+        "text": "Matn",
+        "number": "Son",
+        "boolean": "Ha / Yoʻq",
+        "select": "Bitta variant",
+        "multiselect": "Bir nechta variant"
+      },
+      "unitValue": "Birlik: {unit}",
+      "moveUp": "{name} — yuqoriga",
+      "moveDown": "{name} — pastga",
+      "edit": "{name} — tahrirlash",
+      "delete": "{name} — oʻchirish",
+      "deleteConfirm": "{name} — oʻchirilsinmi?",
+      "deleteHint": "Mavjud mahsulotlardagi qiymatlar saqlanib qoladi.",
+      "deleteAction": "Oʻchirish",
+      "cancel": "Bekor qilish",
+      "saved": "Saqlandi",
+      "error": "Saqlab boʻlmadi. Maydonlarni tekshiring.",
+      "newTitle": "Yangi atribut",
+      "editTitle": "Atributni tahrirlash",
+      "dialogDescription": "Nom ikkala tilda kerak — sayt ikki tilda ishlaydi.",
+      "nameUz": "Nomi (oʻzbekcha)",
+      "nameRu": "Nomi (ruscha)",
+      "namePlaceholder": "Masalan: Kafolat",
+      "type": "Turi",
+      "unit": "Birlik (ixtiyoriy)",
+      "unitPlaceholder": "Masalan: oy, g, sm",
+      "options": "Variantlar",
+      "optionUz": "{index}-variant (oʻzbekcha)",
+      "optionRu": "{index}-variant (ruscha)",
+      "optionUzPlaceholder": "Oʻzbekcha",
+      "optionRuPlaceholder": "Ruscha",
+      "removeOption": "{index}-variantni olib tashlash",
+      "addOption": "Variant qoʻshish",
+      "save": "Saqlash",
+      "validation": {
+        "label": "1–60 belgi",
+        "unit": "Koʻpi bilan 20 belgi",
+        "options": "Kamida 2 ta variant"
+      }
     }
   }
 }

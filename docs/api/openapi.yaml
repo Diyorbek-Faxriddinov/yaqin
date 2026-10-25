@@ -10,8 +10,6 @@ info:
     - Pul summalari — butun son, tiyinda (ADR-0010). Vaqt — ISO 8601.
     - Lokalizatsiya qilinadigan maydonlar (kategoriya, tuman nomlari) `lang` parametri bo'yicha qaytadi.
 
-    Bu versiya — ommaviy (o'qish) qismi. Autentifikatsiya, mijoz va admin endpointlari
-    keyingi qadamlarda qo'shiladi.
 servers:
   - url: /api/v1
 
@@ -26,6 +24,8 @@ tags:
     description: Kirish va chiqish (ADR-0006, ADR-0012)
   - name: me
     description: Joriy foydalanuvchi — profil, sevimlilar, sharhlar, shikoyatlar
+  - name: requests
+    description: Biznes qo'shish so'rovlari
   - name: admin
     description: Admin panel — har bir endpoint ruxsatni backendda tekshiradi (ADR-0009)
 
@@ -898,6 +898,443 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /business-requests:
+    post:
+      tags: [requests]
+      operationId: createBusinessRequest
+      summary: '"Biznesingizni qo''shing" so''rovi (kirish shart emas)'
+      description: |
+        Biznes egasi yoki xodimi qoldiradi; administrator bog'lanib, biznesni platformaga qo'shadi.
+        Backend IP bo'yicha cheklaydi (429). Telefon raqami faqat administratorlarga ko'rinadi.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BusinessRequestInput" }
+      responses:
+        "201":
+          description: Qabul qilindi
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id: { type: string, format: uuid }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /admin/categories:
+    get:
+      tags: [admin]
+      operationId: adminListCategories
+      summary: Barcha kategoriyalar (tekis ro'yxat, ikkala tildagi nomlar va atributlar bilan) — ruxsat category.manage
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Kategoriyalar (daraxt — `parentId` orqali)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminCategory" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [admin]
+      operationId: adminCreateCategory
+      summary: Kategoriya qo'shish — ruxsat category.manage
+      description: |
+        Ikki daraja: `parentId: null` — yuqori daraja (`iconKey` majburiy), aks holda ichki kategoriya
+        (ikonka ota-kategoriyadan olinadi). Slug keyin o'zgartirilmaydi — URL'lar barqaror qoladi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminCategoryCreate" }
+      responses:
+        "201":
+          description: Qo'shildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCategory" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/CategoryId"
+    patch:
+      tags: [admin]
+      operationId: adminUpdateCategory
+      summary: Nomi yoki ikonkasini o'zgartirish — ruxsat category.manage
+      description: Yuqori daraja ikonkasi o'zgarsa, ichki kategoriyalarniki ham o'zgaradi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminCategoryUpdate" }
+      responses:
+        "200":
+          description: Yangilandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCategory" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [admin]
+      operationId: adminDeleteCategory
+      summary: Kategoriyani o'chirish — ruxsat category.manage
+      description: Faqat bo'sh kategoriya (biznes ham, ichki kategoriya ham yo'q) — aks holda 409.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/categories/{categoryId}/attributes:
+    parameters:
+      - $ref: "#/components/parameters/CategoryId"
+    put:
+      tags: [admin]
+      operationId: adminSetCategoryAttributes
+      summary: Ichki kategoriya atributlari (butun ro'yxat almashtiriladi) — ruxsat category.manage
+      description: |
+        Atributlar — shu kategoriyadagi mahsulot/xizmatlar uchun tavsiya etilgan xususiyatlar
+        (o'lcham, kafolat muddati...). Katalog formasida tayyor maydon sifatida taklif qilinadi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attributes]
+              properties:
+                attributes:
+                  type: array
+                  maxItems: 20
+                  items: { $ref: "#/components/schemas/AdminAttribute" }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCategory" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/reviews:
+    get:
+      tags: [admin]
+      operationId: adminListReviews
+      summary: Sharhlar — ruxsat review.moderate
+      description: "`pending` — eng eskisi birinchi (navbat), qolganlari — eng yangisi birinchi."
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ReviewStatus" }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Sharhlar sahifasi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminReviewPage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/reviews/{reviewId}:
+    parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [admin]
+      operationId: adminModerateReview
+      summary: Sharhni chop etish yoki rad etish — ruxsat review.moderate
+      description: |
+        Rad etishda sabab majburiy — muallif uni "Mening sharhlarim"da ko'radi. Chop etilgan
+        sharhni keyin rad etish ham mumkin (masalan, spam aniqlansa). Biznes reytingi qayta hisoblanadi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [published, rejected]
+                rejectionReason:
+                  { type: [string, "null"], minLength: 3, maxLength: 200 }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminReview" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/complaints:
+    get:
+      tags: [admin]
+      operationId: adminListComplaints
+      summary: Shikoyatlar — ruxsat complaint.manage
+      description: "`open` va `in_review` — eng eskisi birinchi, qolganlari — eng yangisi birinchi."
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ComplaintStatus" }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Shikoyatlar sahifasi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminComplaintPage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/complaints/{complaintId}:
+    parameters:
+      - name: complaintId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [admin]
+      operationId: adminUpdateComplaint
+      summary: Shikoyat holati — ruxsat complaint.manage
+      description: "`resolved` va `rejected` uchun javob majburiy — yuborgan foydalanuvchi uni ko'radi."
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [in_review, resolved, rejected]
+                resolutionNote:
+                  { type: [string, "null"], minLength: 3, maxLength: 500 }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminComplaint" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/business-requests:
+    get:
+      tags: [admin]
+      operationId: adminListBusinessRequests
+      summary: Biznes qo'shish so'rovlari — ruxsat business.edit
+      description: Telefon raqamlari bor — shuning uchun faqat biznes qo'sha oladigan administratorlarga.
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/BusinessRequestStatus" }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: So'rovlar sahifasi (eng yangisi birinchi)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusinessRequestPage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/business-requests/{requestId}:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    patch:
+      tags: [admin]
+      operationId: adminUpdateBusinessRequest
+      summary: So'rov holati va izohi — ruxsat business.edit
+      description: "`rejected` uchun izoh majburiy. `converted` holatiga faqat /convert orqali o'tiladi (keyin o'zgarmaydi — 409)."
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [new, contacted, rejected]
+                adminNote: { type: [string, "null"], maxLength: 500 }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusinessRequest" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/business-requests/{requestId}/convert:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [admin]
+      operationId: adminConvertBusinessRequest
+      summary: So'rovdan biznes qoralamasini yaratish — ruxsat business.edit
+      description: |
+        Qoralamaga so'rovdagi manzil va telefon ko'chiriladi; so'rov `converted` bo'ladi.
+        Joylashuv, rasmlar va rozilik — joyiga borganda (ADR-0007).
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Lang"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminBusinessCreate" }
+      responses:
+        "201":
+          description: Qoralama yaratildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminBusiness" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /admin/users:
+    get:
+      tags: [admin]
+      operationId: adminListUsers
+      summary: Mijozlar — ruxsat user.view
+      description: Faqat ko'rsatiladigan ism, kirish usuli va faollik soni — kontakt maʼlumotlari qaytarilmaydi.
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: blocked
+          in: query
+          schema: { type: boolean }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Foydalanuvchilar sahifasi (eng yangisi birinchi)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminUserPage" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [admin]
+      operationId: adminUpdateUser
+      summary: Bloklash yoki blokdan chiqarish — ruxsat user.manage
+      description: |
+        Bloklashda sabab majburiy. Bloklangan foydalanuvchining sessiyalari tugatiladi, u qayta
+        kira olmaydi, sharh va shikoyat qoldira olmaydi. Mavjud sharhlari o'zgarmaydi.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isBlocked]
+              properties:
+                isBlocked: { type: boolean }
+                blockedReason:
+                  { type: [string, "null"], minLength: 3, maxLength: 200 }
+      responses:
+        "200":
+          description: Saqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminUser" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /search/suggest:
     get:
       tags: [businesses]
@@ -957,6 +1394,16 @@ components:
   parameters:
     BusinessId:
       name: businessId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    RequestId:
+      name: requestId
       in: path
       required: true
       schema: { type: string, format: uuid }
@@ -1266,7 +1713,16 @@ components:
       allOf:
         - $ref: "#/components/schemas/BusinessSummary"
         - type: object
-          required: [description, address, phones, telegram, instagram, website, gallery]
+          required:
+            [
+              description,
+              address,
+              phones,
+              telegram,
+              instagram,
+              website,
+              gallery,
+            ]
           properties:
             description: { type: [string, "null"] }
             address:
@@ -1451,15 +1907,21 @@ components:
             name: { type: string }
         rating: { type: integer, minimum: 1, maximum: 5 }
         text: { type: [string, "null"] }
-        status:
-          type: string
-          enum: [pending, published, rejected]
+        status: { $ref: "#/components/schemas/ReviewStatus" }
         rejectionReason: { type: [string, "null"] }
         createdAt: { type: string, format: date-time }
 
     ComplaintReason:
       type: string
-      enum: [wrong_info, closed_permanently, wrong_location, fake_reviews, fraud, other]
+      enum:
+        [
+          wrong_info,
+          closed_permanently,
+          wrong_location,
+          fake_reviews,
+          fraud,
+          other,
+        ]
 
     ComplaintInput:
       type: object
@@ -1485,9 +1947,7 @@ components:
             name: { type: string }
         reason: { $ref: "#/components/schemas/ComplaintReason" }
         text: { type: [string, "null"] }
-        status:
-          type: string
-          enum: [open, in_review, resolved, rejected]
+        status: { $ref: "#/components/schemas/ComplaintStatus" }
         resolutionNote: { type: [string, "null"] }
         createdAt: { type: string, format: date-time }
 
@@ -1502,6 +1962,7 @@ components:
         - review.moderate
         - complaint.manage
         - user.view
+        - user.manage
         - staff.manage
         - audit.view
         - settings.manage
@@ -1529,7 +1990,13 @@ components:
       required: [givenBy, givenAt, note]
       description: Biznes egasining maʼlumotlarni e'lon qilishga roziligi (ADR-0007)
       properties:
-        givenBy: { type: string, maxLength: 100, description: Kim rozilik berdi (ism, lavozim) }
+        givenBy:
+          {
+            type: string,
+            maxLength: 100,
+            description: Kim rozilik berdi (ism,
+            lavozim),
+          }
         givenAt: { type: string, format: date-time }
         note: { type: [string, "null"], maxLength: 500 }
 
@@ -1543,7 +2010,19 @@ components:
 
     AdminBusinessListItem:
       type: object
-      required: [id, slug, name, category, district, status, hasConsent, photosCount, itemsCount, updatedAt]
+      required:
+        [
+          id,
+          slug,
+          name,
+          category,
+          district,
+          status,
+          hasConsent,
+          photosCount,
+          itemsCount,
+          updatedAt,
+        ]
       properties:
         id: { type: string, format: uuid }
         slug: { type: string }
@@ -1629,7 +2108,8 @@ components:
       required: [name, categorySlug, districtSlug]
       properties:
         name: { type: string, minLength: 2, maxLength: 120 }
-        categorySlug: { type: string, description: Ichki (oxirgi darajadagi) kategoriya }
+        categorySlug:
+          { type: string, description: Ichki (oxirgi darajadagi) kategoriya }
         districtSlug: { type: string }
 
     AdminBusinessUpdate:
@@ -1672,7 +2152,17 @@ components:
 
     ItemInput:
       type: object
-      required: [kind, name, group, description, price, durationMinutes, attributes, isAvailable]
+      required:
+        [
+          kind,
+          name,
+          group,
+          description,
+          price,
+          durationMinutes,
+          attributes,
+          isAvailable,
+        ]
       properties:
         kind:
           type: string
@@ -1718,3 +2208,300 @@ components:
           type: string
           enum: [profile_view, call_click, telegram_click, direction_click]
         businessId: { type: string, format: uuid }
+
+    LocalizedText:
+      type: object
+      required: [uz, ru]
+      description: Ikki tildagi matn (kategoriya nomlari uchun server kamida 2 belgi talab qiladi)
+      properties:
+        uz: { type: string, minLength: 1, maxLength: 60 }
+        ru: { type: string, minLength: 1, maxLength: 60 }
+
+    CategoryIconKey:
+      type: string
+      description: Frontend ikonka kaliti (yuqori darajadagi kategoriyalar uchun)
+      enum:
+        - shopping
+        - food
+        - beauty
+        - home-services
+        - auto
+        - health
+        - education
+        - sport
+        - travel
+        - events
+        - pets
+        - professional
+
+    AttributeOption:
+      type: object
+      required: [value, label]
+      properties:
+        value: { type: string, pattern: "^[a-z0-9_-]{1,40}$" }
+        label: { $ref: "#/components/schemas/LocalizedText" }
+
+    AdminAttribute:
+      type: object
+      required: [key, name, type, unit, options, filterable]
+      properties:
+        key: { type: string, pattern: "^[a-z][a-z0-9_]{1,39}$" }
+        name: { $ref: "#/components/schemas/LocalizedText" }
+        type:
+          type: string
+          enum: [text, number, boolean, select, multiselect]
+        unit:
+          type: [string, "null"]
+          maxLength: 20
+          description: Faqat number uchun ("oy", "g")
+        options:
+          type: array
+          maxItems: 30
+          description: select va multiselect uchun (kamida 2 ta), boshqalarida bo'sh
+          items: { $ref: "#/components/schemas/AttributeOption" }
+        filterable:
+          type: boolean
+          description: Kelajakda ommaviy filtrlar uchun (hozircha interfeysda ishlatilmaydi)
+
+    AdminCategory:
+      type: object
+      required: [id, slug, name, iconKey, parentId, businessCount, attributes]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { $ref: "#/components/schemas/LocalizedText" }
+        iconKey:
+          oneOf:
+            - $ref: "#/components/schemas/CategoryIconKey"
+            - type: "null"
+        parentId: { type: [string, "null"], format: uuid }
+        businessCount:
+          type: integer
+          description: Barcha holatdagi bizneslar (ichki kategoriyalari bilan)
+        attributes:
+          type: array
+          items: { $ref: "#/components/schemas/AdminAttribute" }
+
+    AdminCategoryCreate:
+      type: object
+      required: [slug, name, parentId]
+      properties:
+        slug:
+          {
+            type: string,
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$",
+            minLength: 2,
+            maxLength: 60,
+          }
+        name: { $ref: "#/components/schemas/LocalizedText" }
+        parentId: { type: [string, "null"], format: uuid }
+        iconKey: { $ref: "#/components/schemas/CategoryIconKey" }
+
+    AdminCategoryUpdate:
+      type: object
+      properties:
+        name: { $ref: "#/components/schemas/LocalizedText" }
+        iconKey: { $ref: "#/components/schemas/CategoryIconKey" }
+
+    AdminBusinessRef:
+      type: object
+      required: [id, slug, name]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+
+    UserRef:
+      type: object
+      required: [id, displayName]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+
+    ReviewStatus:
+      type: string
+      enum: [pending, published, rejected]
+
+    AdminReview:
+      type: object
+      required:
+        [
+          id,
+          business,
+          author,
+          rating,
+          text,
+          status,
+          rejectionReason,
+          createdAt,
+          moderatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        business: { $ref: "#/components/schemas/AdminBusinessRef" }
+        author: { $ref: "#/components/schemas/UserRef" }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/ReviewStatus" }
+        rejectionReason: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        moderatedAt: { type: [string, "null"], format: date-time }
+
+    AdminReviewPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminReview" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    ComplaintStatus:
+      type: string
+      enum: [open, in_review, resolved, rejected]
+
+    AdminComplaint:
+      type: object
+      required:
+        [
+          id,
+          business,
+          reporter,
+          reason,
+          text,
+          status,
+          resolutionNote,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        business: { $ref: "#/components/schemas/AdminBusinessRef" }
+        reporter: { $ref: "#/components/schemas/UserRef" }
+        reason: { $ref: "#/components/schemas/ComplaintReason" }
+        text: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/ComplaintStatus" }
+        resolutionNote: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AdminComplaintPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminComplaint" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    BusinessRequestInput:
+      type: object
+      required: [businessName, contactName, phone, agree]
+      properties:
+        businessName: { type: string, minLength: 2, maxLength: 120 }
+        activity:
+          type: [string, "null"]
+          maxLength: 100
+          description: Nima bilan shug'ullanadi ("sartaroshxona", "qurilish mollari")
+        districtSlug: { type: [string, "null"] }
+        address: { type: [string, "null"], maxLength: 300 }
+        contactName: { type: string, minLength: 2, maxLength: 60 }
+        phone: { type: string, pattern: "^\\+998\\d{9}$" }
+        note: { type: [string, "null"], maxLength: 1000 }
+        agree:
+          type: boolean
+          const: true
+          description: Shaxsiy maʼlumotlarni (ism, telefon) qayta ishlashga rozilik
+
+    BusinessRequestStatus:
+      type: string
+      description: new — yangi, contacted — bog'lanildi, converted — biznes yaratildi, rejected — rad etildi
+      enum: [new, contacted, converted, rejected]
+
+    AdminBusinessRequest:
+      type: object
+      required:
+        - id
+        - businessName
+        - activity
+        - district
+        - address
+        - contactName
+        - phone
+        - note
+        - status
+        - adminNote
+        - businessId
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string, format: uuid }
+        businessName: { type: string }
+        activity: { type: [string, "null"] }
+        district:
+          oneOf:
+            - $ref: "#/components/schemas/DistrictRef"
+            - type: "null"
+        address: { type: [string, "null"] }
+        contactName: { type: string }
+        phone: { type: string }
+        note: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/BusinessRequestStatus" }
+        adminNote: { type: [string, "null"] }
+        businessId:
+          type: [string, "null"]
+          format: uuid
+          description: converted bo'lsa — yaratilgan biznes
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AdminBusinessRequestPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminBusinessRequest" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    AdminUser:
+      type: object
+      required:
+        [
+          id,
+          displayName,
+          provider,
+          createdAt,
+          isBlocked,
+          blockedReason,
+          reviewsCount,
+          complaintsCount,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        provider:
+          type: string
+          enum: [telegram, google, demo]
+        createdAt: { type: string, format: date-time }
+        isBlocked: { type: boolean }
+        blockedReason: { type: [string, "null"] }
+        reviewsCount: { type: integer }
+        complaintsCount: { type: integer }
+
+    AdminUserPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminUser" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }

@@ -1,25 +1,31 @@
-import { http, HttpResponse, type DefaultBodyType, type StrictRequest } from "msw";
-import type {
-  AdminBusiness,
-  AdminBusinessListItem,
-  AdminPermission,
-  ApiError,
-  Item,
-  WeeklySchedule,
-} from "@/lib/api/types";
+import { http, HttpResponse } from "msw";
+import type { AdminBusiness, AdminBusinessListItem, Item, WeeklySchedule } from "@/lib/api/types";
 import { isValidPoint } from "@/lib/geo";
+import {
+  API,
+  audit,
+  authorize,
+  districtBySlug,
+  districtRef,
+  error,
+  langOf,
+  readJson,
+  revalidate,
+  slugify,
+  type Fields,
+  type Lang,
+} from "./admin-common";
+import { categoryRef as publicCategoryRef } from "./db";
 import {
   ADMIN_SESSION_COOKIE,
   CSRF_COOKIE,
-  CSRF_HEADER,
   demoState,
+  findBusinessRecord,
+  findCategory,
   itemsOf,
   photosOf,
-  type DemoAdmin,
   type DemoBusinessRecord,
 } from "./demo-state";
-import { CATEGORIES } from "./fixtures/categories";
-import { DISTRICTS } from "./fixtures/districts";
 
 /**
  * Admin API demo handler'lari. Backend qoidalarini takrorlaydi: ikki bosqichli kirish,
@@ -28,25 +34,12 @@ import { DISTRICTS } from "./fixtures/districts";
  * revalidateTag chaqiradi (productionda backend /api/revalidate webhook'ini chaqiradi).
  */
 
-const API = "*/api/v1";
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 const CHALLENGE_TTL = 5 * 60 * 1000;
 const MAX_LOGIN_FAILURES = 5;
 const LOGIN_BLOCK_MS = 60 * 1000;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-export const REVALIDATE_HEADER = "x-demo-revalidate";
-
-type Lang = "uz" | "ru";
-type Fields = Record<string, string[]>;
-
-function error(status: number, code: string, message: string, fields?: Fields) {
-  return HttpResponse.json<ApiError>({ code, message, fields }, { status });
-}
-
-function langOf(request: Request): Lang {
-  return new URL(request.url).searchParams.get("lang") === "ru" ? "ru" : "uz";
-}
 
 function cookie(
   name: string,
@@ -60,79 +53,6 @@ function cookie(
   return `${name}=${value}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Strict${httpOnly ? "; HttpOnly" : ""}${secure}`;
 }
 
-function revalidate(headers: Headers, ...tags: string[]) {
-  headers.set(REVALIDATE_HEADER, [...new Set(tags)].join(","));
-  return headers;
-}
-
-function audit(
-  admin: DemoAdmin,
-  action: string,
-  targetType: "business" | "item" | "photo",
-  targetId: string,
-  summary: string,
-) {
-  demoState.audit.push({
-    id: crypto.randomUUID(),
-    at: new Date().toISOString(),
-    adminId: admin.id,
-    action,
-    targetType,
-    targetId,
-    summary,
-  });
-}
-
-/** Admin sessiyasi + (o'zgartiruvchi so'rovlarda) CSRF + ruxsat (null — faqat sessiya) */
-function authorize(
-  request: StrictRequest<DefaultBodyType>,
-  cookies: Record<string, string>,
-  permission: AdminPermission | null,
-): { admin: DemoAdmin } | { response: Response } {
-  const token = cookies[ADMIN_SESSION_COOKIE];
-  const session = token ? demoState.adminSessions.get(token) : undefined;
-  if (!session || session.expiresAt < Date.now()) {
-    if (token) demoState.adminSessions.delete(token);
-    return { response: error(401, "not_authenticated", "Admin sifatida kiring") };
-  }
-  const admin = demoState.admins.find((a) => a.id === session.adminId);
-  if (!admin) return { response: error(401, "not_authenticated", "Admin sifatida kiring") };
-
-  if (!["GET", "HEAD"].includes(request.method)) {
-    const header = request.headers.get(CSRF_HEADER);
-    if (!header || header !== cookies[CSRF_COOKIE] || header !== session.csrfToken) {
-      return {
-        response: error(403, "csrf_failed", "Xavfsizlik tekshiruvi o'tmadi. Sahifani yangilang."),
-      };
-    }
-  }
-  if (permission && !admin.isRoot && !admin.permissions.includes(permission)) {
-    return { response: error(403, "permission_denied", "Bu amal uchun ruxsatingiz yo'q") };
-  }
-  return { admin };
-}
-
-async function readJson(request: Request): Promise<Record<string, unknown> | null> {
-  try {
-    const body: unknown = await request.json();
-    return body && typeof body === "object" ? (body as Record<string, unknown>) : null;
-  } catch {
-    return null;
-  }
-}
-
-const categoryBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
-const districtBySlug = new Map(DISTRICTS.map((d) => [d.slug, d]));
-
-function slugify(name: string): string {
-  const latin = name
-    .toLowerCase()
-    .replace(/[ʻʼ'`‘’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return latin || "biznes";
-}
-
 function uniqueSlug(base: string, exceptId?: string): string {
   let slug = base;
   for (let n = 2; demoState.businesses.some((b) => b.slug === slug && b.id !== exceptId); n++) {
@@ -142,22 +62,17 @@ function uniqueSlug(base: string, exceptId?: string): string {
 }
 
 function categoryRef(slug: string, lang: Lang) {
-  const category = categoryBySlug.get(slug);
+  const category = findCategory(slug);
   if (!category) throw new Error(`Kategoriya yo'q: ${slug}`);
-  return {
-    id: category.id,
-    slug: category.slug,
-    name: category.name[lang],
-    iconKey: category.iconKey,
-  };
+  return publicCategoryRef(category, lang);
 }
 
-function districtRef(slug: string, lang: Lang) {
-  const district = districtBySlug.get(slug);
-  return { slug, name: district?.name[lang] ?? slug };
+/** Biznes faqat ichki (ota-kategoriyasi bor) kategoriyaga biriktiriladi */
+function isLeafCategory(slug: string): boolean {
+  return Boolean(findCategory(slug)?.parentSlug);
 }
 
-function toAdminBusiness(record: DemoBusinessRecord, lang: Lang): AdminBusiness {
+export function toAdminBusiness(record: DemoBusinessRecord, lang: Lang): AdminBusiness {
   return {
     id: record.id,
     slug: record.slug,
@@ -231,8 +146,57 @@ function publishProblems(record: DemoBusinessRecord): Fields {
   return fields;
 }
 
-function findRecord(id: string) {
-  return demoState.businesses.find((b) => b.id === id);
+const findRecord = findBusinessRecord;
+
+type BusinessCreate = { name: string; categorySlug: string; districtSlug: string };
+
+/** POST /admin/businesses va so'rovdan yaratish (convert) uchun umumiy tekshiruv */
+export function parseBusinessCreate(
+  body: Record<string, unknown> | null,
+): { value: BusinessCreate } | { fields: Fields } {
+  const name = typeof body?.name === "string" ? body.name.trim() : "";
+  const categorySlug = typeof body?.categorySlug === "string" ? body.categorySlug : "";
+  const districtSlug = typeof body?.districtSlug === "string" ? body.districtSlug : "";
+  const fields: Fields = {};
+  if (name.length < 2 || name.length > 120) fields.name = ["2–120 belgi"];
+  if (!isLeafCategory(categorySlug)) fields.categorySlug = ["Ichki kategoriyani tanlang"];
+  if (!districtBySlug.has(districtSlug)) fields.districtSlug = ["Tumanni tanlang"];
+  return Object.keys(fields).length > 0
+    ? { fields }
+    : { value: { name, categorySlug, districtSlug } };
+}
+
+/** Platforma boshqaruvidagi qoralama (ADR-0007) */
+export function createDraftBusiness(
+  { name, categorySlug, districtSlug }: BusinessCreate,
+  extra: Partial<Pick<DemoBusinessRecord, "address" | "phones">> = {},
+): DemoBusinessRecord {
+  const now = new Date().toISOString();
+  const record: DemoBusinessRecord = {
+    id: crypto.randomUUID(),
+    slug: uniqueSlug(slugify(name)),
+    name,
+    categorySlug,
+    districtSlug,
+    location: null,
+    priceRange: null,
+    schedule: null,
+    rating: { average: null, count: 0 },
+    isVerified: true,
+    createdAt: now,
+    updatedAt: now,
+    description: null,
+    address: { text: "", landmark: null },
+    phones: [],
+    status: "draft",
+    consent: null,
+    telegram: null,
+    instagram: null,
+    ...extra,
+  };
+  demoState.businesses.push(record);
+  demoState.items.set(record.id, []);
+  return record;
 }
 
 const ITEM_PRICE_TYPES = new Set(["fixed", "from", "range", "on_request"]);
@@ -416,43 +380,11 @@ export const adminHandlers = [
   http.post(`${API}/admin/businesses`, async ({ request, cookies }) => {
     const auth = authorize(request, cookies, "business.edit");
     if ("response" in auth) return auth.response;
-    const body = await readJson(request);
-    const name = typeof body?.name === "string" ? body.name.trim() : "";
-    const categorySlug = typeof body?.categorySlug === "string" ? body.categorySlug : "";
-    const districtSlug = typeof body?.districtSlug === "string" ? body.districtSlug : "";
-    const fields: Fields = {};
-    if (name.length < 2 || name.length > 120) fields.name = ["2–120 belgi"];
-    if (!categoryBySlug.get(categorySlug)?.parentSlug)
-      fields.categorySlug = ["Ichki kategoriyani tanlang"];
-    if (!districtBySlug.has(districtSlug)) fields.districtSlug = ["Tumanni tanlang"];
-    if (Object.keys(fields).length > 0)
-      return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", fields);
-
-    const now = new Date().toISOString();
-    const record: DemoBusinessRecord = {
-      id: crypto.randomUUID(),
-      slug: uniqueSlug(slugify(name)),
-      name,
-      categorySlug,
-      districtSlug,
-      location: null,
-      priceRange: null,
-      schedule: null,
-      rating: { average: null, count: 0 },
-      isVerified: true,
-      createdAt: now,
-      updatedAt: now,
-      description: null,
-      address: { text: "", landmark: null },
-      phones: [],
-      status: "draft",
-      consent: null,
-      telegram: null,
-      instagram: null,
-    };
-    demoState.businesses.push(record);
-    demoState.items.set(record.id, []);
-    audit(auth.admin, "business.create", "business", record.id, `Yaratildi: ${name}`);
+    const parsed = parseBusinessCreate(await readJson(request));
+    if ("fields" in parsed)
+      return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", parsed.fields);
+    const record = createDraftBusiness(parsed.value);
+    audit(auth.admin, "business.create", "business", record.id, `Yaratildi: ${record.name}`);
     return HttpResponse.json(toAdminBusiness(record, langOf(request)), { status: 201 });
   }),
 
@@ -487,8 +419,7 @@ export const adminHandlers = [
     }
     if ("categorySlug" in body) {
       const slug = String(body.categorySlug);
-      if (!categoryBySlug.get(slug)?.parentSlug)
-        fields.categorySlug = ["Ichki kategoriyani tanlang"];
+      if (!isLeafCategory(slug)) fields.categorySlug = ["Ichki kategoriyani tanlang"];
       else next.categorySlug = slug;
     }
     if ("districtSlug" in body) {

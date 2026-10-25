@@ -4,7 +4,8 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
-import { useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
@@ -28,7 +29,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ItemPriceText } from "@/features/business/components/item-list";
-import type { Item, ItemInput } from "@/lib/api/types";
+import { browserApi, call } from "@/lib/api/browser";
+import type { AttributeDefinition, Item, ItemInput } from "@/lib/api/types";
 import {
   applyServerErrors,
   useAdminItems,
@@ -41,13 +43,36 @@ const PRICE_TYPES = ["fixed", "from", "range", "on_request"] as const;
 const toSom = (amount?: number | null) => (amount != null ? String(Math.round(amount / 100)) : "");
 const toTiyin = (som: number) => ({ amount: Math.round(som * 100), currency: "UZS" as const });
 
+/** Kategoriya atributlari (admin belgilaydi) — katalog formasida tayyor xususiyat sifatida */
+function useCategoryAttributes(slug: string, enabled: boolean): AttributeDefinition[] {
+  const lang = useLocale() as "uz" | "ru";
+  const { data } = useQuery({
+    queryKey: ["categories", "detail", slug, lang],
+    queryFn: () =>
+      call(browserApi.GET("/categories/{slug}", { params: { path: { slug }, query: { lang } } })),
+    enabled,
+    staleTime: 10 * 60_000,
+  });
+  return data?.attributes ?? [];
+}
+
+/** Qiymat maydoni uchun maslahat: variantlar, birlik yoki Ha/Yo'q */
+function valueHint(definition: AttributeDefinition | undefined, yesNo: string): string | undefined {
+  if (!definition) return undefined;
+  if (definition.type === "boolean") return yesNo;
+  if (definition.options?.length) return definition.options.map((o) => o.label).join(", ");
+  return definition.unit ?? undefined;
+}
+
 function ItemDialog({
   businessId,
+  categorySlug,
   item,
   open,
   onOpenChange,
 }: {
   businessId: string;
+  categorySlug: string;
   item: Item | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -108,6 +133,12 @@ function ItemDialog({
     },
   });
   const attributes = useFieldArray({ control: form.control, name: "attributes" });
+  const definitions = useCategoryAttributes(categorySlug, open);
+  const currentAttributes = useWatch({ control: form.control, name: "attributes" });
+  const usedNames = new Set(currentAttributes.map((a) => a.name.trim().toLowerCase()));
+  const suggestions = definitions.filter((d) => !usedNames.has(d.name.toLowerCase()));
+  const definitionFor = (name: string) =>
+    definitions.find((d) => d.name.toLowerCase() === name.trim().toLowerCase());
   const kind = useWatch({ control: form.control, name: "kind" });
   const priceType = useWatch({ control: form.control, name: "priceType" });
   const errors = form.formState.errors;
@@ -270,29 +301,69 @@ function ItemDialog({
 
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">{t("catalog.attributes")}</legend>
-            {attributes.fields.map((field, index) => (
-              <div key={field.id} className="flex gap-2">
-                <Input
-                  aria-label={t("catalog.attrName")}
-                  placeholder={t("catalog.attrName")}
-                  {...form.register(`attributes.${index}.name`)}
-                />
-                <Input
-                  aria-label={t("catalog.attrValue")}
-                  placeholder={t("catalog.attrValue")}
-                  {...form.register(`attributes.${index}.value`)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t("catalog.removeAttribute")}
-                  onClick={() => attributes.remove(index)}
-                >
-                  <X aria-hidden="true" />
-                </Button>
+            {suggestions.length > 0 && (
+              <div
+                role="group"
+                aria-label={t("catalog.suggested")}
+                className="flex flex-wrap gap-2"
+              >
+                {suggestions.map((definition) => (
+                  <Button
+                    key={definition.key}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => attributes.append({ name: definition.name, value: "" })}
+                  >
+                    <Plus aria-hidden="true" />
+                    {definition.name}
+                  </Button>
+                ))}
               </div>
-            ))}
+            )}
+            {attributes.fields.map((field, index) => {
+              const definition = definitionFor(currentAttributes[index]?.name ?? "");
+              const listId = `attribute-options-${index}`;
+              const choices =
+                definition?.type === "boolean"
+                  ? [t("catalog.yes"), t("catalog.no")]
+                  : (definition?.options?.map((o) => o.label) ?? []);
+              return (
+                <div key={field.id} className="flex gap-2">
+                  <Input
+                    aria-label={t("catalog.attrName")}
+                    placeholder={t("catalog.attrName")}
+                    {...form.register(`attributes.${index}.name`)}
+                  />
+                  <Input
+                    aria-label={t("catalog.attrValue")}
+                    placeholder={
+                      valueHint(definition, `${t("catalog.yes")} / ${t("catalog.no")}`) ??
+                      t("catalog.attrValue")
+                    }
+                    inputMode={definition?.type === "number" ? "decimal" : undefined}
+                    list={choices.length > 0 ? listId : undefined}
+                    {...form.register(`attributes.${index}.value`)}
+                  />
+                  {choices.length > 0 && (
+                    <datalist id={listId}>
+                      {choices.map((choice) => (
+                        <option key={choice} value={choice} />
+                      ))}
+                    </datalist>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t("catalog.removeAttribute")}
+                    onClick={() => attributes.remove(index)}
+                  >
+                    <X aria-hidden="true" />
+                  </Button>
+                </div>
+              );
+            })}
             <Button
               type="button"
               variant="ghost"
@@ -398,6 +469,7 @@ export function CatalogSection({ business, canEdit, submitLabel, onDone }: Secti
 
       <ItemDialog
         businessId={business.id}
+        categorySlug={business.category.slug}
         item={editing}
         open={dialogOpen}
         onOpenChange={setDialogOpen}

@@ -25,6 +25,7 @@ Qoidalar:
 5. **Biznes turi** qaysi modullar va rollar mavjudligini belgilaydi (sartaroshxonada kuryer yoʻq).
 6. **Bizneslar izolyatsiyasi.** Biznesga tegishli soʻrovlar umumiy qatlamda `business_id` boʻyicha filtrlanadi; har bir endpoint uchun "boshqa biznes maʼlumotiga kirib boʻlmaydi" testi yoziladi.
 7. **Audit.** Har bir ruxsat oʻzgarishi va admin harakati faqat qoʻshiladigan (append-only) jurnalga yoziladi.
+8. **Shaxsiy maʼlumotlar eng kam ruxsat bilan.** "Biznesingizni qoʻshing" soʻrovlarida telefon raqamlari bor — ularni faqat `business.edit` egalari koʻradi. Mijozlar roʻyxatida (`user.view`) kontakt maʼlumotlari qaytarilmaydi; bloklash alohida ruxsat — `user.manage` (2.8 da qoʻshildi).
 
 ## Oqibatlar
 

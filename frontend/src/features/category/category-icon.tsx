@@ -15,6 +15,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import type { CategoryIconKey as ApiCategoryIconKey } from "@/lib/api/types";
 
 /**
  * Kategoriya ikonkasi API'dan kalit (iconKey) sifatida keladi, admin uni ro'yxatdan tanlaydi.
@@ -33,7 +34,7 @@ export const CATEGORY_ICONS = {
   events: PartyPopper,
   pets: PawPrint,
   professional: Briefcase,
-} satisfies Record<string, LucideIcon>;
+} satisfies Record<ApiCategoryIconKey, LucideIcon>;
 
 export type CategoryIconKey = keyof typeof CATEGORY_ICONS;
 

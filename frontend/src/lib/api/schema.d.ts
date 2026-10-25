@@ -620,6 +620,291 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/business-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * "Biznesingizni qo'shing" so'rovi (kirish shart emas)
+         * @description Biznes egasi yoki xodimi qoldiradi; administrator bog'lanib, biznesni platformaga qo'shadi.
+         *     Backend IP bo'yicha cheklaydi (429). Telefon raqami faqat administratorlarga ko'rinadi.
+         */
+        post: operations["createBusinessRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Barcha kategoriyalar (tekis ro'yxat, ikkala tildagi nomlar va atributlar bilan) — ruxsat category.manage */
+        get: operations["adminListCategories"];
+        put?: never;
+        /**
+         * Kategoriya qo'shish — ruxsat category.manage
+         * @description Ikki daraja: `parentId: null` — yuqori daraja (`iconKey` majburiy), aks holda ichki kategoriya
+         *     (ikonka ota-kategoriyadan olinadi). Slug keyin o'zgartirilmaydi — URL'lar barqaror qoladi.
+         */
+        post: operations["adminCreateCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: components["parameters"]["CategoryId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Kategoriyani o'chirish — ruxsat category.manage
+         * @description Faqat bo'sh kategoriya (biznes ham, ichki kategoriya ham yo'q) — aks holda 409.
+         */
+        delete: operations["adminDeleteCategory"];
+        options?: never;
+        head?: never;
+        /**
+         * Nomi yoki ikonkasini o'zgartirish — ruxsat category.manage
+         * @description Yuqori daraja ikonkasi o'zgarsa, ichki kategoriyalarniki ham o'zgaradi.
+         */
+        patch: operations["adminUpdateCategory"];
+        trace?: never;
+    };
+    "/admin/categories/{categoryId}/attributes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: components["parameters"]["CategoryId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Ichki kategoriya atributlari (butun ro'yxat almashtiriladi) — ruxsat category.manage
+         * @description Atributlar — shu kategoriyadagi mahsulot/xizmatlar uchun tavsiya etilgan xususiyatlar
+         *     (o'lcham, kafolat muddati...). Katalog formasida tayyor maydon sifatida taklif qilinadi.
+         */
+        put: operations["adminSetCategoryAttributes"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sharhlar — ruxsat review.moderate
+         * @description `pending` — eng eskisi birinchi (navbat), qolganlari — eng yangisi birinchi.
+         */
+        get: operations["adminListReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Sharhni chop etish yoki rad etish — ruxsat review.moderate
+         * @description Rad etishda sabab majburiy — muallif uni "Mening sharhlarim"da ko'radi. Chop etilgan
+         *     sharhni keyin rad etish ham mumkin (masalan, spam aniqlansa). Biznes reytingi qayta hisoblanadi.
+         */
+        patch: operations["adminModerateReview"];
+        trace?: never;
+    };
+    "/admin/complaints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shikoyatlar — ruxsat complaint.manage
+         * @description `open` va `in_review` — eng eskisi birinchi, qolganlari — eng yangisi birinchi.
+         */
+        get: operations["adminListComplaints"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/complaints/{complaintId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                complaintId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Shikoyat holati — ruxsat complaint.manage
+         * @description `resolved` va `rejected` uchun javob majburiy — yuborgan foydalanuvchi uni ko'radi.
+         */
+        patch: operations["adminUpdateComplaint"];
+        trace?: never;
+    };
+    "/admin/business-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biznes qo'shish so'rovlari — ruxsat business.edit
+         * @description Telefon raqamlari bor — shuning uchun faqat biznes qo'sha oladigan administratorlarga.
+         */
+        get: operations["adminListBusinessRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/business-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: components["parameters"]["RequestId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * So'rov holati va izohi — ruxsat business.edit
+         * @description `rejected` uchun izoh majburiy. `converted` holatiga faqat /convert orqali o'tiladi (keyin o'zgarmaydi — 409).
+         */
+        patch: operations["adminUpdateBusinessRequest"];
+        trace?: never;
+    };
+    "/admin/business-requests/{requestId}/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: components["parameters"]["RequestId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * So'rovdan biznes qoralamasini yaratish — ruxsat business.edit
+         * @description Qoralamaga so'rovdagi manzil va telefon ko'chiriladi; so'rov `converted` bo'ladi.
+         *     Joylashuv, rasmlar va rozilik — joyiga borganda (ADR-0007).
+         */
+        post: operations["adminConvertBusinessRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mijozlar — ruxsat user.view
+         * @description Faqat ko'rsatiladigan ism, kirish usuli va faollik soni — kontakt maʼlumotlari qaytarilmaydi.
+         */
+        get: operations["adminListUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Bloklash yoki blokdan chiqarish — ruxsat user.manage
+         * @description Bloklashda sabab majburiy. Bloklangan foydalanuvchining sessiyalari tugatiladi, u qayta
+         *     kira olmaydi, sharh va shikoyat qoldira olmaydi. Mavjud sharhlari o'zgarmaydi.
+         */
+        patch: operations["adminUpdateUser"];
+        trace?: never;
+    };
     "/search/suggest": {
         parameters: {
             query?: never;
@@ -910,8 +1195,7 @@ export interface components {
             };
             rating: number;
             text: string | null;
-            /** @enum {string} */
-            status: "pending" | "published" | "rejected";
+            status: components["schemas"]["ReviewStatus"];
             rejectionReason: string | null;
             /** Format: date-time */
             createdAt: string;
@@ -934,8 +1218,7 @@ export interface components {
             };
             reason: components["schemas"]["ComplaintReason"];
             text: string | null;
-            /** @enum {string} */
-            status: "open" | "in_review" | "resolved" | "rejected";
+            status: components["schemas"]["ComplaintStatus"];
             resolutionNote: string | null;
             /** Format: date-time */
             createdAt: string;
@@ -944,7 +1227,7 @@ export interface components {
          * @description Atomar ruxsat (ADR-0009). Root barcha ruxsatlarga ega.
          * @enum {string}
          */
-        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "staff.manage" | "audit.view" | "settings.manage";
+        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "user.manage" | "staff.manage" | "audit.view" | "settings.manage";
         AdminMe: {
             /** Format: uuid */
             id: string;
@@ -1068,6 +1351,177 @@ export interface components {
             /** Format: uuid */
             businessId: string;
         };
+        /** @description Ikki tildagi matn (kategoriya nomlari uchun server kamida 2 belgi talab qiladi) */
+        LocalizedText: {
+            uz: string;
+            ru: string;
+        };
+        /**
+         * @description Frontend ikonka kaliti (yuqori darajadagi kategoriyalar uchun)
+         * @enum {string}
+         */
+        CategoryIconKey: "shopping" | "food" | "beauty" | "home-services" | "auto" | "health" | "education" | "sport" | "travel" | "events" | "pets" | "professional";
+        AttributeOption: {
+            value: string;
+            label: components["schemas"]["LocalizedText"];
+        };
+        AdminAttribute: {
+            key: string;
+            name: components["schemas"]["LocalizedText"];
+            /** @enum {string} */
+            type: "text" | "number" | "boolean" | "select" | "multiselect";
+            /** @description Faqat number uchun ("oy", "g") */
+            unit: string | null;
+            /** @description select va multiselect uchun (kamida 2 ta), boshqalarida bo'sh */
+            options: components["schemas"]["AttributeOption"][];
+            /** @description Kelajakda ommaviy filtrlar uchun (hozircha interfeysda ishlatilmaydi) */
+            filterable: boolean;
+        };
+        AdminCategory: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: components["schemas"]["LocalizedText"];
+            iconKey: components["schemas"]["CategoryIconKey"] | null;
+            /** Format: uuid */
+            parentId: string | null;
+            /** @description Barcha holatdagi bizneslar (ichki kategoriyalari bilan) */
+            businessCount: number;
+            attributes: components["schemas"]["AdminAttribute"][];
+        };
+        AdminCategoryCreate: {
+            slug: string;
+            name: components["schemas"]["LocalizedText"];
+            /** Format: uuid */
+            parentId: string | null;
+            iconKey?: components["schemas"]["CategoryIconKey"];
+        };
+        AdminCategoryUpdate: {
+            name?: components["schemas"]["LocalizedText"];
+            iconKey?: components["schemas"]["CategoryIconKey"];
+        };
+        AdminBusinessRef: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+        };
+        UserRef: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+        };
+        /** @enum {string} */
+        ReviewStatus: "pending" | "published" | "rejected";
+        AdminReview: {
+            /** Format: uuid */
+            id: string;
+            business: components["schemas"]["AdminBusinessRef"];
+            author: components["schemas"]["UserRef"];
+            rating: number;
+            text: string | null;
+            status: components["schemas"]["ReviewStatus"];
+            rejectionReason: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            moderatedAt: string | null;
+        };
+        AdminReviewPage: {
+            items: components["schemas"]["AdminReview"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        /** @enum {string} */
+        ComplaintStatus: "open" | "in_review" | "resolved" | "rejected";
+        AdminComplaint: {
+            /** Format: uuid */
+            id: string;
+            business: components["schemas"]["AdminBusinessRef"];
+            reporter: components["schemas"]["UserRef"];
+            reason: components["schemas"]["ComplaintReason"];
+            text: string | null;
+            status: components["schemas"]["ComplaintStatus"];
+            resolutionNote: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminComplaintPage: {
+            items: components["schemas"]["AdminComplaint"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        BusinessRequestInput: {
+            businessName: string;
+            /** @description Nima bilan shug'ullanadi ("sartaroshxona", "qurilish mollari") */
+            activity?: string | null;
+            districtSlug?: string | null;
+            address?: string | null;
+            contactName: string;
+            phone: string;
+            note?: string | null;
+            /**
+             * @description Shaxsiy maʼlumotlarni (ism, telefon) qayta ishlashga rozilik
+             * @constant
+             */
+            agree: true;
+        };
+        /**
+         * @description new — yangi, contacted — bog'lanildi, converted — biznes yaratildi, rejected — rad etildi
+         * @enum {string}
+         */
+        BusinessRequestStatus: "new" | "contacted" | "converted" | "rejected";
+        AdminBusinessRequest: {
+            /** Format: uuid */
+            id: string;
+            businessName: string;
+            activity: string | null;
+            district: components["schemas"]["DistrictRef"] | null;
+            address: string | null;
+            contactName: string;
+            phone: string;
+            note: string | null;
+            status: components["schemas"]["BusinessRequestStatus"];
+            adminNote: string | null;
+            /**
+             * Format: uuid
+             * @description converted bo'lsa — yaratilgan biznes
+             */
+            businessId: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminBusinessRequestPage: {
+            items: components["schemas"]["AdminBusinessRequest"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        AdminUser: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            /** @enum {string} */
+            provider: "telegram" | "google" | "demo";
+            /** Format: date-time */
+            createdAt: string;
+            isBlocked: boolean;
+            blockedReason: string | null;
+            reviewsCount: number;
+            complaintsCount: number;
+        };
+        AdminUserPage: {
+            items: components["schemas"]["AdminUser"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
     };
     responses: {
         /** @description Topilmadi */
@@ -1136,6 +1590,8 @@ export interface components {
     };
     parameters: {
         BusinessId: string;
+        CategoryId: string;
+        RequestId: string;
         Lang: components["schemas"]["Locale"];
         Slug: string;
         Page: number;
@@ -2137,6 +2593,439 @@ export interface operations {
                 };
                 content?: never;
             };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createBusinessRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BusinessRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Qabul qilindi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    adminListCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Kategoriyalar (daraxt — `parentId` orqali) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCategory"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminCreateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Qo'shildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminDeleteCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: components["parameters"]["CategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminUpdateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: components["parameters"]["CategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Yangilandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminSetCategoryAttributes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: components["parameters"]["CategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    attributes: components["schemas"]["AdminAttribute"][];
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListReviews: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ReviewStatus"];
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sharhlar sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReviewPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminModerateReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    status: "published" | "rejected";
+                    rejectionReason?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListComplaints: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ComplaintStatus"];
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shikoyatlar sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminComplaintPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateComplaint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                complaintId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    status: "in_review" | "resolved" | "rejected";
+                    resolutionNote?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminComplaint"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListBusinessRequests: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+                status?: components["schemas"]["BusinessRequestStatus"];
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description So'rovlar sahifasi (eng yangisi birinchi) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessRequestPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateBusinessRequest: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                requestId: components["parameters"]["RequestId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    status: "new" | "contacted" | "rejected";
+                    adminNote?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessRequest"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminConvertBusinessRequest: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                requestId: components["parameters"]["RequestId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBusinessCreate"];
+            };
+        };
+        responses: {
+            /** @description Qoralama yaratildi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBusiness"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminListUsers: {
+        parameters: {
+            query?: {
+                q?: string;
+                blocked?: boolean;
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Foydalanuvchilar sahifasi (eng yangisi birinchi) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminUpdateUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    isBlocked: boolean;
+                    blockedReason?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };
