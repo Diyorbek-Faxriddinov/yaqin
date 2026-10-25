@@ -18,9 +18,9 @@ Oxirgi yangilanish: 2026-10-25
 | Qadam | Mazmuni                                                                                          | Holat                  |
 | ----- | ------------------------------------------------------------------------------------------------ | ---------------------- |
 | 2.1   | Poydevor: Next.js, TS, ESLint/Prettier, Tailwind, next-intl, Vitest, Playwright, CI, README, ADR | ✅                     |
-| 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅ (tasdiq kutilmoqda) |
-| 2.3   | OpenAPI kontrakti, generatsiya, mock-server, demo maʼlumotlar                                    | ⏳                     |
-| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ⏳                     |
+| 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅                     |
+| 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅                     |
+| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅ (tasdiq kutilmoqda) |
 | 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ⏳                     |
 | 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ⏳                     |
 | 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ⏳                     |
@@ -56,9 +56,35 @@ Oxirgi yangilanish: 2026-10-25
 - `next-themes` olib tashlandi (faqat yorugʻ tema).
 - shadcn standartidagi ikki kontrast xatosi tuzatildi: `destructive` → `#B91C1C`, faol boʻlmagan tab matni.
 
+## 2.3–2.4 natijalari
+
+**Ishlaydigan sahifalar** (demo maʼlumotlar bilan):
+
+| Sahifa               | Imkoniyatlar                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `/`                  | Qidiruv, "Yaqin atrofimda", 12 kategoriya, yangi qoʻshilganlar, tumanlar                     |
+| `/kategoriyalar`     | Barcha kategoriyalar va ichki kategoriyalar, bizneslar soni                                  |
+| `/kategoriya/[slug]` | Sahifa yoʻli, ichki kategoriya chiplari, filtrlar (tuman, hozir ochiq, saralash), sahifalash |
+| `/qidiruv`           | Lotin/kirill qidiruv, kategoriya filtri, boʻsh natija holati                                 |
+
+- API kontrakti: `docs/api/openapi.yaml` (ommaviy qism); tiplar generatsiya qilinadi, CI mosligini tekshiradi.
+- Mock qatlam — jarayon ichidagi MSW handler'lari (ADR-0011); 54 ta toʻqima biznes, 12 tuman, 12 kategoriya / 62 ta ichki.
+- "Hozir ochiq" — brauzerda, foydalanuvchi vaqti boʻyicha (yarim tundan keyin yopilish, tushlik, dam olish kunlari).
+- Joylashuv — faqat foydalanuvchi ruxsati bilan, ~110 m aniqlikda cookie'da; URL'ga yozilmaydi.
+- Testlar: 101 unit, 72 E2E (3 ekran), axe — bosh sahifa, kategoriyalar, qidiruv.
+
+**Shu qadamlarda topilgan va tuzatilgan xatolar:**
+
+- Til almashtirgich yuk ostida ruschadan oʻzbekchaga oʻtganda URL'ni `/uz` holida qoldirardi — endi til havolalari aniq yasaladi (`src/i18n/localized-path.ts`); 48/48 stress-test.
+- Planshetda (768–1023 px) "Kategoriyalar" va "Xarita" havolalari yoʻq edi — endi ikonka koʻrinishida.
+- "аптека" kabi soʻz oxiri farq qiladigan qidiruvlar topilmasdi.
+- MSW'ning `Math.random()` prerender ogohlantirishi — `connection()` bilan.
+
+**Hali ishlamaydi:** biznes profili (`/biznes/...` — 2.5), xarita (2.5), kirish/profil/sevimlilar (2.6), admin panel (2.7–2.9), statik sahifalar va "Biznes qoʻshish" formasi (2.10).
+
 ## Maʼlum cheklovlar
 
 - Docker kompyuterda oʻrnatilmagan — 3-bosqichda (PostgreSQL uchun) kerak boʻladi.
-- Bosh sahifa — vaqtinchalik; haqiqiy sahifa 2.4-qadamda.
-- Header va footerdagi havolalar hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
+- Biznes kartalari, "Xarita", "Kirish", "Profil", "Sevimlilar" va footer havolalari hali yaratilmagan sahifalarga olib boradi (404) — tegishli qadamlarda paydo boʻladi.
+- Build'da maʼlum boʻlmagan kategoriya slug'i baʼzan 404 oʻrniga 200 + `noindex` qaytaradi (Next 16 oqimli render xususiyati); qidiruv tizimlari indekslamaydi.
 - Partial Prefetching'ning bitta prefetch soʻrovi baʼzan ochiq qoladi (foydalanuvchiga taʼsiri yoʻq); kuzatib boriladi.

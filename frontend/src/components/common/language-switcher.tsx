@@ -1,8 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
+import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { localizedPath } from "@/i18n/localized-path";
+import { usePathname } from "@/i18n/navigation";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
@@ -18,10 +20,9 @@ function Switcher({ pathname }: { pathname: string }) {
       {routing.locales.map((locale) => {
         const active = locale === current;
         return (
-          <Link
+          <NextLink
             key={locale}
-            href={pathname}
-            locale={locale}
+            href={localizedPath(pathname, locale)}
             hrefLang={locale}
             lang={locale}
             aria-current={active ? "true" : undefined}
@@ -34,7 +35,7 @@ function Switcher({ pathname }: { pathname: string }) {
           >
             <span aria-hidden="true">{SHORT_LABEL[locale]}</span>
             <span className="sr-only">{t(locale)}</span>
-          </Link>
+          </NextLink>
         );
       })}
     </nav>

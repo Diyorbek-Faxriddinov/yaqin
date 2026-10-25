@@ -21,22 +21,23 @@ export async function SiteHeader() {
 
         <SearchForm className="hidden max-w-xl md:flex" />
 
-        <nav aria-label={t("main")} className="ml-auto hidden items-center gap-1 lg:flex">
-          <Button asChild variant="ghost">
+        {/* Planshetda (md) faqat ikonka, desktopda (lg) matn bilan; telefonda — pastki menyu */}
+        <nav aria-label={t("main")} className="ml-auto hidden items-center gap-1 md:flex">
+          <Button asChild variant="ghost" className="px-2.5 lg:px-4">
             <Link href="/kategoriyalar">
               <LayoutGrid aria-hidden="true" />
-              {t("categories")}
+              <span className="sr-only lg:not-sr-only">{t("categories")}</span>
             </Link>
           </Button>
-          <Button asChild variant="ghost">
+          <Button asChild variant="ghost" className="px-2.5 lg:px-4">
             <Link href="/xarita">
               <MapIcon aria-hidden="true" />
-              {t("map")}
+              <span className="sr-only lg:not-sr-only">{t("map")}</span>
             </Link>
           </Button>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <div className="ml-auto flex items-center gap-2 md:ml-0">
           <LanguageSwitcher />
           <Button asChild variant="outline" className="hidden md:inline-flex">
             <Link href="/kirish">

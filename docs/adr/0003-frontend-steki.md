@@ -19,7 +19,7 @@ Ommaviy katalog sahifalari qidiruv tizimlarida topilishi kerak (SEO), telefonda 
 | Formlar       | React Hook Form + Zod                                                            |
 | Tillar        | next-intl; `uz` prefikssiz, `ru` — `/ru`; til `next/root-params` orqali oʻqiladi |
 | API           | OpenAPI kontraktidan generatsiya qilingan tiplangan klient                       |
-| Mock          | Alohida mock-server (MSW handler'lari); frontend faqat `API_URL` ni biladi       |
+| Mock          | MSW handler'lari, jarayon ichida — ADR-0011 (alohida server oʻrniga)             |
 | Testlar       | Vitest + Testing Library, Playwright (375/768/1280 px), axe                      |
 | Xarita        | MapLibre + OpenStreetMap asosidagi bepul tile'lar                                |
 

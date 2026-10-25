@@ -21,16 +21,19 @@ export function OpenStatusBadge({ status, className }: { status: OpenStatus; cla
   const t = useTranslations("Business.status");
 
   return (
+    // Tor kartada holat va vaqt butun bo'laklar sifatida keyingi qatorga o'tadi
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex flex-wrap items-center gap-x-1.5 rounded-lg px-2 py-0.5 text-xs font-medium",
         TONE[status.state],
         className,
       )}
     >
-      <span aria-hidden="true" className={cn("size-1.5 rounded-full", DOT[status.state])} />
-      {t(status.state)}
-      {status.detail && <span className="font-normal">· {status.detail}</span>}
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+        <span aria-hidden="true" className={cn("size-1.5 rounded-full", DOT[status.state])} />
+        {t(status.state)}
+      </span>
+      {status.detail && <span className="font-normal whitespace-nowrap">· {status.detail}</span>}
     </span>
   );
 }

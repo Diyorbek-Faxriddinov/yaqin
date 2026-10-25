@@ -1,4 +1,4 @@
-import type { BusinessCardProps } from "@/features/business/components/business-card";
+import type { BusinessSummary, WeeklySchedule } from "@/lib/api/types";
 
 // ⚠ Faqat dizayn ko'rgazmasi uchun namunaviy maʼlumotlar — haqiqiy bizneslar emas.
 
@@ -19,51 +19,71 @@ export const DEMO_CATEGORIES = [
   { name: "Professional xizmatlar", iconKey: "professional" },
 ] as const;
 
-export const DEMO_BUSINESSES: Omit<BusinessCardProps, "className">[] = [
-  {
-    href: "/dev/ui#kartalar",
+const daily = (open: string, close: string): WeeklySchedule => ({
+  is24x7: false,
+  days: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, intervals: [{ open, close }] })),
+});
+
+function demoBusiness(
+  index: number,
+  overrides: Partial<BusinessSummary> & Pick<BusinessSummary, "name" | "category">,
+): BusinessSummary {
+  return {
+    id: `00000000-0000-4000-a000-00000000000${index}`,
+    slug: `demo-${index}`,
+    district: { slug: "chilonzor", name: "Chilonzor" },
+    location: { lat: 41.2755, lng: 69.2042 },
+    coverImage: null,
+    rating: { average: null, count: 0 },
+    priceRange: null,
+    schedule: null,
+    distanceMeters: null,
+    isVerified: false,
+    createdAt: "2026-10-20T07:00:00.000Z",
+    ...overrides,
+  };
+}
+
+const category = (slug: string, name: string, iconKey: string) => ({
+  id: "00000000-0000-4000-a000-000000000100",
+  slug,
+  name,
+  iconKey,
+});
+
+export const DEMO_BUSINESSES: BusinessSummary[] = [
+  demoBusiness(1, {
     name: "Demo sartaroshxona",
-    categoryName: "Sartaroshxona",
-    categoryIconKey: "beauty",
-    districtName: "Chilonzor",
+    category: category("sartaroshxonalar", "Sartaroshxona", "beauty"),
     rating: { average: 4.8, count: 37 },
     priceRange: { min: som(40000), max: som(80000) },
-    openStatus: { state: "open", detail: "21:00 gacha" },
+    schedule: daily("09:00", "21:00"),
     distanceMeters: 350,
-  },
-  {
-    href: "/dev/ui#kartalar",
+    isVerified: true,
+  }),
+  demoBusiness(2, {
     name: "Demo oilaviy kafe va choyxona",
-    categoryName: "Kafe",
-    categoryIconKey: "food",
-    districtName: "Yunusobod",
+    category: category("kafelar", "Kafe", "food"),
+    district: { slug: "yunusobod", name: "Yunusobod" },
     rating: { average: 4.3, count: 112 },
     priceRange: { min: som(25000), max: som(25000) },
-    openStatus: { state: "closingSoon", detail: "22:00 gacha" },
+    schedule: daily("10:00", "23:00"),
     distanceMeters: 1240,
-  },
-  {
-    href: "/dev/ui#kartalar",
+  }),
+  demoBusiness(3, {
     name: "Demo santexnik xizmati",
-    categoryName: "Santexnika",
-    categoryIconKey: "home-services",
-    districtName: "Mirzo Ulugʻbek",
-    rating: null,
-    priceRange: null,
-    openStatus: { state: "closed", detail: "ertaga 09:00 da" },
-    distanceMeters: null,
-  },
-  {
-    href: "/dev/ui#kartalar",
+    category: category("santexnika", "Santexnika", "home-services"),
+    district: { slug: "mirzo-ulugbek", name: "Mirzo Ulugʻbek" },
+    schedule: { is24x7: false, days: [] },
+  }),
+  demoBusiness(4, {
     name: "Demo avtoservis",
-    categoryName: "Avtomobil taʼmiri",
-    categoryIconKey: "auto",
-    districtName: "Sergeli",
+    category: category("avtoservis", "Avtomobil taʼmiri", "auto"),
+    district: { slug: "sergeli", name: "Sergeli" },
     rating: { average: 3.9, count: 8 },
     priceRange: { min: som(150000), max: som(1200000) },
-    openStatus: { state: "unknown" },
     distanceMeters: 12600,
-  },
+  }),
 ];
 
 export const COLOR_TOKENS = [

@@ -1,12 +1,8 @@
 import { Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { isDemoMode } from "@/lib/env";
 
-/**
- * Mock maʼlumotlar haqiqiy deb ko'rinmasligi uchun ogohlantirish.
- * Xavfsiz standart: faqat NEXT_PUBLIC_DEMO_MODE="false" bo'lsa yashiriladi.
- */
-export const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
-
+/** Mock maʼlumotlar haqiqiy deb ko'rinmasligi uchun ogohlantirish (qarang: lib/env.ts) */
 export async function DemoBanner() {
   if (!isDemoMode) return null;
   const t = await getTranslations("Common");

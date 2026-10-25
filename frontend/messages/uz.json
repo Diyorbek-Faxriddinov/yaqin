@@ -49,7 +49,24 @@
     "reviews": "{count, plural, other {# ta sharh}}",
     "noReviews": "Hali sharh yoʻq",
     "rating": "Reyting: 5 dan {value}",
-    "distance": "Masofa: {distance}"
+    "distance": "Masofa: {distance}",
+    "statusDetail": {
+      "until": "{time} gacha",
+      "allDay": "kecha-kunduz",
+      "opensToday": "bugun {time} da",
+      "opensTomorrow": "ertaga {time} da",
+      "opensOn": "{weekday} {time} da"
+    },
+    "weekdaysShort": {
+      "1": "Du",
+      "2": "Se",
+      "3": "Ch",
+      "4": "Pa",
+      "5": "Ju",
+      "6": "Sh",
+      "7": "Ya"
+    },
+    "verified": "Joyida tekshirilgan"
   },
   "States": {
     "emptyTitle": "Hech narsa topilmadi",
@@ -60,12 +77,72 @@
     "loading": "Yuklanmoqda…"
   },
   "HomePage": {
-    "title": "Yaqin atrofingizdagi xizmatlar",
-    "subtitle": "Platforma ishlab chiqilmoqda. Tez orada shu yerda Toshkentdagi doʻkon va xizmatlarni topa olasiz."
+    "title": "Yaqin atrofingizdagi doʻkon va xizmatlar",
+    "subtitle": "Toshkentdagi doʻkonlar, ustalar, salonlar va kafelarni toping — narxlar, ish vaqti va manzillar bilan.",
+    "categoriesTitle": "Kategoriyalar",
+    "allCategories": "Barcha kategoriyalar",
+    "newestTitle": "Yangi qoʻshilganlar",
+    "districtsTitle": "Tumanlar boʻyicha",
+    "addBusinessTitle": "Doʻkon yoki xizmatingiz bormi?",
+    "addBusinessText": "Biznesingizni Yaqin'ga bepul qoʻshing — mijozlar sizni xaritada topadi.",
+    "addBusinessCta": "Biznes qoʻshish"
   },
   "NotFound": {
     "title": "Sahifa topilmadi",
     "description": "Siz qidirgan sahifa mavjud emas yoki koʻchirilgan.",
     "backHome": "Bosh sahifaga qaytish"
+  },
+  "Location": {
+    "nearMe": "Yaqin atrofimda",
+    "locating": "Joylashuv aniqlanmoqda…",
+    "denied": "Joylashuvga ruxsat berilmadi. Brauzer sozlamalarida ruxsat bering yoki tumanni tanlang.",
+    "unavailable": "Joylashuvni aniqlab boʻlmadi. Keyinroq qayta urinib koʻring yoki tumanni tanlang.",
+    "active": "Joylashuvingiz boʻyicha",
+    "clear": "Joylashuvni oʻchirish",
+    "needForDistance": "Eng yaqinlarini koʻrish uchun joylashuvingizni ulashing. U faqat masofani hisoblash uchun ishlatiladi va saqlanmaydi."
+  },
+  "Filters": {
+    "title": "Filtrlar",
+    "district": "Tuman",
+    "allDistricts": "Barcha tumanlar",
+    "category": "Kategoriya",
+    "allCategories": "Barcha kategoriyalar",
+    "openNow": "Hozir ochiq",
+    "sort": "Saralash",
+    "sortOptions": {
+      "recommended": "Tavsiya etilgan",
+      "rating": "Reyting boʻyicha",
+      "distance": "Eng yaqin",
+      "newest": "Yangi qoʻshilgan"
+    },
+    "distanceNeedsLocation": "joylashuv kerak",
+    "apply": "Natijalarni koʻrsatish",
+    "reset": "Filtrlarni tozalash",
+    "updating": "Yangilanmoqda…"
+  },
+  "Results": {
+    "count": "{count, plural, other {# ta natija}}",
+    "emptyTitle": "Hech narsa topilmadi",
+    "emptyFiltered": "Filtrlarni oʻzgartirib yoki boshqa tumanni tanlab koʻring.",
+    "emptyCategory": "Bu kategoriyada hali bizneslar yoʻq. Tez orada qoʻshiladi.",
+    "pagination": "Sahifalar",
+    "prev": "Oldingi",
+    "next": "Keyingi",
+    "pageOf": "{page} / {total}"
+  },
+  "CategoriesPage": {
+    "title": "Kategoriyalar",
+    "description": "Toshkentdagi doʻkon va xizmatlarning barcha yoʻnalishlari.",
+    "businessCount": "{count, plural, other {# ta biznes}}"
+  },
+  "CategoryPage": {
+    "breadcrumb": "Sahifa yoʻli",
+    "metaDescription": "{name} — Toshkentdagi roʻyxat: narxlar, ish vaqti, manzillar va sharhlar.",
+    "all": "Hammasi"
+  },
+  "SearchPage": {
+    "title": "Qidiruv",
+    "resultsFor": "“{q}” boʻyicha natijalar",
+    "hint": "Doʻkon, xizmat yoki mahsulot nomini yozing — lotin yoki kirill yozuvida."
   }
 }

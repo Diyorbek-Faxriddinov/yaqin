@@ -12,7 +12,9 @@ test.describe("Asosiy tekshiruv", () => {
   test("rus tili /ru prefiksi bilan ochiladi", async ({ page }) => {
     await page.goto("/ru");
     await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Услуги рядом с вами");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Магазины и услуги рядом с вами",
+    );
   });
 
   test("mavjud bo'lmagan sahifa 404 qaytaradi", async ({ page }) => {

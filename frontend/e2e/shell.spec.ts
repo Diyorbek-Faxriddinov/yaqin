@@ -10,19 +10,29 @@ test.describe("Sayt karkasi", () => {
     page,
   }, testInfo) => {
     await page.goto("/");
-    const bottomNav = page.locator("nav.fixed");
-    const search = page.getByRole("search");
+    // Oqimli render paytida Suspense fallback nusxasi qisqa vaqt DOMda (yashirin) turadi —
+    // shuning uchun faqat ko'rinadiganlarini sanaymiz
+    const bottomNav = page.locator("nav.fixed").filter({ visible: true });
+    // Header'dagi qidiruv (bosh sahifada asosiy blokda ham forma bor)
+    const search = page.getByRole("banner").getByRole("search");
+    const headerNav = page
+      .getByRole("banner")
+      .getByRole("navigation", { name: "Asosiy navigatsiya" });
 
     if (testInfo.project.name === "mobile") {
-      await expect(bottomNav).toBeVisible();
+      await expect(bottomNav).toHaveCount(1);
       await expect(bottomNav.getByRole("link", { name: "Bosh sahifa" })).toHaveAttribute(
         "aria-current",
         "page",
       );
       await expect(search).toBeHidden();
+      await expect(headerNav).toBeHidden();
     } else {
-      await expect(bottomNav).toBeHidden();
+      await expect(bottomNav).toHaveCount(0);
       await expect(search).toBeVisible();
+      // Planshetda ham kategoriyalar va xaritaga yo'l bo'lishi kerak
+      await expect(headerNav.getByRole("link", { name: "Kategoriyalar" })).toBeVisible();
+      await expect(headerNav.getByRole("link", { name: "Xarita" })).toBeVisible();
     }
   });
 
@@ -31,7 +41,9 @@ test.describe("Sayt karkasi", () => {
     await page.getByRole("link", { name: "Русский" }).click();
     await expect(page).toHaveURL(/\/ru$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "ru");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Услуги рядом с вами");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Магазины и услуги рядом с вами",
+    );
 
     await page.getByRole("link", { name: "Oʻzbekcha" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "uz");
@@ -41,8 +53,9 @@ test.describe("Sayt karkasi", () => {
   test("qidiruv formasi /qidiruv ga so'rov bilan o'tadi", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === "mobile", "Telefonda qidiruv pastki menyuda");
     await page.goto("/");
-    await page.getByRole("searchbox", { name: "Qidiruv" }).fill("sartarosh");
-    await page.getByRole("button", { name: "Qidirish" }).click();
+    const header = page.getByRole("banner");
+    await header.getByRole("searchbox", { name: "Qidiruv" }).fill("sartarosh");
+    await header.getByRole("button", { name: "Qidirish" }).click();
     await expect(page).toHaveURL(/\/qidiruv\?q=sartarosh$/);
   });
 

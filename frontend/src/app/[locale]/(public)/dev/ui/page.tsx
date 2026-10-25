@@ -215,13 +215,13 @@ export default function DesignSystemPage() {
       <Section id="kartalar" title="Biznes kartalari">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {DEMO_BUSINESSES.map((business) => (
-            <BusinessCard key={business.name} {...business} />
+            <BusinessCard key={business.id} business={business} />
           ))}
         </div>
         <p className="text-sm text-muted-foreground">Yuklanish holati:</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <BusinessCardSkeleton />
-          <BusinessCardSkeleton />
+          <BusinessCardSkeleton layout="responsive" />
         </div>
       </Section>
 
