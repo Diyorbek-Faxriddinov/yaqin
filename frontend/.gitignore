@@ -1,0 +1,28 @@
+# Bog'liqliklar
+/node_modules
+
+# Testlar
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# Muhit o'zgaruvchilari — faqat namuna faylni commit qilamiz
+.env*
+!.env.example
+
+# Loglar
+npm-debug.log*
+
+# Boshqa
+.DS_Store
+*.pem
+.vercel

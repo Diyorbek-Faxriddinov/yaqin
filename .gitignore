@@ -1,0 +1,16 @@
+# Muhit o'zgaruvchilari va maxfiy kalitlar hech qachon commit qilinmaydi
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Muharrir va OT fayllari
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Real biznes ma'lumotlari (yig'ilgan jadvallar, rasmlar) repoga kirmaydi
+/data/private/

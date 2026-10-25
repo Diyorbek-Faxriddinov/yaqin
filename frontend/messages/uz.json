@@ -1,0 +1,20 @@
+{
+  "Metadata": {
+    "title": "Yaqin — yaqin atrofdagi doʻkon va xizmatlar",
+    "titleTemplate": "%s — Yaqin",
+    "description": "Toshkentdagi doʻkonlar, ustalar, salonlar, kafelar va boshqa xizmatlarni xaritada toping: narxlar, ish vaqti va manzillar."
+  },
+  "Common": {
+    "siteName": "Yaqin",
+    "skipToContent": "Asosiy tarkibga oʻtish"
+  },
+  "HomePage": {
+    "title": "Yaqin atrofingizdagi xizmatlar",
+    "subtitle": "Platforma ishlab chiqilmoqda. Tez orada shu yerda Toshkentdagi doʻkon va xizmatlarni topa olasiz."
+  },
+  "NotFound": {
+    "title": "Sahifa topilmadi",
+    "description": "Siz qidirgan sahifa mavjud emas yoki koʻchirilgan.",
+    "backHome": "Bosh sahifaga qaytish"
+  }
+}

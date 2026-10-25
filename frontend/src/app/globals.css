@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Dizayn tokenlari 2.2-qadamda (dizayn tizimi) to'liq belgilanadi */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --brand: #0f766e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Klaviatura foydalanuvchilari uchun: fokusda ko'rinadi */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100%;
+  z-index: 50;
+  border-radius: 0.5rem;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
