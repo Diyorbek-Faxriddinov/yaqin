@@ -59,7 +59,7 @@ Brauzer ──► Next.js (SSR, kesh teglari) ──► /api/v1 ──► demo: 
 | Qatlam   | Tanlov                                                                                                                                                 |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Frontend | Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS 4, shadcn/ui, next-intl, TanStack Query, React Hook Form + Zod, MapLibre |
-| Backend  | Django 5.2 LTS + DRF, PostgreSQL 17 + PostGIS, pytest + kontrakt testlari; Redis va Celery — productionda (3.8)                                        |
+| Backend  | Django 5.2 LTS + DRF, PostgreSQL 17 + PostGIS, Redis (kesh), pytest + kontrakt testlari                                                                |
 | Infra    | GitHub Actions, Docker Compose, Oʻzbekistondagi hosting (5-bosqich)                                                                                    |
 
 Har bir tanlovning sababi — [docs/adr](docs/adr).

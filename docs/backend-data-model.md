@@ -92,6 +92,10 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 
 `apps/staff`: `AdminUser` (parol — Argon2 xeshi; TOTP kaliti — Fernet bilan shifrlangan; `must_change_password`; `totp_last_step` — kodni qayta ishlatishga qarshi), `Role` (ruxsatlar roʻyxati, tizim rollari `is_built_in`), `AdminUser.roles` (M2M) va `extra_permissions`, `AdminSession` (token — faqat SHA-256 xeshi, 8 soat), `LoginChallenge` (5 daqiqa; sozlashda yangi parol va kalit shu yerda kutadi), `AuditEntry` (faqat qoʻshiladi). Ruxsatlar roʻyxati — `apps/staff/permissions.py`, kontraktdagi `AdminPermission` bilan bir xil (test).
 
+## Statistika va hisobot havolasi (3.8)
+
+`DailyStats` — biznes va Toshkent sanasi boʻyicha kunlik hisoblagichlar (faqat sonlar). `ReportLink` — biznesga bitta havola: token (~256 bit) bir marta koʻrsatiladi, bazada SHA-256 xeshi; yangisi eskisini almashtiradi; ochilishlar soni va oxirgi vaqt. Biznes oʻchirilsa — ikkalasi ham (`CASCADE`).
+
 ## Slug qoidalari
 
 - Biznes slug'i nomdan yaratiladi (kirill lotinga oʻgiriladi), butun platformada noyob (`-2`, `-3` …). Nom oʻzgarsa, slug faqat biznes hali hech qachon eʼlon qilinmagan boʻlsa (`published_at` boʻsh) yangilanadi — eʼlon qilingan sahifa manzili barqaror.

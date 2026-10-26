@@ -9,6 +9,7 @@ info:
     - Ishlab chiqishda frontend shu kontraktga mos mock handler'lar bilan ishlaydi (ADR-0011).
     - Pul summalari — butun son, tiyinda (ADR-0010). Vaqt — ISO 8601.
     - Lokalizatsiya qilinadigan maydonlar (kategoriya, tuman nomlari) `lang` parametri bo'yicha qaytadi.
+    - O'zgartiruvchi so'rovlar (POST/PUT/PATCH/DELETE) brauzerdan faqat ruxsat etilgan saytdan qabul qilinadi: boshqa `Origin` — `403 origin_denied`.
 
 servers:
   - url: /api/v1
@@ -356,6 +357,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/LoggedIn"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -607,6 +610,8 @@ paths:
               schema: { $ref: "#/components/schemas/AdminLoginChallenge" }
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
@@ -638,6 +643,8 @@ paths:
               schema: { $ref: "#/components/schemas/AdminMe" }
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
@@ -671,6 +678,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
 
@@ -1502,6 +1511,8 @@ paths:
               schema: { $ref: "#/components/schemas/OwnerReport" }
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /admin/staff:
     get:
@@ -1908,6 +1919,8 @@ paths:
           description: Qabul qilindi
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
@@ -1995,7 +2008,7 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
     Forbidden:
-      description: Ruxsat yoʻq yoki CSRF token notoʻgʻri
+      description: Ruxsat yoʻq, CSRF token notoʻgʻri yoki soʻrov ruxsat etilmagan saytdan (`origin_denied`)
       content:
         application/json:
           schema:

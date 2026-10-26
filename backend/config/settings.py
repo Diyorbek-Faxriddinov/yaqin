@@ -45,6 +45,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.middleware.OriginCheckMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -95,6 +96,8 @@ REST_FRAMEWORK = {
         # Admin kirishi (login, setup, 2fa) — IP bo'yicha; qo'shimcha IP + login bloklash —
         # apps/staff/lockout.py
         "admin_auth": "30/min",
+        # Hisobot havolasi — tokenni tanlab topishga qarshi (to'g'ri havola egasi uchun yetarli)
+        "reports": "30/min",
     },
     # Reverse proxy (Caddy/Nginx) ortida: X-Forwarded-For'dan nechta proksi ishonchli
     "NUM_PROXIES": int(env_str("DJANGO_NUM_PROXIES", "0")) or None,
@@ -146,18 +149,46 @@ if not TOTP_ENCRYPTION_KEY:
 FRONTEND_REVALIDATE_URL = env_str("FRONTEND_REVALIDATE_URL")
 REVALIDATE_SECRET = env_str("REVALIDATE_SECRET")
 
-# Kesh (cheklovlar hisoblagichlari): ishlab chiqishda — xotirada; productionda Redis (3.8)
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+# Kesh (cheklov va bloklash hisoblagichlari): productionda Redis — barcha jarayonlar uchun umumiy;
+# ishlab chiqish va testlarda — jarayon xotirasi. Redis yo'q bo'lsa `check --deploy` ogohlantiradi.
+REDIS_URL = env_str("REDIS_URL")
+CACHES = {
+    "default": (
+        {"BACKEND": "django.core.cache.backends.redis.RedisCache", "LOCATION": REDIS_URL}
+        if REDIS_URL
+        else {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    )
+}
 
-# Xavfsizlik sarlavhalari (HTTPS va cookie sozlamalari productionda — 3.8)
+# O'zgartiruvchi API so'rovlari faqat shu saytlardan (`Origin` sarlavhasi, apps/core/middleware.py)
+ALLOWED_ORIGINS = env_list("DJANGO_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+
+# Xavfsizlik sarlavhalari
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
+# HTTPS reverse proxy (Caddy/Nginx) ortida: proksi X-Forwarded-Proto ni o'rnatadi
+if env_bool("DJANGO_BEHIND_HTTPS_PROXY"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SSL_REDIRECT")
+# HSTS — HTTPS to'liq ishlashi tasdiqlangandan keyingina (5-bosqich, 31536000): yoqilgach brauzerlar
+# saytni HTTP orqali ochmaydi, xato sozlamani tezda qaytarib bo'lmaydi
+SECURE_HSTS_SECONDS = int(env_str("DJANGO_HSTS_SECONDS", "0"))
+# Subdomenlar va preload ro'yxati — domen tanlangach (5-bosqich), barcha subdomenlar HTTPS bo'lsa
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_HSTS_INCLUDE_SUBDOMAINS")
+SECURE_HSTS_PRELOAD = env_bool("DJANGO_HSTS_PRELOAD")
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    # Query string loglanmaydi — unda joylashuv (lat/lng) bo'lishi mumkin (maxfiylik siyosati)
+    "filters": {"strip_query": {"()": "apps.core.logging.StripQueryStringFilter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "filters": ["strip_query"]}},
+    # Django'ning standart "django" handler'lari o'rniga bizniki — xabarlar ikki marta yozilmaydi
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.server": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
     "root": {"handlers": ["console"], "level": "INFO"},
 }
 

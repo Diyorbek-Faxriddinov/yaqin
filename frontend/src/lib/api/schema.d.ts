@@ -2020,7 +2020,7 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Ruxsat yoʻq yoki CSRF token notoʻgʻri */
+        /** @description Ruxsat yoʻq, CSRF token notoʻgʻri yoki soʻrov ruxsat etilmagan saytdan (`origin_denied`) */
         Forbidden: {
             headers: {
                 [name: string]: unknown;
@@ -2433,6 +2433,7 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["LoggedIn"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };
     };
@@ -2741,6 +2742,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -2770,6 +2772,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -2800,6 +2803,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
         };
     };
@@ -3667,6 +3671,7 @@ export interface operations {
                 };
             };
             404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     adminListStaff: {
@@ -4135,6 +4140,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
             429: components["responses"]["TooManyRequests"];
         };
     };

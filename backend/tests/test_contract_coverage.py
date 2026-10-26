@@ -7,12 +7,7 @@ from django.conf import settings
 from django.urls import Resolver404, resolve
 
 # Hali bajarilmagan (qadam bilan) — ro'yxat bo'shaguncha 3.9 yakunlanmaydi
-PENDING = {
-    "/admin/stats": "3.8",
-    "/admin/businesses/{businessId}/stats": "3.8",
-    "/admin/businesses/{businessId}/report-link": "3.8",
-    "/reports/{token}": "3.8",
-}
+PENDING: dict[str, str] = {}
 SAMPLE = {
     "slug": "ustoz",
     "item": "soch-olish",

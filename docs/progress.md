@@ -38,9 +38,35 @@ Oxirgi yangilanish: 2026-10-26
 | 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅                     |
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅                     |
 | 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅                     |
-| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅ (tasdiq kutilmoqda) |
-| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
+| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅                     |
+| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅ (tasdiq kutilmoqda) |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.8 natijalari
+
+| Endpoint / vosita                                    | Imkoniyatlar                                                                                                                                                                                                                                              |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /admin/stats` (`stats.view`)                    | 7, 30 yoki 90 kun: kunlik qator (hodisasiz kunlar nol bilan), jami, eng koʻp koʻrilgan 10 ta biznes (aloqa bosishlari bilan), kontent soni (eʼlon qilingan, yangi bizneslar, sharhlar, shikoyatlar, soʻrovlar). Faqat eʼlon qilingan bizneslar hodisalari |
+| `GET /admin/businesses/{id}/stats` (`business.view`) | Bitta biznes qatori                                                                                                                                                                                                                                       |
+| `GET/POST/DELETE .../report-link`                    | Holat (`business.view`), yangi havola va bekor qilish (`business.edit`). Token ~256 bit, bir marta koʻrsatiladi, bazada faqat xeshi; yangisi eskisini bekor qiladi                                                                                        |
+| `GET /reports/{token}`                               | Egasi uchun 30 kunlik hisobot (shaxsiy maʼlumotsiz); `Cache-Control: no-store`, `Referrer-Policy: no-referrer`; ochilishlar sanaladi; notoʻgʻri havola — 404; IP boʻyicha cheklov (30/daqiqa, 429)                                                        |
+| `manage.py cleanup [--dry-run]`                      | Muddati oʻtgan mijoz va admin sessiyalari, kirish challenge'lari; yopilganiga 12 oy boʻlgan soʻrovlar (maxfiylik siyosati vaʼdasi)                                                                                                                        |
+
+- **`Origin` tekshiruvi:** oʻzgartiruvchi API soʻrovlari brauzerdan faqat `DJANGO_ALLOWED_ORIGINS` dagi saytlardan; begonasi — `403 origin_denied`. Mehmon POST'lari (hodisalar, soʻrov formasi, kirish) CSRF tokenisiz boʻlgani uchun shu himoya qiladi.
+- **Loglar:** ilova loglarida URL query string yozilmaydi (joylashuv `lat/lng` boʻlishi mumkin); `runserver` bilan tekshirildi. Django xabarlari endi ikki marta yozilmaydi.
+- **Redis:** `REDIS_URL` berilsa kesh Redis'da (cheklov va bloklash hisoblagichlari barcha jarayonlar uchun umumiy); berilmasa — `check --deploy` ogohlantiradi (`yaqin.W001`).
+- **HTTPS sozlamalari** muhitdan: `DJANGO_BEHIND_HTTPS_PROXY`, `DJANGO_SSL_REDIRECT`, `DJANGO_HSTS_SECONDS`, `DJANGO_HSTS_INCLUDE_SUBDOMAINS`, `DJANGO_HSTS_PRELOAD`. Hammasi berilganda `check --deploy` — ogohlantirishsiz. HSTS standartda oʻchiq: HTTPS ishlashi tasdiqlanmasdan yoqilsa, qaytarish qiyin.
+- **Qaror (ADR-0004 yangilandi):** Celery ishlatilmaydi — yagona davriy ish uchun `cleanup` buyrugʻi va server cron'i yetarli; Redis — faqat kesh.
+- **Kontrakt toʻliqligi:** kontraktdagi barcha endpointlar backendda bor (kutilayotganlar roʻyxati boʻsh).
+- Testlar: backend 279 (+18).
+
+**Kontrakt oʻzgardi:** `Origin` uchun 403 — kirish (demo, admin login/setup/2fa) va hodisalar endpointlariga; `/reports/{token}` ga 429; `info` boʻlimida qoida yozildi.
+
+**Hali ishlamaydi / qoldi:**
+
+- **Redis lokal sinalmagan:** kompyuterda Redis yoʻq (Windows'da rasmiy versiyasi yoʻq, WSL distributivi C: diskka bir necha GB yozadi). CI'ga Redis xizmati qoʻshildi — butun test toʻplami Redis kesh bilan ishlaydi, lekin CI faqat siz GitHub'ga joylaganingizda ishga tushadi.
+- `cleanup` ni kuniga bir marta ishga tushirish (cron/systemd timer), reverse proxy (Caddy) log formatidan query string'ni olib tashlash, HSTS'ni yoqish — 5-bosqich (hosting).
+- Brauzerdagi admin panelning statistika sahifasi backendga 4-bosqichda ulanadi.
 
 ## 3.7 natijalari
 

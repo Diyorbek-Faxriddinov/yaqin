@@ -34,6 +34,15 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      # Productiondagi kesh — testlar (cheklovlar, bloklash) Redis bilan ishlaydi
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       DJANGO_DEBUG: "false"
@@ -43,6 +52,7 @@ jobs:
       DATABASE_HOST: localhost
       DATABASE_USER: yaqin
       DATABASE_PASSWORD: ci-yaqin-password
+      REDIS_URL: redis://localhost:6379/0
 
     steps:
       - uses: actions/checkout@v5

@@ -31,7 +31,7 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 | `POST /events`                                        | IP boʻyicha, botlarni filtrlash                                                                                               |
 | `POST /businesses/{slug}/reviews`, `POST /complaints` | foydalanuvchi boʻyicha                                                                                                        |
 
-- [ ] Kirishsiz POST endpointlar (`/business-requests`, `/events`) mehmonda `csrftoken` boʻlmaydi — CSRF'dan ozod qilinadi, oʻrniga `Origin` tekshiruvi va cheklovlar.
+- [x] Kirishsiz POST endpointlar (`/business-requests`, `/events`) mehmonda `csrftoken` boʻlmaydi — CSRF'dan ozod qilinadi, oʻrniga `Origin` tekshiruvi va cheklovlar. — 3.8 (`apps/core/middleware.py`: begona `Origin` — `403 origin_denied`; IP cheklovlari)
 
 ## 3. Ruxsatlar va audit (ADR-0009)
 
@@ -75,16 +75,16 @@ Demo rejimda xuddi shu teglar `x-demo-revalidate` sarlavhasi orqali yangilanadi 
 ## 7. Statistika va hisobot havolasi
 
 - [x] Hodisalar (`profile_view`, `call_click`, `telegram_click`, `direction_click`) — kunlik agregat jadval (`business_id`, `date`, sonlar); IP, user-agent va boshqa shaxsiy maʼlumot **saqlanmaydi**. — 3.3
-- [ ] Hisobot tokeni ~250 bit tasodifiy; faqat SHA-256 xeshi saqlanadi; yangisi eskisini bekor qiladi; javob `Cache-Control: no-store`, `Referrer-Policy: no-referrer`; ochilishlar soni va oxirgi vaqt.
+- [x] Hisobot tokeni ~250 bit tasodifiy; faqat SHA-256 xeshi saqlanadi; yangisi eskisini bekor qiladi; javob `Cache-Control: no-store`, `Referrer-Policy: no-referrer`; ochilishlar soni va oxirgi vaqt. — 3.8
 
 ## 8. Maxfiylik siyosatidagi vaʼdalar (bajarilishi shart)
 
 [Maxfiylik siyosati](../frontend/src/content/legal.ts) matni foydalanuvchiga quyidagilarni vaʼda qiladi — backend ularni amalda taʼminlashi kerak:
 
 - [ ] Maʼlumotlar Oʻzbekistondagi serverlarda (ADR-0005).
-- [ ] "Biznesingizni qoʻshing" maʼlumotlari soʻrov yopilgandan keyin **12 oy ichida oʻchiriladi** (davriy vazifa).
+- [x] "Biznesingizni qoʻshing" maʼlumotlari soʻrov yopilgandan keyin **12 oy ichida oʻchiriladi** (davriy vazifa). — 3.8 (`manage.py cleanup`; serverda kunlik ishga tushirish — 5-bosqich)
 - [x] Akkaunt oʻchirilganda shaxsiy maʼlumotlar oʻchiriladi; chop etilgan sharhlar "Oʻchirilgan foydalanuvchi" nomi bilan qoladi, qolgan yozuvlar oʻchiriladi. — 3.4
-- [ ] Joylashuv serverda saqlanmaydi (soʻrovlardagi `lat/lng` loglanmaydi). — saqlanmaydi (3.3); access log'larda query string — 3.8
+- [x] Joylashuv serverda saqlanmaydi (soʻrovlardagi `lat/lng` loglanmaydi). — saqlanmaydi (3.3); access log'larda query string — 3.3 (saqlanmaydi), 3.8 (ilova loglarida query string yoʻq; reverse proxy log formati — 5-bosqich)
 - [ ] Analitika va reklama cookie'lari yoʻq.
 
 ⚠ Huquqiy matnlar — loyiha: ishga tushirishdan oldin huquqshunos tekshiradi.

@@ -23,3 +23,18 @@ class DailyStats(models.Model):
 
     def __str__(self) -> str:
         return f"{self.business_id} {self.date}"
+
+
+class ReportLink(models.Model):
+    """Biznes egasi uchun maxfiy hisobot havolasi (ADR-0007). Biznesga bittadan; yangisi eskisini
+    almashtiradi. Token (~256 bit) faqat bir marta ko'rsatiladi — bazada SHA-256 xeshi.
+    """
+
+    business = models.OneToOneField(Business, on_delete=models.CASCADE, related_name="report_link")
+    token_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_viewed_at = models.DateTimeField(null=True, blank=True)
+    view_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f"{self.business_id} ({self.created_at:%Y-%m-%d})"

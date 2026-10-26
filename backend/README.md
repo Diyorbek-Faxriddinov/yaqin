@@ -39,33 +39,38 @@ Server faqat `127.0.0.1` da tinglaydi. Superuser va ilova parollari `D:\tools\.p
 
 Namuna — [`.env.example`](.env.example). Maxfiy qiymatlar faqat muhitda yoki lokal `.env` da (Git'ga tushmaydi).
 
-| Oʻzgaruvchi                                    | Vazifasi                                                                                                             |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `DJANGO_DEBUG`                                 | Ishlab chiqishda `true`; productionda `false`                                                                        |
-| `DJANGO_SECRET_KEY`                            | Productionda majburiy (yoʻq boʻlsa ilova ishga tushmaydi)                                                            |
-| `DJANGO_ALLOWED_HOSTS`                         | Ruxsat etilgan domenlar                                                                                              |
-| `DATABASE_*`                                   | PostgreSQL ulanishi                                                                                                  |
-| `GDAL_LIBRARY_PATH`, `GEOS_LIBRARY_PATH`       | Faqat Windows (PostGIS toʻplamidagi DLL'lar)                                                                         |
-| `TELEGRAM_BOT_TOKEN`                           | Telegram orqali kirish; boʻsh — oʻchiq (`401 provider_unavailable`)                                                  |
-| `GOOGLE_CLIENT_ID`                             | Google orqali kirish; boʻsh — oʻchiq                                                                                 |
-| `DEMO_LOGIN_ENABLED`                           | `POST /auth/demo` — faqat `DEBUG` rejimida (standart: `DEBUG` bilan bir xil)                                         |
-| `SESSION_COOKIES_SECURE`                       | Cookie'lar faqat HTTPS orqali (standart: `DEBUG` oʻchiq boʻlsa yoqiq)                                                |
-| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | Oʻzgarishdan keyin frontend keshini yangilash webhook'i                                                              |
-| `DJANGO_NUM_PROXIES`                           | Reverse proxy ortida — IP boʻyicha cheklovlar uchun                                                                  |
-| `TOTP_ENCRYPTION_KEY`                          | Admin 2FA kalitlarini shifrlash (Fernet); productionda majburiy. Yoʻqolsa — barcha adminlar 2FA'ni qaytadan sozlaydi |
+| Oʻzgaruvchi                                                                    | Vazifasi                                                                                                             |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `DJANGO_DEBUG`                                                                 | Ishlab chiqishda `true`; productionda `false`                                                                        |
+| `DJANGO_SECRET_KEY`                                                            | Productionda majburiy (yoʻq boʻlsa ilova ishga tushmaydi)                                                            |
+| `DJANGO_ALLOWED_HOSTS`                                                         | Ruxsat etilgan domenlar                                                                                              |
+| `DATABASE_*`                                                                   | PostgreSQL ulanishi                                                                                                  |
+| `GDAL_LIBRARY_PATH`, `GEOS_LIBRARY_PATH`                                       | Faqat Windows (PostGIS toʻplamidagi DLL'lar)                                                                         |
+| `TELEGRAM_BOT_TOKEN`                                                           | Telegram orqali kirish; boʻsh — oʻchiq (`401 provider_unavailable`)                                                  |
+| `GOOGLE_CLIENT_ID`                                                             | Google orqali kirish; boʻsh — oʻchiq                                                                                 |
+| `DEMO_LOGIN_ENABLED`                                                           | `POST /auth/demo` — faqat `DEBUG` rejimida (standart: `DEBUG` bilan bir xil)                                         |
+| `SESSION_COOKIES_SECURE`                                                       | Cookie'lar faqat HTTPS orqali (standart: `DEBUG` oʻchiq boʻlsa yoqiq)                                                |
+| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET`                                 | Oʻzgarishdan keyin frontend keshini yangilash webhook'i                                                              |
+| `DJANGO_NUM_PROXIES`                                                           | Reverse proxy ortida — IP boʻyicha cheklovlar uchun                                                                  |
+| `TOTP_ENCRYPTION_KEY`                                                          | Admin 2FA kalitlarini shifrlash (Fernet); productionda majburiy. Yoʻqolsa — barcha adminlar 2FA'ni qaytadan sozlaydi |
+| `REDIS_URL`                                                                    | Productionda kesh (cheklov va bloklash hisoblagichlari); boʻsh — jarayon xotirasi (`check --deploy` ogohlantiradi)   |
+| `DJANGO_ALLOWED_ORIGINS`                                                       | Oʻzgartiruvchi soʻrovlar qabul qilinadigan saytlar (`Origin`); standart — `http://localhost:3000`                    |
+| `DJANGO_BEHIND_HTTPS_PROXY`, `DJANGO_SSL_REDIRECT`                             | HTTPS reverse proxy ortida (`X-Forwarded-Proto`), HTTP → HTTPS                                                       |
+| `DJANGO_HSTS_SECONDS`, `DJANGO_HSTS_INCLUDE_SUBDOMAINS`, `DJANGO_HSTS_PRELOAD` | HSTS — faqat HTTPS toʻliq ishlashi tasdiqlangach (standart: oʻchiq)                                                  |
 
 ## Buyruqlar
 
-| Buyruq                                                                        | Vazifasi                                                                                                        |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `python manage.py runserver 8000`                                             | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health>                                                  |
-| `waitress-serve --listen=127.0.0.1:8000 --threads=16 config.wsgi:application` | Koʻp oqimli lokal server (frontend build'i backendga ulanganda)                                                 |
-| `pytest`                                                                      | Testlar (test bazasi avtomatik yaratiladi)                                                                      |
-| `ruff check . && ruff format --check .`                                       | Lint va formatlash                                                                                              |
-| `mypy .`                                                                      | Tiplar (strict)                                                                                                 |
-| `pip-audit -r requirements.txt`                                               | Bogʻliqliklardagi zaifliklar                                                                                    |
-| `python manage.py check --deploy`                                             | Production sozlamalari tekshiruvi                                                                               |
-| `python manage.py createroot --username root --display-name "..."`            | Yagona Root administratorni yaratish (parol soʻraladi yoki `--password-stdin`); 2FA birinchi kirishda sozlanadi |
+| Buyruq                                                                        | Vazifasi                                                                                                            |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `python manage.py runserver 8000`                                             | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health>                                                      |
+| `waitress-serve --listen=127.0.0.1:8000 --threads=16 config.wsgi:application` | Koʻp oqimli lokal server (frontend build'i backendga ulanganda)                                                     |
+| `pytest`                                                                      | Testlar (test bazasi avtomatik yaratiladi)                                                                          |
+| `ruff check . && ruff format --check .`                                       | Lint va formatlash                                                                                                  |
+| `mypy .`                                                                      | Tiplar (strict)                                                                                                     |
+| `pip-audit -r requirements.txt`                                               | Bogʻliqliklardagi zaifliklar                                                                                        |
+| `python manage.py check --deploy`                                             | Production sozlamalari tekshiruvi                                                                                   |
+| `python manage.py cleanup [--dry-run]`                                        | Davriy tozalash: muddati oʻtgan sessiyalar, 12 oydan eski yopilgan soʻrovlar — productionda kuniga bir marta (cron) |
+| `python manage.py createroot --username root --display-name "..."`            | Yagona Root administratorni yaratish (parol soʻraladi yoki `--password-stdin`); 2FA birinchi kirishda sozlanadi     |
 
 ## Tuzilma
 
@@ -89,6 +94,12 @@ tests/
 scripts/
   setup-db.sql bazani bir martalik tayyorlash
 ```
+
+## Production eslatmalari
+
+- `python manage.py check --deploy` — barcha HTTPS va Redis oʻzgaruvchilari berilganda ogohlantirishsiz oʻtishi kerak.
+- `cleanup` — kuniga bir marta (cron yoki systemd timer). Celery ishlatilmaydi (ADR-0004).
+- Reverse proxy va WSGI server access log'larida query string boʻlmasin (joylashuv): masalan gunicorn'da `%(U)s` (yoʻl) — `%(r)s` emas. Ilovaning oʻz loglari buni avtomatik qiladi.
 
 ## Kelishuvlar
 

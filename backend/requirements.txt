@@ -13,3 +13,5 @@ qrcode==8.2
 cryptography==50.0.2
 # Rasmlarni qayta kodlash. 13.0.0 — 2 haftadan yosh, lekin 12.x dagi ~40 ta zaiflik tuzatilgan (istisno)
 Pillow==13.0.0
+# Productionda kesh: cheklov (throttle) va bloklash hisoblagichlari barcha jarayonlar uchun umumiy
+redis==8.1.0
