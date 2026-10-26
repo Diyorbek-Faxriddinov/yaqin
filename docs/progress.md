@@ -32,8 +32,8 @@ Oxirgi yangilanish: 2026-10-26
 
 | Qadam | Mazmuni                                                                              | Holat                  |
 | ----- | ------------------------------------------------------------------------------------ | ---------------------- |
-| 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅ (tasdiq kutilmoqda) |
-| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ⏳                     |
+| 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅                     |
+| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅ (tasdiq kutilmoqda) |
 | 3.3   | Ommaviy API                                                                          | ⏳                     |
 | 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ⏳                     |
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ⏳                     |
@@ -41,6 +41,27 @@ Oxirgi yangilanish: 2026-10-26
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.2 natijalari
+
+- **Modellar** (5 ilova): `catalog` (tumanlar, kategoriyalar va atributlar), `accounts` (mijozlar — parolsiz, Telegram/Google), `businesses` (biznes, rasmlar, katalog, "Biznesingizni qoʻshing" soʻrovlari), `community` (sharhlar, shikoyatlar, sevimlilar), `core` (platforma sozlamalari). Sxema va diagramma — [backend-data-model.md](backend-data-model.md).
+- **Joylashuv** — PostGIS `geography` (masofa metrlarda; ikki nuqta orasidagi masofa test bilan tekshirildi).
+- **Qidiruv** — normallashtirilgan `search_text` + GIN trigram indeks: lotin, kirill va imlo xatosi bilan (`ustos` → "Ustoz") topadi. Normalizatsiya frontend bilan bir xil (bir xil test holatlari).
+- **15 ta maʼlumotlar bazasi cheklovi**: eʼlon qilish shartlari, narx izchilligi, bitta foydalanuvchi — bitta sharh va boshqalar. API'ni chetlab oʻtgan kod ham ularni buzolmaydi.
+- **Boshlangʻich maʼlumot** (data migratsiya): 12 tuman va 61 kategoriya — frontend bilan bir xil slug'lar, frontend fixture'laridan avtomatik koʻchirilgan. Demo bizneslar productionga tushmaydi.
+- Ish vaqti (`WeeklySchedule`) tekshiruvi — frontend mock'idagi qoidalar bilan bir xil.
+- Testlar endi migratsiyalar bilan ishlaydi; model oʻzgarib migratsiya unutilsa — test yiqiladi. Jami 63 test, ruff va mypy (strict) — xatosiz.
+
+**Topilgan va tuzatilgan:** narx cheklovi narxsiz "aniq narx"ni oʻtkazib yuborardi — SQL'da `NULL > 0` natijasi `NULL`, `CHECK` esa uni "oʻtdi" deb hisoblaydi. Har bir shoxga `IS NOT NULL` aniq qoʻshildi (test buni ushladi).
+
+**Oʻzgarish:** `factory_boy` olib tashlandi — qatʼiy mypy bilan tiplari mos emas; oʻrniga oddiy tiplangan yordamchi funksiyalar (`tests/factories.py`).
+
+**Hali ishlamaydi:**
+
+- Endpointlar yoʻq — maʼlumotlar API orqali hali koʻrinmaydi (3.3).
+- Administratorlar, rollar, audit (3.5), statistika va hisobot havolalari (3.8) jadvallari keyingi qadamlarda.
+- Kategoriya yoki tuman nomi oʻzgarganda `search_text` ni yangilash — 3.7.
+- Rasm fayllarini saqlash va qayta kodlash — 3.6.
 
 ## 3.1 natijalari
 

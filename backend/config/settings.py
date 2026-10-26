@@ -25,13 +25,18 @@ if env_str("GDAL_LIBRARY_PATH"):
 if env_str("GEOS_LIBRARY_PATH"):
     GEOS_LIBRARY_PATH = env_str("GEOS_LIBRARY_PATH")
 
-# Foydalanuvchi modellari 3.2–3.5 da qo'shiladi (mijoz va administrator alohida, ADR-0006);
-# shuning uchun django.contrib.auth va admin hozircha ulanmagan.
+# Mijoz (accounts.User) va administrator (3.5) — alohida modellar, alohida sessiyalar (ADR-0006).
+# django.contrib.auth/admin ishlatilmaydi: o'z admin panelimiz va RBAC (ADR-0009).
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
+    "django.contrib.postgres",
     "django.contrib.gis",
     "rest_framework",
     "apps.core",
+    "apps.catalog",
+    "apps.accounts",
+    "apps.businesses",
+    "apps.community",
 ]
 
 MIDDLEWARE = [
@@ -57,6 +62,10 @@ DATABASES = {
     }
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Yuklangan fayllar (rasmlar) — ishlab chiqishda diskda; productionda S3-mos xotira (3.6, ADR-0004)
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
 
 LANGUAGE_CODE = "uz"
 TIME_ZONE = "Asia/Tashkent"

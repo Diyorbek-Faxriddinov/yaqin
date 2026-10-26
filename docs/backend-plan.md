@@ -13,7 +13,7 @@ Maqsad — [API kontrakti](api/openapi.yaml)ni toʻliq bajaradigan Django backen
 | Fon vazifalar      | Celery + beat (productionda); testlarda — darhol bajarish                                                              | Rasmlar, eskirgan soʻrovlarni oʻchirish                      |
 | Parollar, 2FA      | Argon2, pyotp (TOTP) + QR                                                                                              | ADR-0006                                                     |
 | Rasmlar            | Pillow — qayta kodlash, EXIF olib tashlash                                                                             |                                                              |
-| Testlar            | pytest + pytest-django + factory_boy, har bir endpoint uchun ruxsatlar testlari                                        | Frontend mock testlari — ssenariy manbai                     |
+| Testlar            | pytest + pytest-django, tiplangan test yordamchilari, har bir endpoint uchun ruxsatlar testlari                        | Frontend mock testlari — ssenariy manbai                     |
 | API kontrakti      | `docs/api/openapi.yaml` — **manba** (koddan generatsiya emas); har bir javob testlarda shu sxemaga qarshi tekshiriladi | ADR-0004dagi drf-spectacular oʻrniga — 3.1da ADR yangilanadi |
 | Qidiruv            | PostgreSQL `pg_trgm` + `unaccent`, lotin/kirill normalizatsiyasi                                                       | ADR-0004                                                     |
 | Sifat              | ruff (lint + format), mypy                                                                                             | CI'da                                                        |

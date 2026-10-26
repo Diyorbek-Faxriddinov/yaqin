@@ -1,6 +1,6 @@
 # Yaqin — backend
 
-Django + Django REST Framework. [API kontrakti](../docs/api/openapi.yaml)ni bajaradi — kontrakt yagona manba, har bir javob testlarda unga qarshi tekshiriladi. Reja — [docs/backend-plan.md](../docs/backend-plan.md), talablar — [docs/backend-handoff.md](../docs/backend-handoff.md).
+Django + Django REST Framework. [API kontrakti](../docs/api/openapi.yaml)ni bajaradi — kontrakt yagona manba, har bir javob testlarda unga qarshi tekshiriladi. Reja — [docs/backend-plan.md](../docs/backend-plan.md), maʼlumot modeli — [docs/backend-data-model.md](../docs/backend-data-model.md), talablar — [docs/backend-handoff.md](../docs/backend-handoff.md).
 
 ## Talablar
 
@@ -49,7 +49,11 @@ Server faqat `127.0.0.1` da tinglaydi. Superuser va ilova parollari `D:\tools\.p
 ```text
 config/        sozlamalar, URL'lar, WSGI/ASGI; env.py — muhit oʻzgaruvchilari va .env
 apps/
-  core/        umumiy: health, xato formati (kontraktdagi Error)
+  core/        umumiy: health, xato formati, sozlamalar, matn normalizatsiyasi, ish vaqti
+  catalog/     tumanlar, kategoriyalar (seed.py — boshlangʻich maʼlumot)
+  accounts/    mijozlar
+  businesses/  bizneslar, rasmlar, katalog, soʻrovlar
+  community/   sharhlar, shikoyatlar, sevimlilar
 tests/
   contract.py  javoblarni openapi.yaml ga qarshi tekshirish
 scripts/

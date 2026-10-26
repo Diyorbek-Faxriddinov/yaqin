@@ -13,7 +13,8 @@ extend-exclude = ["**/migrations/*.py"]
 # E/F — xatolar, I — importlar tartibi, UP — zamonaviy sintaksis, B — xatoga moyil joylar,
 # DJ — Django qoidalari, S — xavfsizlik (bandit), SIM — soddalashtirish, PT — pytest
 select = ["E", "F", "I", "UP", "B", "DJ", "S", "SIM", "PT", "RUF"]
-ignore = ["RUF001", "RUF002", "RUF003"] # o'zbekcha matndagi ʻ ʼ belgilari ataylab ishlatiladi
+# RUF001-003 — o'zbekcha matndagi ʻ ʼ belgilari ataylab; RUF012 — Django Meta ro'yxatlari (idioma)
+ignore = ["RUF001", "RUF002", "RUF003", "RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"] # testlarda assert va namunaviy parollar
@@ -25,7 +26,7 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["openapi_core.*", "factory.*"]
+module = ["openapi_core.*"]
 ignore_missing_imports = true
 
 [tool.django-stubs]
@@ -34,4 +35,4 @@ django_settings_module = "config.settings"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 testpaths = ["tests"]
-addopts = "--strict-markers --no-migrations"
+addopts = "--strict-markers"
