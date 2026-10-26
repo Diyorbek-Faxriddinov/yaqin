@@ -39,8 +39,40 @@ Oxirgi yangilanish: 2026-10-26
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅                     |
 | 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅                     |
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅                     |
-| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅ (tasdiq kutilmoqda) |
-| 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅                     |
+| 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ✅ (tasdiq kutilmoqda) |
+
+## 3.9 natijalari — 3-bosqich yakuni
+
+**Kontrakt va backend toʻliq mos — buni testlar har safar oʻzi tekshiradi:**
+
+- **Operatsiyalar qamrovi:** toʻliq test toʻplami oxirida kontraktdagi har bir operatsiya (77 ta) kamida bitta testda kontraktga qarshi tekshirilganmi, koʻriladi — biri tushib qolsa, `pytest` yiqiladi (`tests/conftest.py`). `CONTRACT_REPORT=1 pytest` — eʼlon qilingan, lekin testlarda uchramagan status kodlarini koʻrsatadi: hozir **bittasi ham yoʻq** (har bir operatsiyaning har bir kodi tekshirilgan).
+- **Xavfsizlik matritsasi** (`tests/test_contract_matrix.py`, kontraktdan avtomatik — yangi endpoint ham avtomatik tushadi): sessiyasiz — 401, ruxsatsiz administratorga — 403, begona saytdan — 403 `origin_denied`, yoʻq obyekt — 404, notoʻgʻri sahifa — 400. Jami 170+ holat.
+- **N+1 yoʻq** (`tests/test_query_counts.py`): 15 ta roʻyxat endpointida SQL soʻrovlar soni 2 va 6 ta yozuvda bir xil.
+- **Route qamrovi:** kontraktdagi har bir yoʻl backendda bor.
+
+**Topilgan va tuzatilgan:** rasm yuklashda mavjud boʻlmagan biznes uchun 404 oʻrniga 400 qaytardi (fayl biznesdan oldin tekshirilardi) — endi biznes avval tekshiriladi, rasm keraksiz qayta ishlanmaydi.
+
+**Yakuniy tekshiruvlar:** maxfiy qiymatlar repoda yoʻq (faqat CI uchun yaratilgan test kaliti); `pip-audit` (asosiy va dev) va `npm audit` — zaiflik yoʻq; analitika va reklama cookie'lari yoʻq.
+
+Testlar: backend **467** (3.8 da 279), frontend unit 205, E2E 221.
+
+### 3-bosqich: nima tayyor
+
+- Kontraktdagi barcha 77 ta operatsiya: ommaviy sayt, mijoz kabineti, admin panel (bizneslar, rasmlar, katalog, kategoriyalar, moderatsiya, foydalanuvchilar, administratorlar va rollar, audit, sozlamalar, statistika, hisobot havolasi).
+- Xavfsizlik: Argon2 + majburiy TOTP (shifrlangan kalit), IP + login bloklash, alohida admin sessiyasi, CSRF, `Origin` tekshiruvi, RBAC, bazada himoyalangan audit jurnali, tokenlar faqat xesh koʻrinishida, EXIF/GPS'siz rasmlar, loglarda joylashuv yoʻq.
+- Lokal integratsiya: `scripts/local/start.ps1` (Caddy orqali, productiondagi tartib).
+
+### 4-bosqichga (integratsiya) qoladigan ishlar
+
+- Mijozning Telegram va Google orqali kirishi: frontend vidjetlari, bot (@BotFather) va Google OAuth client ID — ikkalasi bepul; Telegram uchun haqiqiy domen yoki vaqtinchalik tunnel kerak.
+- Frontend E2E testlarini haqiqiy backend bilan ishlatish (alohida seed).
+- Haqiqiy autentifikator ilovasi bilan admin 2FA'ni qoʻlda sinash.
+- Biznes sahifasidagi Next.js tezlik maslahati (`params` Suspense'dan tashqarida) va boshqa optimallashtirishlar.
+
+### 5-bosqichga (hosting) qoladigan ishlar
+
+- Oʻzbekistondagi server va domen (pullik — sizning roziligingiz bilan), HTTPS, HSTS, Redis, `cleanup` cron'i, rasmlar uchun xotira va sarlavhalar, proxy loglarida query string yoʻqligi, `NEXT_PUBLIC_SITE_URL`.
 
 ## Lokal integratsiya (3.8 dan keyin)
 

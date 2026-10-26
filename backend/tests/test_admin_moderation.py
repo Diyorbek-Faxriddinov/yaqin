@@ -194,6 +194,8 @@ def test_requests_status_and_note(root: AdminClient) -> None:
 def test_convert_request(root: AdminClient, client: Client) -> None:
     entry = request_entry()
     url = f"/admin/business-requests/{entry.id}/convert"
+    bad = root.call("POST", url, {"name": "G", "categorySlug": "yoq", "districtSlug": "yoq"})
+    assert set(bad.json()["fields"]) == {"name", "categorySlug", "districtSlug"}
     body = {
         "name": "Gulnora gullari",
         "categorySlug": "sartaroshxonalar",

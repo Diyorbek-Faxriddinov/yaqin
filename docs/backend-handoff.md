@@ -81,16 +81,16 @@ Demo rejimda xuddi shu teglar `x-demo-revalidate` sarlavhasi orqali yangilanadi 
 
 [Maxfiylik siyosati](../frontend/src/content/legal.ts) matni foydalanuvchiga quyidagilarni vaʼda qiladi — backend ularni amalda taʼminlashi kerak:
 
-- [ ] Maʼlumotlar Oʻzbekistondagi serverlarda (ADR-0005).
+- [ ] Maʼlumotlar Oʻzbekistondagi serverlarda (ADR-0005). — 5-bosqich (hosting tanlovi)
 - [x] "Biznesingizni qoʻshing" maʼlumotlari soʻrov yopilgandan keyin **12 oy ichida oʻchiriladi** (davriy vazifa). — 3.8 (`manage.py cleanup`; serverda kunlik ishga tushirish — 5-bosqich)
 - [x] Akkaunt oʻchirilganda shaxsiy maʼlumotlar oʻchiriladi; chop etilgan sharhlar "Oʻchirilgan foydalanuvchi" nomi bilan qoladi, qolgan yozuvlar oʻchiriladi. — 3.4
 - [x] Joylashuv serverda saqlanmaydi (soʻrovlardagi `lat/lng` loglanmaydi). — saqlanmaydi (3.3); access log'larda query string — 3.3 (saqlanmaydi), 3.8 (ilova loglarida query string yoʻq; reverse proxy log formati — 5-bosqich)
-- [ ] Analitika va reklama cookie'lari yoʻq.
+- [x] Analitika va reklama cookie'lari yoʻq. — 3.9 (tekshirildi: analitika skriptlari yoʻq; cookie'lar — sessiya, CSRF, admin sessiyasi, til va ruxsat bilan joylashuv, maxfiylik siyosatida roʻyxati bor)
 
 ⚠ Huquqiy matnlar — loyiha: ishga tushirishdan oldin huquqshunos tekshiradi.
 
 ## 9. Integratsiya (4-bosqich) tekshiruvlari
 
-- [ ] `npm run api:types` farqsiz (kontrakt va backend bir xil).
-- [ ] Frontend E2E testlari haqiqiy backend bilan (`NEXT_PUBLIC_DEMO_MODE=false`) — demo maʼlumotga bogʻliq testlar uchun alohida seed.
-- [ ] `NEXT_PUBLIC_SITE_URL` — production domeni (canonical, sitemap, OG); demo oʻchgach `robots.txt` indekslashga ruxsat beradi.
+- [x] `npm run api:types` farqsiz (kontrakt va backend bir xil). — 3.9 (frontend CI: `npm run api:types && git diff --exit-code`; backend: har bir operatsiya va status kodi testlarda kontraktga qarshi)
+- [ ] Frontend E2E testlari haqiqiy backend bilan (`NEXT_PUBLIC_DEMO_MODE=false`) — demo maʼlumotga bogʻliq testlar uchun alohida seed. — 4-bosqich
+- [ ] `NEXT_PUBLIC_SITE_URL` — production domeni (canonical, sitemap, OG); demo oʻchgach `robots.txt` indekslashga ruxsat beradi. — 5-bosqich

@@ -168,5 +168,5 @@ def test_unknown_report(client: Client, token: str) -> None:
 
 
 def test_report_throttled(client: Client) -> None:
-    codes = {client.get(f"/api/v1/reports/{'b' * 43}").status_code for _ in range(31)}
+    codes = {public(client, f"/reports/{'b' * 43}").status_code for _ in range(31)}
     assert codes == {404, 429}

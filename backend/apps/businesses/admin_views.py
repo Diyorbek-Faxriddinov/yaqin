@@ -220,6 +220,9 @@ class AdminPhotoUploadView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def post(self, request: Request, business_id: UUID) -> Response:
+        # Biznes avval tekshiriladi — yo'q bo'lsa rasm umuman qayta ishlanmaydi
+        if not Business.objects.filter(pk=business_id).exists():
+            raise not_found()
         upload = request.FILES.get("file")
         if upload is None:
             raise invalid({"file": ["Rasm tanlang"]})

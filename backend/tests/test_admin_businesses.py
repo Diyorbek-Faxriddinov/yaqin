@@ -453,6 +453,8 @@ def test_item_crud(root: AdminClient, client: Client, revalidated: MagicMock) ->
         },
     ).json()
     assert updated["slug"] == "soch-olish"
+    response = root.call("PUT", f"{url}/{created['id']}", {**service, "name": "S"})
+    assert response.status_code == 400
     assert updated["price"] == {"type": "on_request", "min": None, "max": None}
 
     assert root.call("DELETE", f"{url}/{listed[0]['id']}").status_code == 204

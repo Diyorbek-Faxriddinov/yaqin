@@ -1,5 +1,7 @@
 # 3-bosqich: backend rejasi
 
+> **Holat:** bajarildi (3.1–3.9) — natijalar [progress.md](progress.md) da. Rejadan chetga chiqishlar: Celery oʻrniga cron (ADR-0004), Redis lokal emas, CI'da sinaladi.
+
 Maqsad — [API kontrakti](api/openapi.yaml)ni toʻliq bajaradigan Django backend. Frontend undan oʻzgarishsiz foydalanadi (`NEXT_PUBLIC_DEMO_MODE=false`). Talablar roʻyxati — [backend-handoff.md](backend-handoff.md), stek — [ADR-0004](adr/0004-backend-steki.md).
 
 ## Stek

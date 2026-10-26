@@ -191,9 +191,10 @@ def test_demo_login_only_when_enabled(client: Client) -> None:
     assert response.json()["provider"] == "demo"
 
 
-def test_login_rate_limit(client: Client, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("provider", ["telegram", "google"])
+def test_login_rate_limit(client: Client, monkeypatch: pytest.MonkeyPatch, provider: str) -> None:
     monkeypatch.setitem(ScopedRateThrottle.THROTTLE_RATES, "auth", "2/min")
-    statuses = [call(client, "POST", "/auth/telegram", {}).status_code for _ in range(3)]
+    statuses = [call(client, "POST", f"/auth/{provider}", {}).status_code for _ in range(3)]
     assert statuses == [401, 401, 429]
 
 
@@ -330,6 +331,16 @@ def test_review_rate_limit(client: Client, monkeypatch: pytest.MonkeyPatch) -> N
         make_business(**publishable(slug=slug))
     assert session.request("POST", "/businesses/a-biznes/reviews", {"rating": 5}).status_code == 201
     assert session.request("POST", "/businesses/b-biznes/reviews", {"rating": 5}).status_code == 429
+
+
+def test_complaint_rate_limit(
+    client: Client, business: Business, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setitem(ScopedRateThrottle.THROTTLE_RATES, "complaints", "1/hour")
+    session = Session(client)
+    body = {"businessId": str(business.id), "reason": "wrong_info", "text": None}
+    assert session.request("POST", "/complaints", body).status_code == 201
+    assert session.request("POST", "/complaints", body).status_code == 429
 
 
 def test_review_on_draft_business_is_404(client: Client) -> None:

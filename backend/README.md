@@ -101,6 +101,13 @@ scripts/
 - `cleanup` — kuniga bir marta (cron yoki systemd timer). Celery ishlatilmaydi (ADR-0004).
 - Reverse proxy va WSGI server access log'larida query string boʻlmasin (joylashuv): masalan gunicorn'da `%(U)s` (yoʻl) — `%(r)s` emas. Ilovaning oʻz loglari buni avtomatik qiladi.
 
+## Testlar
+
+- `pytest` — toʻliq toʻplam; oxirida **kontrakt qamrovi** tekshiriladi: kontraktdagi har bir operatsiya kamida bitta testda `assert_matches_contract` dan oʻtgan boʻlishi shart (aks holda yiqiladi). Filtr bilan (`-k`, alohida fayl) ishlatilganda bu tekshiruv oʻtkazib yuboriladi.
+- `CONTRACT_REPORT=1 pytest` — eʼlon qilingan, lekin testlarda uchramagan status kodlari roʻyxati.
+- `tests/test_contract_matrix.py` — kontraktdan avtomatik: 401 / 403 / `origin_denied` / 404 / 400 har bir mos operatsiya uchun. Yangi endpoint qoʻshsangiz, u oʻzi tushadi; 404 ga yetish uchun tekshiruvdan oʻtadigan tana kerak boʻlsa — `VALID_BODY` ga qoʻshing.
+- `tests/test_query_counts.py` — roʻyxatlarda N+1 yoʻq (2 va 6 ta yozuvda soʻrovlar soni bir xil). Yangi roʻyxat endpointini shu yerga qoʻshing.
+
 ## Kelishuvlar
 
 - Xatolar har doim `{code, message, fields?}` (`apps/core/exceptions.py`); `code` barqaror — frontend unga tayanadi.

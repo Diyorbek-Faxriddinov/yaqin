@@ -109,6 +109,8 @@ def test_update_staff(root: AdminClient) -> None:
     assert [r["name"] for r in body["roles"]] == [ANALYST]
     assert AdminSession.objects.filter(admin=admin).exists()
 
+    response = root.call("PATCH", url, {"displayName": "M", "isActive": "ha"})
+    assert set(response.json()["fields"]) == {"displayName", "isActive"}
     body = root.call("PATCH", url, {"isActive": False}).json()
     assert body["isActive"] is False
     # O'chirilgan administrator darhol chiqariladi
@@ -175,6 +177,8 @@ def test_roles_crud(root: AdminClient) -> None:
     assert root.call("DELETE", f"/admin/roles/{built_in}").json()["code"] == "built_in_role"
     response = root.call("POST", "/admin/roles", {**body, "permissions": []})
     assert response.status_code == 400
+    built_in_url = f"/admin/roles/{built_in}"
+    assert root.call("PATCH", built_in_url, {**body, "name": "X"}).status_code == 400
 
 
 # --- Audit ---
