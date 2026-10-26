@@ -14,3 +14,15 @@ Thumbs.db
 
 # Real biznes ma'lumotlari (yig'ilgan jadvallar, rasmlar) repoga kirmaydi
 /data/private/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# Backend yuklangan fayllar (ishlab chiqishda)
+/backend/media/

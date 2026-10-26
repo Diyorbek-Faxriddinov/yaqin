@@ -4,29 +4,64 @@ Oxirgi yangilanish: 2026-10-26
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat                  |
-| ------- | --------------------------------- | ---------------------- |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan        |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan        |
-| 2       | Frontend ishlab chiqish           | ✅ (tasdiq kutilmoqda) |
-| 3       | Backend                           | ⏳                     |
-| 4       | Integratsiya va yakuniy tekshiruv | ⏳                     |
-| 5       | Hosting va domen                  | ⏳                     |
+| Bosqich | Mazmuni                           | Holat                                  |
+| ------- | --------------------------------- | -------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                        |
+| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                        |
+| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                        |
+| 3       | Backend                           | 🔄 Jarayonda ([reja](backend-plan.md)) |
+| 4       | Integratsiya va yakuniy tekshiruv | ⏳                                     |
+| 5       | Hosting va domen                  | ⏳                                     |
 
 ## 2-bosqich qadamlari
 
-| Qadam | Mazmuni                                                                                          | Holat                  |
-| ----- | ------------------------------------------------------------------------------------------------ | ---------------------- |
-| 2.1   | Poydevor: Next.js, TS, ESLint/Prettier, Tailwind, next-intl, Vitest, Playwright, CI, README, ADR | ✅                     |
-| 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅                     |
-| 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅                     |
-| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅                     |
-| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅                     |
-| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅                     |
-| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅                     |
-| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅                     |
-| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ✅                     |
-| 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ✅ (tasdiq kutilmoqda) |
+| Qadam | Mazmuni                                                                                          | Holat |
+| ----- | ------------------------------------------------------------------------------------------------ | ----- |
+| 2.1   | Poydevor: Next.js, TS, ESLint/Prettier, Tailwind, next-intl, Vitest, Playwright, CI, README, ADR | ✅    |
+| 2.2   | Dizayn tizimi, umumiy komponentlar, layoutlar                                                    | ✅    |
+| 2.3   | OpenAPI kontrakti, generatsiya, mock qatlam, demo maʼlumotlar                                    | ✅    |
+| 2.4   | Bosh sahifa, kategoriyalar, roʻyxat, filtrlar, qidiruv                                           | ✅    |
+| 2.5   | Biznes profili, mahsulot sahifasi, xarita                                                        | ✅    |
+| 2.6   | Kirish (mock), mijoz kabineti, sharhlar, sevimlilar, shikoyatlar                                 | ✅    |
+| 2.7   | Admin: kirish+2FA, layout, bizneslar, tezkor qoʻshish, katalog, rasmlar                          | ✅    |
+| 2.8   | Admin: kategoriyalar, moderatsiya, shikoyatlar, soʻrovlar, foydalanuvchilar                      | ✅    |
+| 2.9   | Admin: administratorlar, rollar, audit, sozlamalar, statistika, hisobot havolasi                 | ✅    |
+| 2.10  | Statik sahifalar, SEO, a11y, tezlik, hujjatlar                                                   | ✅    |
+
+## 3-bosqich qadamlari
+
+| Qadam | Mazmuni                                                                              | Holat                  |
+| ----- | ------------------------------------------------------------------------------------ | ---------------------- |
+| 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅ (tasdiq kutilmoqda) |
+| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ⏳                     |
+| 3.3   | Ommaviy API                                                                          | ⏳                     |
+| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ⏳                     |
+| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ⏳                     |
+| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ⏳                     |
+| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
+| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
+| 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.1 natijalari
+
+- **Lokal maʼlumotlar bazasi** (C: diskka hech narsa yozilmagan): PostgreSQL 17.11 va PostGIS 3.6.2 — rasmiy bepul arxivlardan `D:\tools\pgsql` ga (PostGIS arxivining MD5 yigʻindisi tekshirildi), maʼlumotlar — `D:\tools\pgdata`. Server faqat `127.0.0.1` da; superuser va ilova paroli tasodifiy, repodan tashqarida.
+- Ilova roli `yaqin` superuser emas; kengaytmalar (`postgis`, `pg_trgm`, `unaccent`) `scripts/setup-db.sql` bilan — skript alohida vaqtinchalik klasterda sinab koʻrildi.
+- **Django 5.2.18 LTS + DRF 3.18.3**, Python virtual muhiti va pip keshi D: diskda. Bogʻliqliklar aniq versiyalar bilan, `pip-audit` — zaiflik yoʻq.
+- **GeoDjango Windows'da ishladi** — PostGIS toʻplamidagi GDAL/GEOS DLL'lari bilan (rejadagi asosiy xavf yopildi).
+- Sozlamalar muhit oʻzgaruvchilaridan (`.env` faqat lokal); productionda `DJANGO_SECRET_KEY` boʻlmasa ilova ishga tushmaydi.
+- Xatolar kontraktdagi `Error` formatida (`code`, `message`, `fields`) — DRF tashqarisidagi 404/500 ham JSON (HTML sahifa emas).
+- **Kontrakt tekshiruvi:** `tests/contract.py` har bir javobni `openapi.yaml` ga qarshi tekshiradi; sxemaga zid javob testni yiqitishi ham test bilan isbotlangan.
+- `GET /api/v1/health` — kontraktga qoʻshildi (ilova va baza holati, ichki tafsilotsiz).
+- Sifat: ruff (lint + format), mypy (strict) — xatosiz; 13 test.
+- **CI** (`.github/workflows/backend.yml`): PostGIS servisi, `setup-db.sql`, pip-audit, ruff, mypy, `check --deploy`, pytest.
+- ADR-0004 yangilandi: OpenAPI manbasi — qoʻlda yoziladigan kontrakt (drf-spectacular oʻrniga).
+
+**Hali ishlamaydi:**
+
+- Modellar, endpointlar, autentifikatsiya — keyingi qadamlarda.
+- `check --deploy` ogohlantirishlari: CSRF middleware (3.4, sessiyalar bilan), HSTS va HTTPS'ga yoʻnaltirish (3.8).
+- CI GitHub'da hali ishga tushmagan — siz push qilganingizda birinchi marta ishlaydi.
+- Lokal PostgreSQL kompyuter qayta yoqilganda avtomatik ishga tushmaydi — buyruq `backend/README.md` da.
 
 ## 2.1 natijalari
 

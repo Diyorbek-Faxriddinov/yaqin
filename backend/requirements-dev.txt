@@ -1,0 +1,17 @@
+-r requirements.txt
+
+# Testlar
+pytest==9.1.1
+pytest-django==4.14.0
+factory-boy==3.3.3
+# API javoblarini docs/api/openapi.yaml kontraktiga qarshi tekshirish
+openapi-core==0.23.1
+PyYAML==6.0.3
+
+# Sifat
+ruff==0.17.0
+mypy==1.19.1
+django-stubs==5.2.9
+django-stubs-ext==5.2.9
+djangorestframework-stubs==3.16.9
+pip-audit==2.10.1

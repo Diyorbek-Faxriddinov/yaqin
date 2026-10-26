@@ -2,7 +2,7 @@
 
 **Yaqin** — Toshkentdagi hali onlayn boʻlmagan doʻkonlar, ustalar, salonlar, kafelar va boshqa kundalik xizmatlarni xaritada koʻrsatuvchi platforma. Foydalanuvchi oʻziga eng yaqin xizmatni topadi: narxlar, ish vaqti, manzil va sharhlar bilan. Bizneslarni platforma jamoasi joyida, egasining roziligi bilan qoʻshadi.
 
-> **Holat:** frontend (2-bosqich) tayyor; backend (3-bosqich) hali yoʻq. Frontend **demo (mock) maʼlumotlar** bilan ishlaydi — bu har bir sahifada koʻrsatiladi va demo sayt qidiruv tizimlariga yopiq. Batafsil — [docs/progress.md](docs/progress.md).
+> **Holat:** frontend (2-bosqich) tayyor; backend (3-bosqich) ishlab chiqilmoqda — [reja](docs/backend-plan.md). Frontend **demo (mock) maʼlumotlar** bilan ishlaydi — bu har bir sahifada koʻrsatiladi va demo sayt qidiruv tizimlariga yopiq. Batafsil — [docs/progress.md](docs/progress.md).
 
 ## Imkoniyatlar
 
@@ -73,7 +73,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 ```text
 .
 ├── frontend/              Next.js ilovasi (batafsil: frontend/README.md)
-├── backend/               Django ilovasi (3-bosqichda qoʻshiladi)
+├── backend/               Django ilovasi (batafsil: backend/README.md)
 ├── docs/
 │   ├── api/openapi.yaml   API kontrakti
 │   ├── adr/               arxitektura qarorlari

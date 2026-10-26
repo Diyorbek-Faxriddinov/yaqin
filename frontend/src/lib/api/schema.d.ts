@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ilova va maʼlumotlar bazasi holati
+         * @description Ichki tafsilotlar (versiyalar, xato matni) qaytarilmaydi.
+         */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/categories": {
         parameters: {
             query?: never;
@@ -1918,6 +1938,12 @@ export interface components {
             /** Format: date-time */
             generatedAt: string;
         };
+        Health: {
+            /** @enum {string} */
+            status: "ok" | "error";
+            /** @enum {string} */
+            database: "ok" | "error";
+        };
     };
     responses: {
         /** @description Topilmadi */
@@ -2002,6 +2028,35 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hammasi ishlayapti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Health"];
+                };
+            };
+            /** @description Maʼlumotlar bazasi javob bermayapti */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
     listCategories: {
         parameters: {
             query?: {

@@ -1,0 +1,37 @@
+[project]
+name = "yaqin-backend"
+version = "0.1.0"
+description = "Yaqin API — docs/api/openapi.yaml kontraktini bajaradigan Django backend"
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+# E/F — xatolar, I — importlar tartibi, UP — zamonaviy sintaksis, B — xatoga moyil joylar,
+# DJ — Django qoidalari, S — xavfsizlik (bandit), SIM — soddalashtirish, PT — pytest
+select = ["E", "F", "I", "UP", "B", "DJ", "S", "SIM", "PT", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"] # o'zbekcha matndagi ʻ ʼ belgilari ataylab ishlatiladi
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"] # testlarda assert va namunaviy parollar
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = ["migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["openapi_core.*", "factory.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["tests"]
+addopts = "--strict-markers --no-migrations"

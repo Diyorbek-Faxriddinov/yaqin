@@ -1,0 +1,69 @@
+name: Backend
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", "docs/api/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", "docs/api/**", ".github/workflows/backend.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_DEBUG: "false"
+      DJANGO_SECRET_KEY: ci-only-secret-key-not-used-anywhere-else
+      DATABASE_HOST: localhost
+      DATABASE_USER: yaqin
+      DATABASE_PASSWORD: ci-yaqin-password
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      # Linux'da GeoDjango uchun GDAL/GEOS tizim kutubxonalari
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gdal-bin libgdal-dev
+
+      - name: Maʼlumotlar bazasini tayyorlash (setup-db.sql)
+        env:
+          PGPASSWORD: ci-only-password
+        run: psql -U postgres -h localhost -v ON_ERROR_STOP=1 -v app_password="'ci-yaqin-password'" -f scripts/setup-db.sql
+
+      - run: pip install -r requirements-dev.txt
+      - name: Bogʻliqliklarda zaifliklar
+        run: pip-audit -r requirements.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy .
+      - run: python manage.py check --deploy --fail-level ERROR
+      - run: pytest -q
