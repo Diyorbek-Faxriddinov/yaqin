@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { securityHeaders } from "./src/lib/security-headers";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -11,6 +12,18 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Brauzer xavfsizlik sarlavhalari — barcha sahifalarga (ADR-0013)
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders({
+          dev: process.env.NODE_ENV === "development",
+          mapStyleUrl: process.env.NEXT_PUBLIC_MAP_STYLE_URL,
+        }),
+      },
+    ];
+  },
   images: {
     // Faqat o'zimizning media yo'li va so'rov parametrlarisiz — optimallashtirgich boshqa
     // manzillar uchun suiiste'mol qilinmasligi uchun (CDN 5-bosqichda remotePatterns bilan)

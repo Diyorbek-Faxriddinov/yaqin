@@ -53,7 +53,7 @@ Brauzer ──► Next.js (SSR, kesh teglari) ──► /api/v1 ──► demo: 
 - **Kontrakt asosida:** [`docs/api/openapi.yaml`](docs/api/openapi.yaml) — frontend va backend uchun yagona manba; TypeScript tiplari undan generatsiya qilinadi, CI farqni tekshiradi.
 - **Mock qatlam** kontraktni toʻliq bajaradi (ruxsatlar, CSRF, tekshiruvlar, audit) — backend uchun ishlaydigan namuna ([ADR-0011](docs/adr/0011-mock-qatlam.md)).
 - **Backend** shu kontraktni bajaradi: har bir javob testlarda `openapi.yaml` ga qarshi tekshiriladi ([ADR-0004](docs/adr/0004-backend-steki.md)). Holati — [docs/progress.md](docs/progress.md), maʼlumot modeli — [docs/backend-data-model.md](docs/backend-data-model.md).
-- **Xavfsizlik:** httpOnly sessiya + CSRF double-submit, alohida admin sessiyasi (`SameSite=Strict`), admin paroli Argon2 + majburiy 2FA (kalit shifrlangan), IP + login boʻyicha bloklash, har bir endpointda ruxsat tekshiruvi, bazada himoyalangan (faqat qoʻshiladigan) audit jurnali.
+- **Xavfsizlik:** httpOnly sessiya + CSRF double-submit, alohida admin sessiyasi (`SameSite=Strict`), admin paroli Argon2 + majburiy 2FA (kalit shifrlangan), IP + login boʻyicha bloklash, har bir endpointda ruxsat tekshiruvi, bazada himoyalangan (faqat qoʻshiladigan) audit jurnali, Content-Security-Policy va Permissions-Policy ([ADR-0013](docs/adr/0013-xavfsizlik-sarlavhalari.md)).
 - Backend uchun topshiriqlar roʻyxati: [docs/backend-handoff.md](docs/backend-handoff.md).
 
 | Qatlam   | Tanlov                                                                                                                                                 |

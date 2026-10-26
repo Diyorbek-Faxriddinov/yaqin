@@ -65,6 +65,18 @@ def test_origin_list_from_settings(client: Client) -> None:
     assert post(client, "/admin/auth/login", body, "http://localhost:3000").status_code == 403
 
 
+# --- Sarlavhalar ---
+
+
+def test_api_security_headers(client: Client) -> None:
+    for path in ("/api/v1/health", "/api/v1/yoq-yol"):
+        response = client.get(path)
+        assert response["Content-Security-Policy"] == "default-src 'none'; frame-ancestors 'none'"
+        assert response["Cross-Origin-Resource-Policy"] == "same-origin"
+        assert response["X-Content-Type-Options"] == "nosniff"
+        assert response["X-Frame-Options"] == "DENY"
+
+
 # --- Loglar ---
 
 

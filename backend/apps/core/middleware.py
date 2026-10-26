@@ -30,3 +30,21 @@ class OriginCheckMiddleware:
                     status=403,
                 )
         return self.get_response(request)
+
+
+class SecurityHeadersMiddleware:
+    """API va yuklangan rasmlar uchun qat'iy sarlavhalar (ADR-0013).
+
+    API faqat JSON va rasm qaytaradi — hech qanday skript, uslub yoki iframe kerak emas. Sahifalar
+    sarlavhalarini Next.js qo'yadi (frontend/src/lib/security-headers.ts).
+    """
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        response = self.get_response(request)
+        response.setdefault("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+        # Boshqa saytlar bizning JSON va rasmlarimizni o'z sahifasiga qo'sha olmaydi
+        response.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+        return response

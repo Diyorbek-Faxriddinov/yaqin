@@ -53,6 +53,16 @@ Oxirgi yangilanish: 2026-10-26
 | 4.5   | Telefonda sinov                                        | ⏳    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
 
+## 4.3 natijalari
+
+- **Sahifalar uchun sarlavhalar** (`frontend/src/lib/security-headers.ts`, [ADR-0013](adr/0013-xavfsizlik-sarlavhalari.md)): Content-Security-Policy — tashqi manbalar aniq roʻyxatda (xarita plitkalari, Telegram, Google); saytni iframe'ga joylash, plaginlar, `<base>` va begona formalar taqiqlangan. `Permissions-Policy` — joylashuv faqat oʻz saytimizga, kamera va mikrofon yopiq. `Cross-Origin-Opener-Policy: same-origin-allow-popups` (kirish oynalari ishlashi uchun), `Referrer-Policy`, `nosniff`, `X-Frame-Options`. Xarita provayderi oʻzgarsa, CSP avtomatik moslashadi; dev rejimida HMR uchun qoʻshimcha ruxsatlar.
+- **API va rasmlar uchun** (Django `SecurityHeadersMiddleware`): `default-src 'none'`, `Cross-Origin-Resource-Policy: same-origin`.
+- **Qaror:** skriptlarda `'unsafe-inline'` qoldirildi — nonce bilan qatʼiy CSP barcha sahifalarni dinamik renderga oʻtkazib, statik keshni yoʻqotardi; sabablari va qachon qayta koʻrib chiqilishi ADR'da.
+- **E2E** (`e2e/security.spec.ts`): sarlavhalar bor; bosh sahifa, kategoriyalar, biznes sahifasi, kirish (vidjetlar bilan), xarita (tashqi plitkalar bilan), admin paneli va biznes qoʻshish — CSP buzilishisiz. Detektorning oʻzi ham sinaldi: ataylab qoʻshilgan begona skript, rasm va `fetch` bloklandi va ushlandi. Dev serverga qarshi ham oʻtdi.
+- Testlar: backend 473 (+1), frontend unit 211 (+4), E2E backend 241, demo 230 (+9 har birida).
+
+**Sizdan soʻralmoqda:** CSP endi haqiqiy Telegram va Google vidjetlarini ham cheklaydi. E2E ularni sinov skriptlari bilan tekshiradi; haqiqiy vidjetlar bilan yana bir marta sinab koʻrsangiz (Google — `localhost:8090`, Telegram — tunnel orqali), CSP ularni buzmaganini tasdiqlagan boʻlamiz.
+
 ## 4.2 natijalari
 
 - **Mijoz kirishi haqiqiy rejimda:** Telegram Login Widget va Google Identity Services rasmiy skriptlari (`provider-buttons.tsx`). Skript faqat kirish sahifasida va faqat sozlangan boʻlsa yuklanadi (`NEXT_PUBLIC_TELEGRAM_BOT`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`); sozlanmagan provayder ishlayotgandek koʻrsatilmaydi ("hali sozlanmagan"). Imzo va ID token faqat backendda tekshiriladi.

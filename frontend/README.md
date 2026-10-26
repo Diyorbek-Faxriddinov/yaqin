@@ -56,6 +56,7 @@ Namuna — [`.env.example`](.env.example).
 
 - **Next.js 16.4** — `middleware` oʻrniga `src/proxy.ts`; `cacheComponents` yoqilgan. Kod yozishdan oldin `node_modules/next/dist/docs/` dagi hujjatlarni tekshiring (qarang: `AGENTS.md`).
 - Ichki havolalar uchun `next/link` emas, `@/i18n/navigation` dagi `Link` ishlatiladi.
+- **Xavfsizlik sarlavhalari** (CSP, Permissions-Policy) — `src/lib/security-headers.ts`, ADR-0013. Yangi tashqi manba (skript, rasm, API, iframe) qoʻshilsa — shu yerga aniq qoʻshing, aks holda brauzer bloklaydi; `e2e/security.spec.ts` buzilishlarni ushlaydi.
 - Oʻzbekcha matnlarda `ʻ` (U+02BB) va `ʼ` (U+02BC) belgilari ishlatiladi.
 - Narxlar tiyinda, butun son. Formatlash — `src/lib/format/price.ts`.
 - MapLibre worker `predev`/`prebuild` da `public/vendor/` ga koʻchiriladi (`scripts/copy-vendor.mjs`) — bu papka Git'ga kirmaydi.
