@@ -6,3 +6,8 @@ psycopg[binary]==3.3.6
 # Google ID tokenini tekshirish (rasmiy kutubxona) va uning HTTP transporti
 google-auth==2.61.0
 requests==2.34.2
+# Administratorlar: Argon2 parol xeshi, TOTP (2FA) va QR, TOTP kalitlarini shifrlash
+argon2-cffi==25.1.0
+pyotp==2.10.0
+qrcode==8.2
+cryptography==50.0.2

@@ -426,8 +426,11 @@ export interface paths {
         put?: never;
         /**
          * Admin kirishi — 1-qadam (login va parol)
-         * @description Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — 2FA uchun qisqa muddatli `challengeToken`
-         *     qaytadi. Ketma-ket muvaffaqiyatsiz urinishlar cheklanadi (429).
+         * @description Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — qisqa muddatli (5 daqiqa) `challengeToken`
+         *     qaytadi. `next`: `totp` — 2FA kodi (/admin/auth/2fa); `setup` — birinchi kirish yoki
+         *     tiklangan akkaunt: avval /admin/auth/setup (yangi parol va TOTP kaliti), keyin 2fa.
+         *     Ketma-ket muvaffaqiyatsiz urinishlar IP + login juftligi bo'yicha cheklanadi (429).
+         *     Login yoki parol noto'g'ri, akkaunt o'chirilgan — bir xil 401 (holat oshkor qilinmaydi).
          */
         post: operations["adminLogin"];
         delete?: never;
@@ -449,8 +452,33 @@ export interface paths {
          * Admin kirishi — 2-qadam (TOTP kodi)
          * @description Muvaffaqiyatli bo'lsa `adminsessionid` (HttpOnly, Secure, SameSite=Strict, 8 soat) va
          *     `csrftoken` cookie'lari o'rnatiladi. Admin sessiyasi mijoz sessiyasidan alohida.
+         *     Sozlash (`next: setup`) jarayonida kod yangi kalit bo'yicha tekshiriladi va kalit faollashadi.
+         *     Bir kodni qayta ishlatib bo'lmaydi. 5 ta noto'g'ri kod — challenge bekor bo'ladi (429).
          */
         post: operations["adminVerify2fa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/auth/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Birinchi kirish — yangi parol va TOTP kaliti (faqat next=setup bo'lganda)
+         * @description `mustChangePassword` bo'lsa `newPassword` majburiy (kamida 12 belgi, oddiy parollar va
+         *     logindan foydalanib bo'lmaydi). Javobda yangi TOTP kaliti — autentifikator ilovaga QR yoki
+         *     kalit orqali qo'shiladi; kalit /admin/auth/2fa da birinchi to'g'ri kod bilan faollashadi.
+         *     Kalit faqat shu javobda ko'rsatiladi; backendda shifrlangan holda saqlanadi.
+         */
+        post: operations["adminSetup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1944,6 +1972,24 @@ export interface components {
             /** @enum {string} */
             database: "ok" | "error";
         };
+        AdminLoginChallenge: {
+            challengeToken: string;
+            /**
+             * @description totp — 2FA kodi; setup — avval /admin/auth/setup
+             * @enum {string}
+             */
+            next: "totp" | "setup";
+            /** @description Vaqtinchalik parol bilan kirildi — setup'da yangi parol majburiy */
+            mustChangePassword: boolean;
+        };
+        AdminTotpSetup: {
+            /** @description Base32 kalit (QR'ni skanerlab bo'lmasa qo'lda kiritish uchun) */
+            secret: string;
+            /** @description otpauth://totp/... — autentifikator ilovalar uchun */
+            otpauthUri: string;
+            /** @description QR kod — data:image/svg+xml;base64,... (img src sifatida) */
+            qrDataUri: string;
+        };
     };
     responses: {
         /** @description Topilmadi */
@@ -2684,15 +2730,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description 2FA kodi kerak */
+            /** @description Keyingi qadam (2FA kodi yoki birinchi sozlash) */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        challengeToken: string;
-                    };
+                    "application/json": components["schemas"]["AdminLoginChallenge"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -2728,6 +2772,36 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    adminSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    challengeToken: string;
+                    newPassword?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description TOTP kaliti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTotpSetup"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     adminLogout: {
         parameters: {
             query?: never;
@@ -2744,6 +2818,7 @@ export interface operations {
                 };
                 content?: never;
             };
+            403: components["responses"]["Forbidden"];
         };
     };
     getAdminMe: {

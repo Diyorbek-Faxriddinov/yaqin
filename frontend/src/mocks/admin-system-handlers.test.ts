@@ -2,6 +2,7 @@
 // Mock API serverda (Node) ishlaydi — jsdom Blob/FormData Node Request bilan mos emas
 import { describe, expect, it } from "vitest";
 import type {
+  AdminLoginChallenge,
   AdminMe,
   AdminRole,
   AdminStaff,
@@ -49,10 +50,20 @@ async function json<T>(response: Response | Promise<Response>): Promise<T> {
   return (await (await response).json()) as T;
 }
 
+const NEW_PASSWORD = "Kuzgi-Barglar-Shamol-77";
+
 async function adminLogin(username = "root", password = "yaqin-demo"): Promise<Session> {
   const step1 = await send("POST", "/admin/auth/login", null, { username, password });
   expect(step1.status).toBe(200);
-  const { challengeToken } = (await step1.json()) as { challengeToken: string };
+  const { challengeToken, next, mustChangePassword } = (await step1.json()) as AdminLoginChallenge;
+  if (next === "setup") {
+    // Yangi administrator: birinchi kirishda yangi parol va 2FA
+    const setup = await send("POST", "/admin/auth/setup", null, {
+      challengeToken,
+      newPassword: mustChangePassword ? NEW_PASSWORD : null,
+    });
+    expect(setup.status).toBe(200);
+  }
   const step2 = await send("POST", "/admin/auth/2fa", null, { challengeToken, code: "123456" });
   const cookies = step2.headers.getSetCookie();
   return {
@@ -127,8 +138,7 @@ describe("administratorlar va rollar", () => {
     await send("PATCH", `/admin/staff/${staff.id}`, root, { isActive: false });
     expect((await get("/admin/me", session)).status).toBe(401);
     expect(
-      (await send("POST", "/admin/auth/login", null, { username, password: temporaryPassword }))
-        .status,
+      (await send("POST", "/admin/auth/login", null, { username, password: NEW_PASSWORD })).status,
     ).toBe(401);
   });
 

@@ -38,6 +38,8 @@ jobs:
     env:
       DJANGO_DEBUG: "false"
       DJANGO_SECRET_KEY: ci-only-secret-key-not-used-anywhere-else
+      # Faqat CI testlari uchun yaratilgan kalit — boshqa hech qayerda ishlatilmaydi
+      TOTP_ENCRYPTION_KEY: 28GXnHkvaWTEsdJaYDN8BgG9bnPBwJtDRF9sf-qeAso=
       DATABASE_HOST: localhost
       DATABASE_USER: yaqin
       DATABASE_PASSWORD: ci-yaqin-password

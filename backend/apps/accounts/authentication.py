@@ -19,14 +19,14 @@ def csrf_failed() -> ApiError:
     return ApiError(403, "csrf_failed", "Xavfsizlik tekshiruvi oʻtmadi. Sahifani yangilang.")
 
 
-def check_csrf(request: Request, session: CustomerSession) -> None:
-    """Sarlavha = cookie = sessiyadagi token (vaqtga chidamli taqqoslash)."""
+def check_csrf(request: Request, expected: str) -> None:
+    """Sarlavha = cookie = sessiyadagi token (vaqtga chidamli taqqoslash). Admin sessiyasi ham."""
     header = request.META.get(CSRF_HEADER, "")
     cookie = request.COOKIES.get(CSRF_COOKIE, "")
     if not (
         header
         and secrets.compare_digest(header, cookie)
-        and secrets.compare_digest(header, session.csrf_token)
+        and secrets.compare_digest(header, expected)
     ):
         raise csrf_failed()
 
@@ -37,7 +37,7 @@ class CustomerSessionAuthentication(BaseAuthentication):
         if session is None:
             return None
         if request.method not in SAFE_METHODS:
-            check_csrf(request, session)
+            check_csrf(request, session.csrf_token)
         return session.user, session
 
     def authenticate_header(self, request: Request) -> str:

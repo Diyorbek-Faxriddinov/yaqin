@@ -26,12 +26,13 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def create_session(user: User) -> tuple[str, CustomerSession]:
+def create_session(user: User, csrf_token: str | None = None) -> tuple[str, CustomerSession]:
+    """`csrf_token` — ochiq admin sessiyasiniki (cookie umumiy, apps/staff/sessions.py)."""
     token = secrets.token_urlsafe(32)
     session = CustomerSession.objects.create(
         token_hash=hash_token(token),
         user=user,
-        csrf_token=secrets.token_urlsafe(32),
+        csrf_token=csrf_token or secrets.token_urlsafe(32),
         expires_at=timezone.now() + SESSION_TTL,
     )
     return token, session
@@ -61,9 +62,11 @@ def set_session_cookies(response: HttpResponse, token: str, csrf_token: str) -> 
     )
 
 
-def clear_session_cookies(response: HttpResponse) -> None:
+def clear_session_cookies(response: HttpResponse, keep_csrf: bool = False) -> None:
+    """`keep_csrf` — admin sessiyasi ochiq bo'lsa, umumiy CSRF cookie qoladi."""
     response.delete_cookie(SESSION_COOKIE, samesite="Lax")
-    response.delete_cookie(CSRF_COOKIE, samesite="Lax")
+    if not keep_csrf:
+        response.delete_cookie(CSRF_COOKIE, samesite="Lax")
 
 
 def end_all_sessions(user: User) -> None:

@@ -1,7 +1,16 @@
 // @vitest-environment node
 // Mock API serverda (Node) ishlaydi — jsdom Blob/FormData Node Request bilan mos emas
 import { describe, expect, it } from "vitest";
-import type { AdminBusiness, AdminMe, AdminPhoto, BusinessPage, Item } from "@/lib/api/types";
+import type {
+  AdminBusiness,
+  AdminLoginChallenge,
+  AdminMe,
+  AdminPhoto,
+  AdminTotpSetup,
+  ApiError,
+  BusinessPage,
+  Item,
+} from "@/lib/api/types";
 import { REVALIDATE_HEADER } from "./admin-common";
 import { demoState } from "./demo-state";
 import { mockFetch } from "./fetch";
@@ -91,6 +100,63 @@ describe("admin kirishi", () => {
     const step1 = await post("/admin/auth/login", { username: "root", password: "yaqin-demo" });
     const { challengeToken } = (await step1.json()) as { challengeToken: string };
     expect((await post("/admin/auth/2fa", { challengeToken, code: "000000" })).status).toBe(401);
+  });
+
+  it("5-noto'g'ri kod — challenge bekor bo'ladi (429)", async () => {
+    const step1 = await post("/admin/auth/login", { username: "root", password: "yaqin-demo" });
+    const { challengeToken } = (await step1.json()) as AdminLoginChallenge;
+    for (let i = 0; i < 4; i++)
+      expect((await post("/admin/auth/2fa", { challengeToken, code: "000000" })).status).toBe(401);
+    expect((await post("/admin/auth/2fa", { challengeToken, code: "000000" })).status).toBe(429);
+    expect((await post("/admin/auth/2fa", { challengeToken, code: "123456" })).status).toBe(401);
+  });
+
+  it("birinchi kirish: yangi parol + 2FA sozlash, keyin oddiy kirish", async () => {
+    const admin = demoState.admins.find((a) => a.username === "moderator")!;
+    const original = { ...admin };
+    Object.assign(admin, {
+      password: "vaqtinchalik-1",
+      mustChangePassword: true,
+      totpConfigured: false,
+    });
+    try {
+      const step1 = await post("/admin/auth/login", {
+        username: "moderator",
+        password: "vaqtinchalik-1",
+      });
+      const challenge = (await step1.json()) as AdminLoginChallenge;
+      expect(challenge).toMatchObject({ next: "setup", mustChangePassword: true });
+      const { challengeToken } = challenge;
+      // Sozlamasdan kod — yo'q; parolsiz va zaif parol — 400
+      expect((await post("/admin/auth/2fa", { challengeToken, code: "123456" })).status).toBe(401);
+      expect((await post("/admin/auth/setup", { challengeToken })).status).toBe(400);
+      const weak = await post("/admin/auth/setup", { challengeToken, newPassword: "qisqa" });
+      expect(((await weak.json()) as ApiError).fields?.newPassword).toBeDefined();
+
+      const setup = await post("/admin/auth/setup", {
+        challengeToken,
+        newPassword: "Yangi-Uzun-Parol-2026",
+      });
+      expect(setup.status).toBe(200);
+      const totp = (await setup.json()) as AdminTotpSetup;
+      expect(totp.otpauthUri).toMatch(/^otpauth:\/\/totp\/Yaqin:moderator\?/);
+      expect(totp.qrDataUri).toMatch(/^data:image\/svg\+xml;base64,/);
+      // Kod tasdiqlanmaguncha parol o'zgarmaydi
+      expect(admin.password).toBe("vaqtinchalik-1");
+      expect((await post("/admin/auth/2fa", { challengeToken, code: "123456" })).status).toBe(200);
+
+      // Keyingi kirish — faqat TOTP; sozlash endi kerak emas (409)
+      const again = await post("/admin/auth/login", {
+        username: "moderator",
+        password: "Yangi-Uzun-Parol-2026",
+      });
+      const next = (await again.json()) as AdminLoginChallenge;
+      expect(next.next).toBe("totp");
+      const setupAgain = await post("/admin/auth/setup", { challengeToken: next.challengeToken });
+      expect(setupAgain.status).toBe(409);
+    } finally {
+      Object.assign(admin, original);
+    }
   });
 
   it("mijoz sessiyasi admin API'ga kirita olmaydi", async () => {

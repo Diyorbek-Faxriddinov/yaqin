@@ -8,6 +8,7 @@ urlpatterns = [
     path("api/v1/", include("apps.stats.urls")),
     path("api/v1/", include("apps.accounts.urls")),
     path("api/v1/", include("apps.community.urls")),
+    path("api/v1/", include("apps.staff.urls")),
 ]
 
 handler404 = "apps.core.views.not_found"

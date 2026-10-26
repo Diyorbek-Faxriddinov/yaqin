@@ -7,6 +7,12 @@
 - `handlers.ts` — MSW handler'lari, [docs/api/openapi.yaml](../../../docs/api/openapi.yaml) kontraktiga mos.
 - `fetch.ts` — `mockFetch(request)`: so'rovni tarmoqsiz, shu handler'lar orqali javoblaydi.
 
+## Admin kirishi (demo)
+
+- Hamma demo administratorlar uchun kod — `123456` (`totpCode`); parollar ochiq matnda. Backendda — Argon2 xeshi va har bir admin uchun shifrlangan TOTP kaliti.
+- Root qoʻshgan yoki paroli tiklangan administrator birinchi kirishda `next: setup` oladi: yangi parol → `/admin/auth/setup` → kod. Javobdagi kalit (`DEMODEMODEMODEMO`) va QR — belgi, haqiqiy emas.
+- Bloklash faqat login boʻyicha va 1 daqiqaga (backendda — IP + login, 15 daqiqa).
+
 Ilova kodi bu papkani **to'g'ridan-to'g'ri import qilmaydi** — faqat `src/lib/api/server.ts`
 demo rejimida `mockFetch` ni ulaydi. Demo rejim o'chirilsa (`NEXT_PUBLIC_DEMO_MODE=false`),
 so'rovlar `API_URL` dagi haqiqiy backendga ketadi. Qarang: ADR-0011.

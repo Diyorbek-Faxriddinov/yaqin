@@ -584,8 +584,11 @@ paths:
       operationId: adminLogin
       summary: Admin kirishi — 1-qadam (login va parol)
       description: |
-        Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — 2FA uchun qisqa muddatli `challengeToken`
-        qaytadi. Ketma-ket muvaffaqiyatsiz urinishlar cheklanadi (429).
+        Muvaffaqiyatli bo'lsa sessiya hali yaratilmaydi — qisqa muddatli (5 daqiqa) `challengeToken`
+        qaytadi. `next`: `totp` — 2FA kodi (/admin/auth/2fa); `setup` — birinchi kirish yoki
+        tiklangan akkaunt: avval /admin/auth/setup (yangi parol va TOTP kaliti), keyin 2fa.
+        Ketma-ket muvaffaqiyatsiz urinishlar IP + login juftligi bo'yicha cheklanadi (429).
+        Login yoki parol noto'g'ri, akkaunt o'chirilgan — bir xil 401 (holat oshkor qilinmaydi).
       requestBody:
         required: true
         content:
@@ -598,14 +601,10 @@ paths:
                 password: { type: string, maxLength: 256 }
       responses:
         "200":
-          description: 2FA kodi kerak
+          description: Keyingi qadam (2FA kodi yoki birinchi sozlash)
           content:
             application/json:
-              schema:
-                type: object
-                required: [challengeToken]
-                properties:
-                  challengeToken: { type: string }
+              schema: { $ref: "#/components/schemas/AdminLoginChallenge" }
         "401":
           $ref: "#/components/responses/Unauthorized"
         "429":
@@ -619,6 +618,8 @@ paths:
       description: |
         Muvaffaqiyatli bo'lsa `adminsessionid` (HttpOnly, Secure, SameSite=Strict, 8 soat) va
         `csrftoken` cookie'lari o'rnatiladi. Admin sessiyasi mijoz sessiyasidan alohida.
+        Sozlash (`next: setup`) jarayonida kod yangi kalit bo'yicha tekshiriladi va kalit faollashadi.
+        Bir kodni qayta ishlatib bo'lmaydi. 5 ta noto'g'ri kod — challenge bekor bo'ladi (429).
       requestBody:
         required: true
         content:
@@ -640,6 +641,39 @@ paths:
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
+  /admin/auth/setup:
+    post:
+      tags: [admin]
+      operationId: adminSetup
+      summary: Birinchi kirish — yangi parol va TOTP kaliti (faqat next=setup bo'lganda)
+      description: |
+        `mustChangePassword` bo'lsa `newPassword` majburiy (kamida 12 belgi, oddiy parollar va
+        logindan foydalanib bo'lmaydi). Javobda yangi TOTP kaliti — autentifikator ilovaga QR yoki
+        kalit orqali qo'shiladi; kalit /admin/auth/2fa da birinchi to'g'ri kod bilan faollashadi.
+        Kalit faqat shu javobda ko'rsatiladi; backendda shifrlangan holda saqlanadi.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challengeToken]
+              properties:
+                challengeToken: { type: string }
+                newPassword: { type: [string, "null"], maxLength: 256 }
+      responses:
+        "200":
+          description: TOTP kaliti
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminTotpSetup" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
   /admin/auth/logout:
     post:
       tags: [admin]
@@ -649,6 +683,8 @@ paths:
       responses:
         "204":
           description: Chiqildi
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /admin/me:
     get:
@@ -3226,3 +3262,32 @@ components:
         database:
           type: string
           enum: [ok, error]
+
+    AdminLoginChallenge:
+      type: object
+      required: [challengeToken, next, mustChangePassword]
+      properties:
+        challengeToken: { type: string }
+        next:
+          type: string
+          enum: [totp, setup]
+          description: "totp — 2FA kodi; setup — avval /admin/auth/setup"
+        mustChangePassword:
+          type: boolean
+          description: Vaqtinchalik parol bilan kirildi — setup'da yangi parol majburiy
+
+    AdminTotpSetup:
+      type: object
+      required: [secret, otpauthUri, qrDataUri]
+      properties:
+        secret:
+          type: string
+          description: Base32 kalit (QR'ni skanerlab bo'lmasa qo'lda kiritish uchun)
+        otpauthUri:
+          {
+            type: string,
+            description: "otpauth://totp/... — autentifikator ilovalar uchun",
+          }
+        qrDataUri:
+          type: string
+          description: "QR kod — data:image/svg+xml;base64,... (img src sifatida)"

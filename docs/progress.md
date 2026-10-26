@@ -35,12 +35,43 @@ Oxirgi yangilanish: 2026-10-26
 | 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅                     |
 | 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅                     |
 | 3.3   | Ommaviy API                                                                          | ✅                     |
-| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅ (tasdiq kutilmoqda) |
-| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ⏳                     |
+| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅                     |
+| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅ (tasdiq kutilmoqda) |
 | 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ⏳                     |
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.5 natijalari
+
+Yangi ilova — `apps/staff`: administratorlar, rollar, admin sessiyalari, kirish challenge'lari, audit jurnali.
+
+| Endpoint / buyruq                          | Imkoniyatlar                                                                                                                                                                                                |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /admin/auth/login`                   | Login + parol (Argon2). Javob: `challengeToken` (5 daqiqa), `next` (`totp` yoki `setup`), `mustChangePassword`. Notoʻgʻri parol, nomaʼlum login va oʻchirilgan akkaunt — bir xil 401 va bir xil javob vaqti |
+| `POST /admin/auth/setup`                   | **Yangi.** Birinchi kirish yoki tiklangan akkaunt: yangi parol (kamida 12 belgi, oddiy, faqat raqamli, loginga oʻxshash va avvalgi parol taqiqlangan) va TOTP kaliti (QR — SVG, kalit matni)                |
+| `POST /admin/auth/2fa`                     | TOTP kodi (±30 soniya). Bir kodni qayta ishlatib boʻlmaydi; 5 ta notoʻgʻri kod — challenge bekor (429). Muvaffaqiyatli boʻlsa `adminsessionid` (HttpOnly, SameSite=Strict, 8 soat)                          |
+| `POST /admin/auth/logout`, `GET /admin/me` | Chiqish (CSRF bilan), joriy admin va amaldagi ruxsatlari                                                                                                                                                    |
+| `python manage.py createroot`              | Yagona Root (DB cheklovi); parol faqat `getpass` yoki `--password-stdin` orqali (shell tarixida qolmaydi)                                                                                                   |
+
+- **Parol tanlashga qarshi:** IP + login juftligi — 15 daqiqada 5 xato → 15 daqiqa blok; faqat login boʻyicha (turli IP'lardan) — 20 xato; IP boʻyicha umumiy chegara — 30/daqiqa. Begona odam haqiqiy adminni oʻz IP'sidan bloklay olmaydi.
+- **2FA kalitlari** bazada Fernet bilan shifrlangan (`TOTP_ENCRYPTION_KEY` — productionda majburiy, yoʻq boʻlsa ilova ishga tushmaydi).
+- **Sozlash atomar:** yangi parol va kalit challenge'da kutadi, faqat toʻgʻri kod kiritilgach akkauntga yoziladi — jarayon yarim yoʻlda qolsa, akkaunt oʻzgarmaydi.
+- **RBAC:** 12 ta atomar ruxsat (kontraktdagi roʻyxat bilan bir xilligi testda), 3 ta tizim roli (Moderator, Kontent menejeri, Tahlilchi), amaldagi ruxsatlar = rollar ∪ alohida; Root — hammasi. View'larda: `IsAdmin` + `admin_permission` (`"root"` — faqat Root).
+- **Audit jurnali faqat qoʻshiladi:** UPDATE, DELETE va TRUNCATE bazadagi trigger bilan rad etiladi; yozuvi bor administratorni oʻchirib boʻlmaydi (faqat oʻchiriladi). DB cheklovlari: bitta Root, Root'ni oʻchirib boʻlmaydi, login formati.
+- **Umumiy CSRF tokeni:** mijoz va admin sessiyasi bir brauzerda ochiq boʻlsa, ikkalasi bir xil `csrftoken` ni ishlatadi — biri kirsa yoki chiqsa, ikkinchisi buzilmaydi.
+- **Frontend:** kirish oynasiga sozlash bosqichi qoʻshildi (yangi parol ×2 → QR va kalit → kod); mock ham shu oqimda (yangi va paroli tiklangan administrator birinchi kirishda sozlaydi); E2E testi yangilandi.
+- Testlar: backend 185 (+46), frontend unit 204, E2E 221 (3 ekran).
+
+**Kontrakt oʻzgardi:** `login` javobi `AdminLoginChallenge` (`next`, `mustChangePassword`); yangi `POST /admin/auth/setup` (`AdminTotpSetup`); admin chiqishiga 403 (CSRF).
+
+**Hali ishlamaydi / qoldi:**
+
+- Administratorlar, rollar, parolni tiklash, audit roʻyxati endpointlari — 3.7 (model va ruxsat tekshiruvi tayyor).
+- Bloklash hisoblagichlari hozircha jarayon xotirasida (LocMem) — bir nechta jarayonli productionda Redis kerak (3.8).
+- Faol admin sessiyalarini koʻrish va bekor qilish (ADR-0006) — kontraktda endpoint yoʻq; hozircha parolni tiklash va oʻchirish sessiyalarni tugatadi (3.7).
+- `TOTP_ENCRYPTION_KEY` yoʻqolsa, barcha administratorlar 2FA'ni qaytadan sozlashi kerak — kalit zaxirasi hosting bosqichida (5) rejalashtiriladi.
+- Haqiqiy autentifikator ilovasi bilan qoʻlda sinov — 4-bosqichda (testlarda RFC 6238 boʻyicha `pyotp` bilan tekshirildi).
 
 ## 3.4 natijalari
 

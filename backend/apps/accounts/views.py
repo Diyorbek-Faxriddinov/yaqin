@@ -30,6 +30,7 @@ from apps.accounts.sessions import (
 )
 from apps.community.models import Review
 from apps.core.api import ApiError, not_found
+from apps.staff.sessions import admin_csrf_token
 
 
 def me_payload(user: User) -> dict[str, Any]:
@@ -42,7 +43,7 @@ def me_payload(user: User) -> dict[str, Any]:
     }
 
 
-def login(profile: Profile) -> Response:
+def login(request: Request, profile: Profile) -> Response:
     """Provayder hisobi bo'yicha foydalanuvchini topadi yoki yaratadi va sessiya ochadi."""
     user, _created = User.objects.get_or_create(
         provider=profile.provider,
@@ -55,7 +56,7 @@ def login(profile: Profile) -> Response:
     user.avatar_url = profile.avatar_url or user.avatar_url
     user.last_login_at = timezone.now()
     user.save(update_fields=["avatar_url", "last_login_at"])
-    token, session = create_session(user)
+    token, session = create_session(user, admin_csrf_token(request))
     response = Response(me_payload(user))
     set_session_cookies(response, token, session.csrf_token)
     return response
@@ -69,7 +70,7 @@ class LoginThrottled(APIView):
 class TelegramLoginView(LoginThrottled):
     def post(self, request: Request) -> Response:
         data = request.data if isinstance(request.data, dict) else {}
-        return login(verify_telegram(data))
+        return login(request, verify_telegram(data))
 
 
 class GoogleInput(serializers.Serializer[dict[str, str]]):
@@ -81,7 +82,7 @@ class GoogleLoginView(LoginThrottled):
         data = GoogleInput(data=request.data)
         if not data.is_valid():
             raise ApiError(401, "invalid_credentials", "Kirish maʼlumotlari tasdiqlanmadi")
-        return login(verify_google(data.validated_data["credential"]))
+        return login(request, verify_google(data.validated_data["credential"]))
 
 
 class DemoLoginView(LoginThrottled):
@@ -92,7 +93,8 @@ class DemoLoginView(LoginThrottled):
             raise not_found()
         uid = secrets.token_hex(8)
         return login(
-            Profile(provider="demo", uid=uid, display_name="Demo foydalanuvchi", avatar_url="")
+            request,
+            Profile(provider="demo", uid=uid, display_name="Demo foydalanuvchi", avatar_url=""),
         )
 
 
@@ -101,10 +103,10 @@ class LogoutView(APIView):
         # Sessiya bo'lsa CSRF talab qilinadi; bo'lmasa — shunchaki cookie'lar tozalanadi
         session = find_session(request.COOKIES.get(SESSION_COOKIE))
         if session is not None:
-            check_csrf(request, session)
+            check_csrf(request, session.csrf_token)
             session.delete()
         response = Response(status=204)
-        clear_session_cookies(response)
+        clear_session_cookies(response, keep_csrf=admin_csrf_token(request) is not None)
         return response
 
 
@@ -137,5 +139,5 @@ class MeView(APIView):
             end_all_sessions(user)
             user.delete()
         response = Response(status=204)
-        clear_session_cookies(response)
+        clear_session_cookies(response, keep_csrf=admin_csrf_token(request) is not None)
         return response

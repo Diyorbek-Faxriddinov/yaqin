@@ -266,6 +266,8 @@ export const adminSystemHandlers = [
       username,
       password: temporaryPassword,
       totpCode: "123456",
+      mustChangePassword: true,
+      totpConfigured: false,
       displayName,
       isRoot: false,
       isActive: true,
@@ -328,6 +330,9 @@ export const adminSystemHandlers = [
     if (admin.isRoot) return error(403, "root_immutable", "Root API orqali oʻzgartirilmaydi");
     const temporaryPassword = randomToken(14);
     admin.password = temporaryPassword;
+    // Tiklangan akkaunt: keyingi kirishda yangi parol va 2FA qaytadan sozlanadi
+    admin.mustChangePassword = true;
+    admin.totpConfigured = false;
     endSessions(admin.id);
     audit(
       auth.admin,

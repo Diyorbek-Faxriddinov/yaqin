@@ -12,6 +12,9 @@ from django.contrib.gis.geos import Point
 from apps.accounts.models import User
 from apps.businesses.models import Business, Item
 from apps.catalog.models import Category, District
+from apps.staff import totp
+from apps.staff.models import AdminUser
+from apps.staff.passwords import hash_password
 
 # Chilonzor tumani atrofidagi nuqta
 CHILONZOR = Point(69.2042, 41.2755, srid=4326)
@@ -26,6 +29,27 @@ def make_user(**fields: Any) -> User:
             "provider": User.Provider.TELEGRAM,
             "provider_uid": f"tg-{n}",
             "display_name": f"Foydalanuvchi {n}",
+            **fields,
+        }
+    )
+
+
+ADMIN_PASSWORD = "Yashil-Olma-Daraxt-42"
+TOTP_SECRET = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"
+
+
+def make_admin(
+    *, password: str = ADMIN_PASSWORD, totp_secret: str | None = TOTP_SECRET, **fields: Any
+) -> AdminUser:
+    """Standart: 2FA sozlangan, parol almashtirilgan. `totp_secret=None` — 2FA sozlanmagan."""
+    n = next(_sequence)
+    return AdminUser.objects.create(
+        **{
+            "username": f"admin{n}",
+            "display_name": f"Administrator {n}",
+            "password_hash": hash_password(password),
+            "must_change_password": False,
+            "totp_secret": totp.encrypt(totp_secret) if totp_secret else "",
             **fields,
         }
     )

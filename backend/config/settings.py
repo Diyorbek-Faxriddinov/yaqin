@@ -25,7 +25,7 @@ if env_str("GDAL_LIBRARY_PATH"):
 if env_str("GEOS_LIBRARY_PATH"):
     GEOS_LIBRARY_PATH = env_str("GEOS_LIBRARY_PATH")
 
-# Mijoz (accounts.User) va administrator (3.5) — alohida modellar, alohida sessiyalar (ADR-0006).
+# Mijoz (accounts.User) va admin (staff.AdminUser) — alohida modellar va sessiyalar (ADR-0006).
 # django.contrib.auth/admin ishlatilmaydi: o'z admin panelimiz va RBAC (ADR-0009).
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "apps.businesses",
     "apps.community",
     "apps.stats",
+    "apps.staff",
 ]
 
 MIDDLEWARE = [
@@ -91,6 +92,9 @@ REST_FRAMEWORK = {
         # Kirgan foydalanuvchi bo'yicha (ScopedRateThrottle foydalanuvchi ID'sini ishlatadi)
         "reviews": "10/hour",
         "complaints": "10/hour",
+        # Admin kirishi (login, setup, 2fa) — IP bo'yicha; qo'shimcha IP + login bloklash —
+        # apps/staff/lockout.py
+        "admin_auth": "30/min",
     },
     # Reverse proxy (Caddy/Nginx) ortida: X-Forwarded-For'dan nechta proksi ishonchli
     "NUM_PROXIES": int(env_str("DJANGO_NUM_PROXIES", "0")) or None,
@@ -114,6 +118,29 @@ SESSION_COOKIES_SECURE = env_bool("SESSION_COOKIES_SECURE", not DEBUG)
 # apps/accounts/authentication.py); Django CsrfViewMiddleware ishlatilmaydi —
 # DRF APIView'lar baribir uni chetlab o'tadi
 SILENCED_SYSTEM_CHECKS = ["security.W003"]
+
+# --- Administratorlar (ADR-0006, ADR-0009) ---
+# Parollar — Argon2 (Django hashers; django.contrib.auth ilovasi kerak emas)
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.Argon2PasswordHasher"]
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "OPTIONS": {"user_attributes": ("username", "display_name")},
+    },
+]
+# TOTP kalitlarini shifrlash (Fernet). Yaratish:
+# python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+TOTP_ENCRYPTION_KEY = env_str("TOTP_ENCRYPTION_KEY")
+if not TOTP_ENCRYPTION_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured("TOTP_ENCRYPTION_KEY majburiy (productionda)")
+    TOTP_ENCRYPTION_KEY = "ZGV2LW9ubHktaW5zZWN1cmUtdG90cC1rZXktMzJieXQ="  # faqat DEBUG
 
 # --- Frontend keshini yangilash (docs/backend-handoff.md, 6-bo'lim) ---
 FRONTEND_REVALIDATE_URL = env_str("FRONTEND_REVALIDATE_URL")

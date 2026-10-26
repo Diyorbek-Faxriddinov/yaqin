@@ -21,6 +21,13 @@ Yuridik shaxs yoʻq — SMS provayderlar bilan shartnoma tuzish qiyin. Oʻzbekis
 - Admin sessiyasi alohida cookie'da (`adminsessionid`, `SameSite=Strict`, 8 soat) — mijoz sessiyasidan mustaqil.
 - Mock rejimida Telegram/Google oʻrniga "Demo foydalanuvchi sifatida kirish" tugmasi boʻladi.
 
+### Yangilanish (3.5): admin kirishi amalda
+
+- Kirish uch qadamli boʻlishi mumkin: `login` (parol) → `setup` (faqat birinchi kirishda yoki parol tiklangandan keyin: yangi parol + TOTP kaliti QR orqali) → `2fa` (kod). Sozlash maʼlumotlari faqat toʻgʻri kod kiritilgach saqlanadi.
+- TOTP kaliti bazada shifrlangan (Fernet); bir kodni qayta ishlatib boʻlmaydi.
+- Cheklov: IP + login juftligi (5 xato / 15 daqiqa), faqat login boʻyicha yuqoriroq chegara (20) va IP boʻyicha umumiy chegara.
+- `csrftoken` cookie mijoz va admin sessiyalari uchun umumiy: yangi sessiya ochiq turgan boshqasining tokenini oladi.
+
 ## Oqibatlar
 
 - MVP'da SMS xarajati va shartnoma kerak emas.

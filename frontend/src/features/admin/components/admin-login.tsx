@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
+import { KeyRound, Loader2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Logo } from "@/components/common/logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,8 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
+import type { AdminTotpSetup } from "@/lib/api/types";
 import { useHydrated } from "@/lib/use-hydrated";
 import { adminMeKey } from "../use-admin";
+
+const MIN_PASSWORD_LENGTH = 12;
+
+type Step =
+  | { kind: "credentials" }
+  // Birinchi kirish yoki tiklangan akkaunt: vaqtinchalik parol → o'zining paroli
+  | { kind: "password"; token: string }
+  // TOTP kodi; `setup` bo'lsa — avval autentifikator ilovaga kalit qo'shiladi
+  | { kind: "code"; token: string; setup: AdminTotpSetup | null };
 
 function errorMessage(
   error: unknown,
@@ -21,52 +31,98 @@ function errorMessage(
   if (error instanceof BrowserApiError) {
     if (error.status === 429) return t("errors.tooMany");
     if (error.body?.code === "invalid_code") return t("errors.code");
-    if (error.body?.code === "challenge_expired") return t("errors.expired");
+    if (["challenge_expired", "setup_required"].includes(error.body?.code ?? "")) {
+      return t("errors.expired");
+    }
     if (error.status === 401) return t("errors.invalid");
   }
   return t("errors.generic");
 }
 
-/** Ikki bosqichli kirish: login + parol → TOTP kodi (ADR-0006) */
+/** Muddati o'tgan, urinishlar tugagan yoki holat o'zgargan — birinchi qadamdan qayta */
+function mustRestart(error: unknown): boolean {
+  return error instanceof BrowserApiError && [401, 409, 429].includes(error.status);
+}
+
+/** Kirish: login + parol → (birinchi marta: yangi parol, 2FA sozlash) → TOTP kodi (ADR-0006) */
 export function AdminLogin({ next, demoMode }: { next: string; demoMode: boolean }) {
   const t = useTranslations("Admin.login");
   const router = useRouter();
   const queryClient = useQueryClient();
   const hydrated = useHydrated();
-  const [challenge, setChallenge] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>({ kind: "credentials" });
   const [code, setCode] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+
+  const restart = (message: string | null) => {
+    setStep({ kind: "credentials" });
+    setCode("");
+    setFormError(message);
+  };
+
+  const setup = useMutation({
+    mutationFn: (input: { token: string; newPassword: string | null }) =>
+      call(
+        browserApi.POST("/admin/auth/setup", {
+          body: { challengeToken: input.token, newPassword: input.newPassword },
+        }),
+      ),
+    onSuccess: (data, input) => {
+      setFormError(null);
+      setStep({ kind: "code", token: input.token, setup: data });
+    },
+    onError: (error) => {
+      const passwordErrors =
+        error instanceof BrowserApiError ? error.body?.fields?.newPassword : undefined;
+      if (passwordErrors?.length) setFormError(passwordErrors.join(" "));
+      else if (mustRestart(error)) restart(errorMessage(error, t));
+      else setFormError(errorMessage(error, t));
+    },
+  });
 
   const login = useMutation({
     mutationFn: (credentials: { username: string; password: string }) =>
       call(browserApi.POST("/admin/auth/login", { body: credentials })),
-    onSuccess: ({ challengeToken }) => {
+    onSuccess: ({ challengeToken, next: nextStep, mustChangePassword }) => {
       setFormError(null);
-      setChallenge(challengeToken);
+      if (nextStep === "totp") setStep({ kind: "code", token: challengeToken, setup: null });
+      else if (mustChangePassword) setStep({ kind: "password", token: challengeToken });
+      // Parol o'zgarmaydi — darhol 2FA kaliti
+      else setup.mutate({ token: challengeToken, newPassword: null });
     },
     onError: (error) => setFormError(errorMessage(error, t)),
   });
 
   const verify = useMutation({
-    mutationFn: () =>
-      call(browserApi.POST("/admin/auth/2fa", { body: { challengeToken: challenge ?? "", code } })),
+    mutationFn: (token: string) =>
+      call(browserApi.POST("/admin/auth/2fa", { body: { challengeToken: token, code } })),
     onSuccess: (admin) => {
       queryClient.setQueryData(adminMeKey, admin);
       router.replace(next);
       router.refresh();
     },
     onError: (error) => {
-      setFormError(errorMessage(error, t));
       setCode("");
-      // Muddati o'tgan yoki urinishlar tugagan — birinchi qadamga
-      if (
-        error instanceof BrowserApiError &&
-        (error.status === 429 || error.body?.code === "challenge_expired")
-      ) {
-        setChallenge(null);
+      if (error instanceof BrowserApiError && error.body?.code === "invalid_code") {
+        setFormError(errorMessage(error, t));
+      } else if (mustRestart(error)) {
+        restart(errorMessage(error, t));
+      } else {
+        setFormError(errorMessage(error, t));
       }
     },
   });
+
+  const errorAlert = formError && (
+    <p role="alert" className="text-sm text-destructive">
+      {formError}
+    </p>
+  );
+  const backButton = (
+    <Button type="button" variant="ghost" className="w-full" onClick={() => restart(null)}>
+      {t("back")}
+    </Button>
+  );
 
   return (
     <div className="mx-auto w-full max-w-sm space-y-6">
@@ -74,7 +130,7 @@ export function AdminLogin({ next, demoMode }: { next: string; demoMode: boolean
         <Logo />
       </div>
 
-      {!challenge ? (
+      {step.kind === "credentials" && (
         // method="post": JavaScript yuklanmasdan yuborilsa ham parol URL'ga (tarix, loglar) tushmaydi.
         // Maydonlar boshqarilmaydigan — sahifa jonlanishidan oldin yozilgan matn yo'qolmaydi.
         <form
@@ -116,22 +172,79 @@ export function AdminLogin({ next, demoMode }: { next: string; demoMode: boolean
               autoComplete="current-password"
             />
           </div>
-          {formError && (
-            <p role="alert" className="text-sm text-destructive">
-              {formError}
-            </p>
-          )}
+          {errorAlert}
           <Button
             type="submit"
             size="lg"
             className="w-full"
-            disabled={!hydrated || login.isPending}
+            disabled={!hydrated || login.isPending || setup.isPending}
           >
-            {login.isPending && <Loader2 aria-hidden="true" className="animate-spin" />}
+            {(login.isPending || setup.isPending) && (
+              <Loader2 aria-hidden="true" className="animate-spin" />
+            )}
             {t("submit")}
           </Button>
         </form>
-      ) : (
+      )}
+
+      {step.kind === "password" && (
+        <form
+          method="post"
+          noValidate
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            const newPassword = String(data.get("newPassword") ?? "");
+            if (newPassword.length < MIN_PASSWORD_LENGTH) {
+              setFormError(t("errors.passwordShort"));
+              return;
+            }
+            if (newPassword !== String(data.get("confirmPassword") ?? "")) {
+              setFormError(t("errors.passwordMismatch"));
+              return;
+            }
+            setup.mutate({ token: step.token, newPassword });
+          }}
+        >
+          <h1 className="flex items-center gap-2 text-xl font-semibold">
+            <LockKeyhole aria-hidden="true" className="size-5 text-primary" />
+            {t("setupTitle")}
+          </h1>
+          <p className="text-sm text-muted-foreground">{t("setupDescription")}</p>
+          <div className="grid gap-2">
+            <Label htmlFor="admin-new-password">{t("newPassword")}</Label>
+            <Input
+              id="admin-new-password"
+              name="newPassword"
+              type="password"
+              autoComplete="new-password"
+              aria-describedby="admin-new-password-hint"
+              autoFocus
+            />
+            <p id="admin-new-password-hint" className="text-xs text-muted-foreground">
+              {t("newPasswordHint")}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="admin-confirm-password">{t("confirmPassword")}</Label>
+            <Input
+              id="admin-confirm-password"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+            />
+          </div>
+          {errorAlert}
+          <Button type="submit" size="lg" className="w-full" disabled={setup.isPending}>
+            {setup.isPending && <Loader2 aria-hidden="true" className="animate-spin" />}
+            {t("submit")}
+          </Button>
+          {backButton}
+        </form>
+      )}
+
+      {step.kind === "code" && (
         <form
           noValidate
           className="space-y-4"
@@ -141,14 +254,35 @@ export function AdminLogin({ next, demoMode }: { next: string; demoMode: boolean
               setFormError(t("errors.codeFormat"));
               return;
             }
-            verify.mutate();
+            verify.mutate(step.token);
           }}
         >
           <h1 className="flex items-center gap-2 text-xl font-semibold">
             <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
-            {t("codeTitle")}
+            {step.setup ? t("totpTitle") : t("codeTitle")}
           </h1>
-          <p className="text-sm text-muted-foreground">{t("codeDescription")}</p>
+          {step.setup ? (
+            <>
+              <p className="text-sm text-muted-foreground">{t("totpDescription")}</p>
+              {/* QR — backend yaratgan SVG (data URI); next/image kerak emas */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={step.setup.qrDataUri}
+                alt={t("qrAlt")}
+                width={192}
+                height={192}
+                className="mx-auto rounded-md bg-white p-2"
+              />
+              <div className="space-y-1 text-sm">
+                <p className="text-muted-foreground">{t("secretLabel")}</p>
+                <code className="block rounded-md bg-muted px-3 py-2 font-mono break-all select-all">
+                  {step.setup.secret}
+                </code>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("codeDescription")}</p>
+          )}
           <div className="grid gap-2">
             <Label htmlFor="admin-code">{t("code")}</Label>
             <Input
@@ -156,32 +290,18 @@ export function AdminLogin({ next, demoMode }: { next: string; demoMode: boolean
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
-              autoFocus
+              autoFocus={!step.setup}
               className="text-center text-lg tracking-[0.5em]"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             />
           </div>
-          {formError && (
-            <p role="alert" className="text-sm text-destructive">
-              {formError}
-            </p>
-          )}
+          {errorAlert}
           <Button type="submit" size="lg" className="w-full" disabled={verify.isPending}>
             {verify.isPending && <Loader2 aria-hidden="true" className="animate-spin" />}
             {t("verify")}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => {
-              setChallenge(null);
-              setFormError(null);
-            }}
-          >
-            {t("back")}
-          </Button>
+          {backButton}
         </form>
       )}
 

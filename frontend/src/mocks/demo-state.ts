@@ -49,8 +49,12 @@ export type DemoAdmin = {
   username: string;
   /** ⚠ Demo: ochiq matnda. Backendda — Argon2 xeshi */
   password: string;
-  /** ⚠ Demo: qat'iy kod. Backendda — har bir admin uchun TOTP maxfiy kaliti */
+  /** ⚠ Demo: qat'iy kod. Backendda — har bir admin uchun TOTP maxfiy kaliti (shifrlangan) */
   totpCode: string;
+  /** Vaqtinchalik parol berilgan (yangi admin yoki parol tiklangan) — birinchi kirishda almashtiriladi */
+  mustChangePassword: boolean;
+  /** 2FA sozlanganmi; yo'q bo'lsa kirishda `next: setup` */
+  totpConfigured: boolean;
   displayName: string;
   isRoot: boolean;
   isActive: boolean;
@@ -59,6 +63,16 @@ export type DemoAdmin = {
   extraPermissions: AdminPermission[];
   createdAt: string;
   lastLoginAt: string | null;
+};
+
+export type DemoChallenge = {
+  adminId: string;
+  next: "totp" | "setup";
+  /** Sozlashda yangi parol shu yerda kutadi — 2FA kodi tasdiqlangach yoziladi */
+  pendingPassword: string | null;
+  setupStarted: boolean;
+  expiresAt: number;
+  attempts: number;
 };
 
 export type DemoRole = {
@@ -128,7 +142,7 @@ type DemoState = {
   admins: DemoAdmin[];
   roles: DemoRole[];
   adminSessions: Map<string, { adminId: string; csrfToken: string; expiresAt: number }>;
-  adminChallenges: Map<string, { adminId: string; expiresAt: number; attempts: number }>;
+  adminChallenges: Map<string, DemoChallenge>;
   loginFailures: Map<string, { count: number; blockedUntil: number }>;
   /** Faqat qo'shiladi (append-only) — ADR-0009 */
   audit: AuditEntry[];
@@ -193,6 +207,8 @@ const DEMO_ADMINS: DemoAdmin[] = [
     username: "root",
     password: "yaqin-demo",
     totpCode: "123456",
+    mustChangePassword: false,
+    totpConfigured: true,
     displayName: "Root (demo)",
     isRoot: true,
     isActive: true,
@@ -206,6 +222,8 @@ const DEMO_ADMINS: DemoAdmin[] = [
     username: "moderator",
     password: "yaqin-demo",
     totpCode: "123456",
+    mustChangePassword: false,
+    totpConfigured: true,
     displayName: "Moderator (demo)",
     isRoot: false,
     isActive: true,

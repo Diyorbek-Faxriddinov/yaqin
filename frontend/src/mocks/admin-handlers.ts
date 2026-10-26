@@ -8,6 +8,7 @@ import {
   districtBySlug,
   districtRef,
   error,
+  invalid,
   langOf,
   readJson,
   revalidate,
@@ -39,6 +40,14 @@ const SESSION_TTL = 8 * 60 * 60 * 1000;
 const CHALLENGE_TTL = 5 * 60 * 1000;
 const MAX_LOGIN_FAILURES = 5;
 const LOGIN_BLOCK_MS = 60 * 1000;
+// ⚠ Demo: hamma uchun bir xil kalit va QR o'rnida belgi; kod baribir "123456" (totpCode).
+// Backendda — har bir admin uchun tasodifiy kalit va haqiqiy QR (apps/staff/totp.py)
+const DEMO_TOTP_SECRET = "DEMODEMODEMODEMO";
+const DEMO_QR =
+  "data:image/svg+xml;base64," +
+  btoa(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#fff"/><rect x="6" y="6" width="108" height="108" fill="none" stroke="#000" stroke-width="4" stroke-dasharray="8 6"/><text x="60" y="56" font-family="sans-serif" font-size="16" text-anchor="middle">DEMO</text><text x="60" y="76" font-family="sans-serif" font-size="11" text-anchor="middle">kod: 123456</text></svg>',
+  );
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -290,12 +299,56 @@ export const adminHandlers = [
     }
     demoState.loginFailures.delete(username);
     const challengeToken = crypto.randomUUID();
+    const next = admin.mustChangePassword || !admin.totpConfigured ? "setup" : "totp";
     demoState.adminChallenges.set(challengeToken, {
       adminId: admin.id,
+      next,
+      pendingPassword: null,
+      setupStarted: false,
       expiresAt: Date.now() + CHALLENGE_TTL,
       attempts: 0,
     });
-    return HttpResponse.json({ challengeToken });
+    return HttpResponse.json({
+      challengeToken,
+      next,
+      mustChangePassword: admin.mustChangePassword,
+    });
+  }),
+
+  // Birinchi kirish: yangi parol (vaqtinchalik parol bo'lsa) va TOTP kaliti
+  http.post(`${API}/admin/auth/setup`, async ({ request }) => {
+    const body = await readJson(request);
+    const token = typeof body?.challengeToken === "string" ? body.challengeToken : "";
+    const challenge = demoState.adminChallenges.get(token);
+    const admin = challenge && demoState.admins.find((a) => a.id === challenge.adminId);
+    if (!challenge || challenge.expiresAt < Date.now() || !admin?.isActive) {
+      demoState.adminChallenges.delete(token);
+      return error(401, "challenge_expired", "Vaqt tugadi. Qaytadan kiring.");
+    }
+    if (challenge.next !== "setup") {
+      return error(409, "setup_not_required", "2FA allaqachon sozlangan");
+    }
+    const newPassword = typeof body?.newPassword === "string" ? body.newPassword : "";
+    if (admin.mustChangePassword && !newPassword) {
+      return invalid({ newPassword: ["Yangi parolni kiriting"] });
+    }
+    if (newPassword) {
+      // Backend qoidalari (Django validatorlari) — mock'da oddiy parollar ro'yxatisiz
+      const problems: string[] = [];
+      if (newPassword.length < 12) problems.push("Parol kamida 12 belgidan iborat boʻlishi kerak");
+      if (/^d+$/.test(newPassword))
+        problems.push("Parol faqat raqamlardan iborat boʻlmasligi kerak");
+      if (newPassword.toLowerCase().includes(admin.username))
+        problems.push("Parol login yoki ismga juda oʻxshash");
+      if (newPassword === admin.password)
+        problems.push("Yangi parol avvalgisidan farq qilishi kerak");
+      if (problems.length > 0) return invalid({ newPassword: problems });
+      challenge.pendingPassword = newPassword;
+    }
+    challenge.setupStarted = true;
+    challenge.expiresAt = Date.now() + CHALLENGE_TTL;
+    const uri = `otpauth://totp/Yaqin:${admin.username}?secret=${DEMO_TOTP_SECRET}&issuer=Yaqin`;
+    return HttpResponse.json({ secret: DEMO_TOTP_SECRET, otpauthUri: uri, qrDataUri: DEMO_QR });
   }),
 
   http.post(`${API}/admin/auth/2fa`, async ({ request }) => {
@@ -307,16 +360,26 @@ export const adminHandlers = [
       demoState.adminChallenges.delete(token);
       return error(401, "challenge_expired", "Vaqt tugadi. Qaytadan kiring.");
     }
-    if (challenge.attempts >= MAX_LOGIN_FAILURES) {
-      demoState.adminChallenges.delete(token);
-      return error(429, "too_many_attempts", "Juda ko'p urinish. Qaytadan kiring.");
+    if (challenge.next === "setup" && !challenge.setupStarted) {
+      return error(401, "setup_required", "Avval 2FA ni sozlang. Qaytadan kiring.");
     }
     const admin = demoState.admins.find((a) => a.id === challenge.adminId);
     if (!admin || code !== admin.totpCode) {
       challenge.attempts += 1;
+      // 5-noto'g'ri kod — challenge bekor bo'ladi (backend bilan bir xil)
+      if (challenge.attempts >= MAX_LOGIN_FAILURES) {
+        demoState.adminChallenges.delete(token);
+        return error(429, "too_many_attempts", "Juda ko'p urinish. Qaytadan kiring.");
+      }
       return error(401, "invalid_code", "Kod noto'g'ri");
     }
     demoState.adminChallenges.delete(token);
+    if (challenge.next === "setup") {
+      if (challenge.pendingPassword) admin.password = challenge.pendingPassword;
+      admin.mustChangePassword = false;
+      admin.totpConfigured = true;
+      audit(admin, "auth.setup", "auth", admin.id, "Parol va 2FA sozlandi");
+    }
     const sessionToken = crypto.randomUUID();
     const csrfToken = crypto.randomUUID();
     demoState.adminSessions.set(sessionToken, {

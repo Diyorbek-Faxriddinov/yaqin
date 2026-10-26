@@ -17,6 +17,8 @@
 
 ### Admin panel (telefonga moslashgan, ikki bosqichli kirish)
 
+- Parol + 2FA (TOTP) kirishi; yangi administrator birinchi kirishda vaqtinchalik parolni almashtiradi va autentifikator ilovasini QR orqali ulaydi
+
 - Doʻkonda turib 7 qadamda biznes qoʻshish: GPS, kamera rasmlari (EXIF olib tashlanadi), ish vaqti, narxlar, egasining roziligi
 - Soʻrovlar, sharhlar moderatsiyasi, shikoyatlar, kategoriyalar va atributlar, foydalanuvchilarni bloklash
 - Administratorlar, rollar va granular ruxsatlar (manbasi bilan), audit jurnali, sozlamalar
@@ -39,7 +41,7 @@ npm run dev                  # http://localhost:3000
 | Admin (Root)       | `/admin` → login `root`, parol `yaqin-demo`, kod `123456`     |
 | Admin (cheklangan) | login `moderator` — ruxsatlar qanday ishlashini koʻrish uchun |
 
-⚠ Demo kirish maʼlumotlari faqat mock rejimda ishlaydi. Demo maʼlumotlar server xotirasida — server qayta ishga tushganda boshlangʻich holatga qaytadi.
+⚠ Demo kirish maʼlumotlari faqat mock rejimda ishlaydi. Demo'da Root qoʻshgan administrator birinchi kirishda yangi parol oʻrnatadi va 2FA sozlash oynasini koʻradi (QR oʻrnida belgi, kod baribir `123456`). Demo maʼlumotlar server xotirasida — server qayta ishga tushganda boshlangʻich holatga qaytadi.
 
 ## Arxitektura
 
@@ -51,7 +53,7 @@ Brauzer ──► Next.js (SSR, kesh teglari) ──► /api/v1 ──► demo: 
 - **Kontrakt asosida:** [`docs/api/openapi.yaml`](docs/api/openapi.yaml) — frontend va backend uchun yagona manba; TypeScript tiplari undan generatsiya qilinadi, CI farqni tekshiradi.
 - **Mock qatlam** kontraktni toʻliq bajaradi (ruxsatlar, CSRF, tekshiruvlar, audit) — backend uchun ishlaydigan namuna ([ADR-0011](docs/adr/0011-mock-qatlam.md)).
 - **Backend** shu kontraktni bajaradi: har bir javob testlarda `openapi.yaml` ga qarshi tekshiriladi ([ADR-0004](docs/adr/0004-backend-steki.md)). Holati — [docs/progress.md](docs/progress.md), maʼlumot modeli — [docs/backend-data-model.md](docs/backend-data-model.md).
-- **Xavfsizlik:** httpOnly sessiya + CSRF double-submit, alohida admin sessiyasi (`SameSite=Strict`), har bir endpointda ruxsat tekshiruvi, faqat qoʻshiladigan audit jurnali.
+- **Xavfsizlik:** httpOnly sessiya + CSRF double-submit, alohida admin sessiyasi (`SameSite=Strict`), admin paroli Argon2 + majburiy 2FA (kalit shifrlangan), IP + login boʻyicha bloklash, har bir endpointda ruxsat tekshiruvi, bazada himoyalangan (faqat qoʻshiladigan) audit jurnali.
 - Backend uchun topshiriqlar roʻyxati: [docs/backend-handoff.md](docs/backend-handoff.md).
 
 | Qatlam   | Tanlov                                                                                                                                                 |
@@ -88,6 +90,8 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 ## Backend'ni ishga tushirish
 
 PostgreSQL + PostGIS va Python 3.13 kerak — batafsil [backend/README.md](backend/README.md). Frontend backendga ulanishi uchun `frontend/.env.local` da `NEXT_PUBLIC_DEMO_MODE=false` va `API_URL=http://127.0.0.1:8000/api/v1` (brauzer soʻrovlari uchun reverse proxy — 4-bosqich).
+
+Birinchi administrator (Root) faqat serverda yaratiladi: `python manage.py createroot --username root --display-name "Bosh administrator"` — keyin `/admin` da kirib, 2FA'ni sozlaysiz.
 
 ## Tekshiruvlar
 

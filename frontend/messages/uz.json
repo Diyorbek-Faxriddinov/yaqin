@@ -380,16 +380,27 @@
       "codeDescription": "Autentifikator ilovasidagi 6 xonali kodni kiriting.",
       "code": "Kod",
       "verify": "Kirish",
+      "setupTitle": "Yangi parol",
+      "setupDescription": "Birinchi kirish: vaqtinchalik parolni oʻzingiz oʻylab topgan parolga almashtiring.",
+      "newPassword": "Yangi parol",
+      "newPasswordHint": "Kamida 12 belgi. Oddiy parollar va logindan foydalanmang.",
+      "confirmPassword": "Yangi parol (takror)",
+      "totpTitle": "Ikki bosqichli tasdiqlashni yoqish",
+      "totpDescription": "Autentifikator ilovasida (Google Authenticator, Aegis, 1Password va h.k.) QR kodni skanerlang va ilova koʻrsatgan 6 xonali kodni kiriting.",
+      "qrAlt": "Autentifikator ilovasi uchun QR kod",
+      "secretLabel": "QR skanerlanmasa, kalitni qoʻlda kiriting:",
       "back": "Orqaga",
       "demoHint": "Demo: login <b>root</b> (yoki cheklangan ruxsatli <b>moderator</b>), parol <b>yaqin-demo</b>, kod <b>123456</b>.",
       "errors": {
         "invalid": "Login yoki parol notoʻgʻri",
         "code": "Kod notoʻgʻri",
         "expired": "Vaqt tugadi. Qaytadan kiring.",
-        "tooMany": "Juda koʻp urinish. Bir daqiqadan soʻng qayta urinib koʻring.",
+        "tooMany": "Juda koʻp urinish. Keyinroq qayta urinib koʻring.",
         "generic": "Kirib boʻlmadi. Qayta urinib koʻring.",
         "required": "Login va parolni kiriting",
-        "codeFormat": "6 ta raqam"
+        "codeFormat": "6 ta raqam",
+        "passwordShort": "Parol kamida 12 belgidan iborat boʻlishi kerak",
+        "passwordMismatch": "Parollar mos kelmadi"
       }
     },
     "dashboard": {

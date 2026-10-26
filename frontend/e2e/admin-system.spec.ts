@@ -14,6 +14,31 @@ async function adminLogin(page: Page, username = "root", password = "yaqin-demo"
   await expect(page).toHaveURL(/\/admin$/);
 }
 
+/** Yangi administrator: vaqtinchalik parol → o'z paroli → 2FA sozlash (QR) → kod */
+async function firstLogin(page: Page, username: string, temporaryPassword: string) {
+  await page.goto("/admin/kirish");
+  await page.getByLabel("Login").fill(username);
+  await page.getByLabel("Parol").fill(temporaryPassword);
+  await page.getByRole("button", { name: "Davom etish" }).click();
+  await expect(page.getByRole("heading", { name: "Yangi parol" })).toBeVisible();
+  await page.getByLabel("Yangi parol", { exact: true }).fill("Yangi-Uzun-Parol-2026");
+  await page.getByLabel("Yangi parol (takror)").fill("Boshqa-Parol-2026!");
+  await page.getByRole("button", { name: "Davom etish" }).click();
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Parollar mos kelmadi");
+  await page.getByLabel("Yangi parol (takror)").fill("Yangi-Uzun-Parol-2026");
+  await page.getByRole("button", { name: "Davom etish" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Ikki bosqichli tasdiqlashni yoqish" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Autentifikator ilovasi uchun QR kod" }),
+  ).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByLabel("Kod").fill("123456");
+  await page.getByRole("button", { name: "Kirish" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+}
+
 const tagOf = (testInfo: TestInfo) =>
   `${testInfo.project.name}${testInfo.repeatEachIndex}${Date.now().toString().slice(-6)}`;
 
@@ -53,7 +78,7 @@ test.describe("Administratorlar", () => {
 
     const context = await browser.newContext();
     const other = await context.newPage();
-    await adminLogin(other, username, password);
+    await firstLogin(other, username, password);
     const nav = await navLinks(other);
     await expect(nav.getByRole("link", { name: "Statistika" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Audit jurnali" })).toBeVisible();
