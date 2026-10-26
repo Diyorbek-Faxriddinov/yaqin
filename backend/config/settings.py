@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.businesses",
     "apps.community",
+    "apps.stats",
 ]
 
 MIDDLEWARE = [
@@ -82,9 +83,16 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": [],
     "UNAUTHENTICATED_USER": None,
+    # Kirishsiz endpointlar uchun IP bo'yicha cheklov (handoff, 2-bo'lim)
+    "DEFAULT_THROTTLE_RATES": {"events": "120/min", "business_requests": "5/hour"},
+    # Reverse proxy (Caddy/Nginx) ortida: X-Forwarded-For'dan nechta proksi ishonchli
+    "NUM_PROXIES": int(env_str("DJANGO_NUM_PROXIES", "0")) or None,
     # Xatolar kontraktdagi Error sxemasida: {code, message, fields}
     "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
 }
+
+# Kesh (cheklovlar hisoblagichlari): ishlab chiqishda — xotirada; productionda Redis (3.8)
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 # Xavfsizlik sarlavhalari (HTTPS va cookie sozlamalari productionda — 3.8)
 SECURE_CONTENT_TYPE_NOSNIFF = True

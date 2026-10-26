@@ -943,6 +943,11 @@ paths:
                   id: { type: string, format: uuid }
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          description: Soʻrov formasi yopiq (`requests_closed`) — admin sozlamalari
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
@@ -1740,6 +1745,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchSuggestions"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
   /events:
     post:
@@ -1758,6 +1765,8 @@ paths:
           description: Qabul qilindi
         "400":
           $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
 components:
   securitySchemes:

@@ -3,6 +3,9 @@ from django.urls import include, path
 # Barcha API manzillari kontraktdagi `servers: /api/v1` ostida
 urlpatterns = [
     path("api/v1/", include("apps.core.urls")),
+    path("api/v1/", include("apps.catalog.urls")),
+    path("api/v1/", include("apps.businesses.urls")),
+    path("api/v1/", include("apps.stats.urls")),
 ]
 
 handler404 = "apps.core.views.not_found"

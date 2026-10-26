@@ -10,6 +10,8 @@ from rest_framework import exceptions, status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+from apps.core.api import ApiError
+
 # DRF istisnosi → (code, o'zbekcha xabar). Til bo'yicha xabarlar (lang=ru) keyingi qadamlarda.
 _KNOWN: dict[type[exceptions.APIException], tuple[str, str]] = {
     exceptions.NotAuthenticated: ("not_authenticated", "Avval tizimga kiring"),
@@ -47,6 +49,10 @@ def api_exception_handler(exc: Exception, context: dict[str, Any]) -> Response |
     if response is None:
         # Kutilmagan xato — Django 500 qaytaradi va loglaydi (tafsilotlar foydalanuvchiga chiqmaydi)
         return None
+
+    if isinstance(exc, ApiError):
+        response.data = exc.payload()
+        return response
 
     if isinstance(exc, exceptions.ValidationError):
         response.data = {

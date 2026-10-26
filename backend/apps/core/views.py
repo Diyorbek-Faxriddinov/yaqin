@@ -4,6 +4,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.models import PlatformSettings
+
 
 class HealthView(APIView):
     """Serverni kuzatish (deploy, monitoring): ilova va maʼlumotlar bazasi javob beradimi.
@@ -35,3 +37,20 @@ def server_error(request: HttpRequest) -> JsonResponse:
         {"code": "server_error", "message": "Serverda xatolik. Keyinroq qayta urinib koʻring."},
         status=500,
     )
+
+
+class PublicSettingsView(APIView):
+    """Ommaviy sozlamalar: "Aloqa" sahifasidagi kontaktlar va so'rov formasi holati."""
+
+    def get(self, request: Request) -> Response:
+        settings = PlatformSettings.load()
+        return Response(
+            {
+                "businessRequestsOpen": settings.business_requests_open,
+                "contacts": {
+                    "telegram": settings.contact_telegram or None,
+                    "email": settings.contact_email or None,
+                    "phone": settings.contact_phone or None,
+                },
+            }
+        )

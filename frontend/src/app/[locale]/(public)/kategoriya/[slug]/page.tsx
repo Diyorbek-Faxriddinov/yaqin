@@ -12,11 +12,15 @@ import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { pageMetadata } from "@/lib/seo";
+import { atLeastOne } from "@/lib/static-params";
 
 /** Barcha kategoriya sahifalari build vaqtida tayyorlanadi; natijalar esa so'rov vaqtida */
 export async function generateStaticParams() {
   const tree = await getCategoryTree("uz");
-  return tree.flatMap((root) => [root, ...root.children]).map(({ slug }) => ({ slug }));
+  return atLeastOne(
+    tree.flatMap((root) => [root, ...root.children]).map(({ slug }) => ({ slug })),
+    "slug",
+  );
 }
 
 export async function generateMetadata({

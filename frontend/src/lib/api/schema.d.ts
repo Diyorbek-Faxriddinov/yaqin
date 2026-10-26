@@ -3077,6 +3077,15 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            /** @description Soʻrov formasi yopiq (`requests_closed`) — admin sozlamalari */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -3953,6 +3962,7 @@ export interface operations {
                     "application/json": components["schemas"]["SearchSuggestions"];
                 };
             };
+            400: components["responses"]["BadRequest"];
         };
     };
     trackEvent: {
@@ -3976,6 +3986,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
 }

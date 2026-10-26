@@ -14,10 +14,14 @@ import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { formatDuration } from "@/lib/format/duration";
 import { pageMetadata } from "@/lib/seo";
+import { atLeastOne } from "@/lib/static-params";
 
 /** Ota layout har bir biznes uchun chaqiradi — bu yerda faqat mahsulot slug'lari */
 export async function generateStaticParams({ params }: { params: { slug: string } }) {
-  return (await getBusinessItems(params.slug, "uz")).map((item) => ({ item: item.slug }));
+  return atLeastOne(
+    (await getBusinessItems(params.slug, "uz")).map((item) => ({ item: item.slug })),
+    "item",
+  );
 }
 
 export async function generateMetadata({

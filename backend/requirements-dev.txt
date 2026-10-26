@@ -7,6 +7,9 @@ pytest-django==4.14.0
 openapi-core==0.23.1
 PyYAML==6.0.3
 
+# Windows'da koʻp oqimli lokal server (frontend build'i backendga ulanganda); productionda gunicorn
+waitress==3.0.2
+
 # Sifat
 ruff==0.17.0
 mypy==1.19.1

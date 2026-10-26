@@ -33,14 +33,44 @@ Oxirgi yangilanish: 2026-10-26
 | Qadam | Mazmuni                                                                              | Holat                  |
 | ----- | ------------------------------------------------------------------------------------ | ---------------------- |
 | 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅                     |
-| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅ (tasdiq kutilmoqda) |
-| 3.3   | Ommaviy API                                                                          | ⏳                     |
+| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅                     |
+| 3.3   | Ommaviy API                                                                          | ✅ (tasdiq kutilmoqda) |
 | 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ⏳                     |
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ⏳                     |
 | 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ⏳                     |
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.3 natijalari
+
+| Endpoint                                                            | Imkoniyatlar                                                                                                                                                           |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /categories`, `/categories/{slug}`, `/districts`               | Daraxt, eʼlon qilingan bizneslar soni (ichki kategoriyalar bilan), atributlar joriy tilda                                                                              |
+| `GET /businesses`                                                   | Qidiruv (lotin, kirill, imlo xatosi), kategoriya (ota-kategoriya ichkilarini ham), tuman, "hozir ochiq", masofa; saralash: tavsiya, reyting, masofa, yangi; sahifalash |
+| `GET /businesses/{slug}`, `/items`, `/items/{itemSlug}`, `/reviews` | Profil (galereya, narx oraligʻi katalogdan), katalog, faqat chop etilgan sharhlar ("Malika R.", oʻchirilgan muallif — "Oʻchirilgan foydalanuvchi")                     |
+| `GET /map/markers`, `/search/suggest`                               | Xarita nuqtalari (1000 tagacha), takliflar (5+5)                                                                                                                       |
+| `POST /events`                                                      | Kunlik statistika hisoblagichi (faqat son, parallel soʻrovlarga chidamli), IP boʻyicha cheklov                                                                         |
+| `POST /business-requests`, `GET /settings`                          | Soʻrov formasi (raqam E.164 ga, rozilik majburiy, forma yopiq boʻlsa 403, IP boʻyicha cheklov), ommaviy kontaktlar                                                     |
+
+- Xatti-harakat frontend mock'i bilan bir xil: "tavsiya etilgan" formulasi, "hozir ochiq" (yarim tundan va yakshanbadan dushanbaga oʻtadigan oraliqlar bilan), parametr xatolari (`fields`).
+- Faqat eʼlon qilingan bizneslar koʻrinadi; qoralama — 404.
+- Testlar: 112 (backend), har bir javob kontraktga qarshi tekshiriladi.
+- **Real frontend bilan sinov:** frontend demo rejimisiz, backendga ulab yigʻildi va ishga tushirildi. Server tomonda render qilinadigan sahifalar (bosh sahifa, kategoriya, biznes profili, mahsulot, qidiruv, rus tili) backend maʼlumotlarini toʻgʻri koʻrsatdi. Sinov maʼlumotlari keyin oʻchirildi.
+
+**Topilgan va tuzatilgan:**
+
+- Kontraktda eʼlon qilinmagan javoblar (kontrakt tekshiruvi ushladi): `/search/suggest` — 400, `/events` — 429, `/business-requests` — 403 `requests_closed`. Kontrakt toʻldirildi.
+- **Frontend production build haqiqiy backend bilan yiqilardi**: Cache Components rejimida `generateStaticParams` boʻsh roʻyxat qaytarsa build xatosi — yangi (boʻsh) bazada yoki mahsuloti yoʻq biznesda. Demo maʼlumotlarda bunday holat yoʻqligi uchun yashirin edi. Endi boʻsh boʻlsa placeholder (Next.js hujjatidagi tavsiya), sahifa uni 404 qiladi.
+- **Har bir ommaviy sahifaga barcha tarjimalar, jumladan admin panel matnlari ham yuborilardi** (tarjimalarning 58 %, ~22 KB). Endi admin matnlari faqat admin boʻlimida.
+
+**Hali ishlamaydi:**
+
+- Brauzerdan keladigan `/api/v1` soʻrovlari (sevimlilar, sharh yozish, xarita filtrlari va h.k.) productionda reverse proxy orqali backendga yetadi — 4-bosqichda sozlanadi va sinaladi.
+- Kirish talab qiladigan endpointlar (sharh yozish, sevimlilar, admin) — 3.4–3.7.
+- Kesh hozircha xotirada (cheklov hisoblagichlari bitta jarayonda); productionda Redis — 3.8.
+- Kirishsiz POST endpointlarida `Origin` tekshiruvi — 3.8.
+- Topilmagan biznes sahifasi "200 + noindex" qaytaradi (Next 16 xususiyati, maʼlum cheklovlarda).
 
 ## 3.2 natijalari
 

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { QueryProvider } from "@/components/common/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,6 +41,9 @@ export const viewport: Viewport = {
 export default async function LocaleLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await getLocale();
   const t = await getTranslations("Common");
+  // Admin panel matnlari (tarjimalarning katta qismi) ommaviy sahifalarga yuborilmaydi —
+  // ular admin layout'idagi alohida provider orqali faqat admin bo'limida ulanadi
+  const { Admin: _admin, ...publicMessages } = await getMessages();
 
   return (
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
@@ -48,7 +51,7 @@ export default async function LocaleLayout({ children }: LayoutProps<"/[locale]"
         <a href="#main" className="skip-link">
           {t("skipToContent")}
         </a>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={publicMessages}>
           <QueryProvider>
             <TooltipProvider>
               {children}

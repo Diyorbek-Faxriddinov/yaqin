@@ -35,14 +35,15 @@ Server faqat `127.0.0.1` da tinglaydi. Superuser va ilova parollari `D:\tools\.p
 
 ## Buyruqlar
 
-| Buyruq                                  | Vazifasi                                                       |
-| --------------------------------------- | -------------------------------------------------------------- |
-| `python manage.py runserver 8000`       | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health> |
-| `pytest`                                | Testlar (test bazasi avtomatik yaratiladi)                     |
-| `ruff check . && ruff format --check .` | Lint va formatlash                                             |
-| `mypy .`                                | Tiplar (strict)                                                |
-| `pip-audit -r requirements.txt`         | Bogʻliqliklardagi zaifliklar                                   |
-| `python manage.py check --deploy`       | Production sozlamalari tekshiruvi                              |
+| Buyruq                                                                        | Vazifasi                                                        |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `python manage.py runserver 8000`                                             | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health>  |
+| `waitress-serve --listen=127.0.0.1:8000 --threads=16 config.wsgi:application` | Koʻp oqimli lokal server (frontend build'i backendga ulanganda) |
+| `pytest`                                                                      | Testlar (test bazasi avtomatik yaratiladi)                      |
+| `ruff check . && ruff format --check .`                                       | Lint va formatlash                                              |
+| `mypy .`                                                                      | Tiplar (strict)                                                 |
+| `pip-audit -r requirements.txt`                                               | Bogʻliqliklardagi zaifliklar                                    |
+| `python manage.py check --deploy`                                             | Production sozlamalari tekshiruvi                               |
 
 ## Tuzilma
 
@@ -54,6 +55,7 @@ apps/
   accounts/    mijozlar
   businesses/  bizneslar, rasmlar, katalog, soʻrovlar
   community/   sharhlar, shikoyatlar, sevimlilar
+  stats/       kunlik statistika hodisalari
 tests/
   contract.py  javoblarni openapi.yaml ga qarshi tekshirish
 scripts/

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Admin.meta");
@@ -10,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function AdminLayout({ children }: LayoutProps<"/[locale]/admin">) {
-  return children;
+// Ommaviy layout admin matnlarini yubormaydi — admin bo'limida barcha tarjimalar bilan provider
+export default async function AdminLayout({ children }: LayoutProps<"/[locale]/admin">) {
+  return <NextIntlClientProvider messages={await getMessages()}>{children}</NextIntlClientProvider>;
 }
