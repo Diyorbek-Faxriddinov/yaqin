@@ -37,10 +37,37 @@ Oxirgi yangilanish: 2026-10-26
 | 3.3   | Ommaviy API                                                                          | ✅                     |
 | 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅                     |
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅                     |
-| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅ (tasdiq kutilmoqda) |
-| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
+| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅                     |
+| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅ (tasdiq kutilmoqda) |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.7 natijalari
+
+| Boʻlim           | Endpointlar                                                | Ruxsat                                        | Imkoniyatlar                                                                                                                                                                                                                                                                                                                             |
+| ---------------- | ---------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kategoriyalar    | `/admin/categories`, `.../{id}`, `.../{id}/attributes`     | `category.manage`                             | Daraxt tartibidagi roʻyxat (bizneslar soni ichki kategoriyalari bilan); ikki daraja; slug oʻzgarmaydi; band slug — 409; bizneslari yoki ichki kategoriyasi bor kategoriya oʻchmaydi (409); yoʻnalish ikonkasi ichkilarga ham taʼsir qiladi; nom oʻzgarsa bizneslarning qidiruv matni yangilanadi; atributlar (5 tur, variantlar, birlik) |
+| Sharhlar         | `/admin/reviews`, `.../{id}`                               | `review.moderate`                             | Navbat — eng eskisi birinchi; chop etish va rad etish (sabab majburiy); reyting faqat chop etilganlik holati oʻzgarganda qayta hisoblanadi (takror chop etish ikki marta qoʻshmaydi)                                                                                                                                                     |
+| Shikoyatlar      | `/admin/complaints`, `.../{id}`                            | `complaint.manage`                            | Ochiq va koʻrib chiqilayotganlar — eng eskisi birinchi; hal qilish va rad etishda javob majburiy                                                                                                                                                                                                                                         |
+| Soʻrovlar        | `/admin/business-requests`, `.../{id}`, `.../{id}/convert` | `business.edit`                               | Holat va izoh; rad etishda sabab majburiy; soʻrovdan qoralama (manzil va telefon koʻchiriladi); yaratilgandan keyin oʻzgarmaydi (409); yopilgan vaqt saqlanadi (12 oylik oʻchirish uchun)                                                                                                                                                |
+| Foydalanuvchilar | `/admin/users`, `.../{id}`                                 | `user.view`, `user.manage`                    | Qidiruv, bloklanganlar filtri, sharh va shikoyatlar soni; kontakt maʼlumotlari yoʻq; bloklashda sabab majburiy, sessiyalar darhol tugaydi                                                                                                                                                                                                |
+| Administratorlar | `/admin/staff`, `.../{id}`, `.../{id}/reset-password`      | koʻrish — `staff.manage`, oʻzgartirish — Root | Amaldagi ruxsatlar manbasi bilan (rol yoki alohida); yangi admin — vaqtinchalik parol, birinchi kirishda sozlash; oʻchirilganda sessiyalar tugaydi; parol tiklansa 2FA ham qaytadan sozlanadi; Root API orqali oʻzgarmaydi                                                                                                               |
+| Rollar           | `/admin/roles`, `.../{id}`                                 | koʻrish — `staff.manage`, oʻzgartirish — Root | Ruxsatlar oʻzgarishi shu roldagi adminlarga darhol taʼsir qiladi; tizim yoki ishlatilayotgan rol oʻchmaydi (409); nom takrorlanmaydi                                                                                                                                                                                                     |
+| Audit            | `/admin/audit`                                             | `audit.view`                                  | Faqat oʻqish, eng yangisi birinchi; obyekt turi va administrator boʻyicha filtr                                                                                                                                                                                                                                                          |
+| Sozlamalar       | `/admin/settings`                                          | `settings.manage`                             | Sharhlar moderatsiyasi, soʻrov formasi, kontaktlar; ommaviy sahifalar keshi yangilanadi                                                                                                                                                                                                                                                  |
+
+- Har bir oʻzgarish audit jurnaliga yoziladi; ommaviy saytga taalluqlilari frontend keshini yangilaydi.
+- Umumiy qism: `AdminView` (sessiya, CSRF, ruxsat), `page_payload` (sahifalash), `invalid` (forma xatolari).
+- **Kontrakt toʻliqligi testi:** kontraktdagi har bir endpointga backendda route bor; hali yoʻqlari (3.8: statistika va hisobot havolasi — 4 ta) aniq roʻyxatda.
+- Testlar: backend 261 (+39), frontend unit 205.
+
+**Kontrakt oʻzgardi:** 28 ta admin endpointiga yetishmagan 401/403/400 javoblari qoʻshildi (sessiyasiz, ruxsatsiz, notoʻgʻri filtr); `AdminReview.author` endi `null` boʻlishi mumkin (akkauntini oʻchirgan muallif) — frontend "Oʻchirilgan foydalanuvchi" deb koʻrsatadi, mock ham shunday.
+
+**Hali ishlamaydi / qoldi:**
+
+- Statistika, hisobot havolasi, davriy vazifalar (eskirgan sessiyalar, yopilgan soʻrovlarni 12 oydan keyin oʻchirish), Redis, HTTPS sarlavhalari, `Origin` tekshiruvi — 3.8.
+- Brauzerdagi admin panel hali backendga ulanmagan (4-bosqich) — bu qadam API testlari bilan tekshirildi, HTTP smoke oʻtkazilmadi (3.6 dagi smoke server qatlamini allaqachon tekshirgan).
+- Administratorlarni boshqarish faqat Root'da (MVP qarori, ADR-0009) — "berilishi mumkin" ruxsatlar keyin.
 
 ## 3.6 natijalari
 

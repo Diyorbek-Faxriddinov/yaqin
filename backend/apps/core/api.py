@@ -1,6 +1,6 @@
 """API qatlami uchun umumiy yordamchilar: til, sahifalash, pul, kontraktdagi xatolar."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
 from django.db.models import QuerySet
@@ -36,6 +36,13 @@ class ApiError(APIException):
         return body
 
 
+def invalid(fields: dict[str, list[str]]) -> ApiError:
+    """400 validation_error — `fields` forma maydonlari ostida ko'rsatiladi."""
+    return ApiError(
+        status.HTTP_400_BAD_REQUEST, "validation_error", "Maʼlumotlar notoʻgʻri", fields
+    )
+
+
 def not_found() -> ApiError:
     return ApiError(status.HTTP_404_NOT_FOUND, "not_found", "Topilmadi")
 
@@ -59,6 +66,22 @@ def page_params(request: Request) -> tuple[int, int]:
 def page_slice[T](items: QuerySet[Any, T] | Sequence[T], page: int, page_size: int) -> list[T]:
     start = (page - 1) * page_size
     return list(items[start : start + page_size])
+
+
+def page_payload[T](
+    items: QuerySet[Any, T] | Sequence[T],
+    request: Request,
+    present: Callable[[T], dict[str, Any]],
+) -> dict[str, Any]:
+    """Kontraktdagi `*Page` javobi: {items, total, page, pageSize}."""
+    page, page_size = page_params(request)
+    total = items.count() if isinstance(items, QuerySet) else len(items)
+    return {
+        "items": [present(item) for item in page_slice(items, page, page_size)],
+        "total": total,
+        "page": page,
+        "pageSize": page_size,
+    }
 
 
 def money(amount: int | None) -> dict[str, Any] | None:

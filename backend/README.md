@@ -69,20 +69,23 @@ Namuna — [`.env.example`](.env.example). Maxfiy qiymatlar faqat muhitda yoki l
 
 ## Tuzilma
 
+Admin API har bir ilovada alohida: `admin_views.py` va `admin_urls.py` (ommaviy — `views.py`, `urls.py`).
+
 ```text
 config/        sozlamalar, URL'lar, WSGI/ASGI; env.py — muhit oʻzgaruvchilari va .env
 apps/
-  core/        umumiy: health, xato formati, sozlamalar, matn normalizatsiyasi, ish vaqti
-  catalog/     tumanlar, kategoriyalar (seed.py — boshlangʻich maʼlumot)
-  accounts/    mijozlar: Telegram/Google kirishi, sessiyalar, CSRF, /me
-  businesses/  bizneslar, rasmlar, katalog, soʻrovlar; admin API — admin_views.py, tekshiruv — admin_input.py, rasmlarni qayta kodlash — photos.py
-  community/   sharhlar, shikoyatlar, sevimlilar (reyting — services.py)
+  core/        umumiy: health, xato formati, sahifalash (api.py), platforma sozlamalari, matn normalizatsiyasi, ish vaqti
+  catalog/     tumanlar, kategoriyalar va atributlar (seed.py — boshlangʻich maʼlumot)
+  accounts/    mijozlar: Telegram/Google kirishi, sessiyalar, CSRF, /me; bloklash (admin)
+  businesses/  bizneslar, rasmlar, katalog, soʻrovlar; tekshiruv — admin_input.py, rasmlarni qayta kodlash — photos.py
+  community/   sharhlar, shikoyatlar, sevimlilar, moderatsiya (reyting — services.py)
   stats/       kunlik statistika hodisalari
   staff/       administratorlar: parol + TOTP kirishi, rollar va ruxsatlar (RBAC), admin sessiyalari, audit jurnali
 tests/
   contract.py  javoblarni openapi.yaml ga qarshi tekshirish
   factories.py test maʼlumotlari (tiplangan yordamchilar)
   admin_api.py admin sessiyasi va CSRF bilan soʻrovlar (AdminClient)
+  test_contract_coverage.py  kontraktdagi har bir endpointga route bor (hali yoʻqlari — PENDING)
 scripts/
   setup-db.sql bazani bir martalik tayyorlash
 ```
@@ -92,7 +95,7 @@ scripts/
 - Xatolar har doim `{code, message, fields?}` (`apps/core/exceptions.py`); `code` barqaror — frontend unga tayanadi.
 - Har bir endpoint testi `assert_matches_contract(response)` ni chaqiradi.
 - Kirish talab qiladigan view: `authentication_classes = [CustomerSessionAuthentication]`, `permission_classes = [IsCustomer]`, joriy foydalanuvchi — `customer(request)`. O'zgartiruvchi so'rovlarda CSRF (`X-CSRFToken` = cookie = sessiya) avtomatik tekshiriladi.
-- Admin view: `authentication_classes = [AdminSessionAuthentication]`, `permission_classes = [IsAdmin]`, `admin_permission = "business.edit"` (yoki `"root"`; usul boʻyicha — `admin_permissions = {"PATCH": ...}`), joriy admin — `current_admin(request)` (`apps/staff/authentication.py`).
+- Admin view: `AdminView` dan meros (`apps/staff/authentication.py`) va `admin_permission = Permission.BUSINESS_EDIT` (yoki `ROOT`; usul boʻyicha — `admin_permissions = {"POST": ...}`); joriy admin — `current_admin(request)`. Roʻyxatlar — `page_payload(queryset, request, presenter)`, forma xatolari — `invalid({"maydon": ["xabar"]})` (`apps/core/api.py`).
 - Har bir admin amali audit jurnaliga yoziladi: `apps.staff.audit.audit(admin, action, target_type, target_id, summary)`. Jurnal faqat qoʻshiladi (DB trigger); `summary` ga parol, token va shaxsiy maʼlumot yozilmaydi.
 - Yuklangan rasm faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da; ishlab chiqishda `/media/` ni Django beradi (faqat `DEBUG`).
 - Yangi ruxsat qoʻshilsa — avval kontraktdagi `AdminPermission` ga, keyin `apps/staff/permissions.py` ga (test ikkalasini solishtiradi).

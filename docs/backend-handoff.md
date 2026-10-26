@@ -18,8 +18,8 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 - [x] Admin sessiyasi alohida: `adminsessionid` — `SameSite=Strict`, 8 soat. — 3.5
 - [x] Admin parollari — Argon2; TOTP — har bir admin uchun alohida maxfiy kalit, birinchi kirishda QR orqali sozlash; vaqtinchalik parol bilan kirganda parolni almashtirish majburiy. — 3.5 (TOTP kaliti Fernet bilan shifrlangan; yangi parol va kalit faqat kod tasdiqlangach yoziladi)
 - [x] Root faqat serverdagi CLI buyrugʻi bilan yaratiladi (API orqali emas). — 3.5 (`manage.py createroot`)
-- [ ] Bloklangan foydalanuvchi: sessiyalari darhol tugatiladi, qayta kirishda `403 account_blocked`. — kirishda 403 — 3.4; bloklash amali va sessiyalarni tugatish — 3.7
-- [ ] Oʻchirilgan admin (`isActive=false`) — sessiyalari tugatiladi, kirish urinishi `401` (holat oshkor qilinmaydi). — kirish 401 va sessiya ishlamasligi — 3.5; oʻchirish amali — 3.7
+- [x] Bloklangan foydalanuvchi: sessiyalari darhol tugatiladi, qayta kirishda `403 account_blocked`. — 3.4 (kirish 403), 3.7 (bloklash amali, sessiyalar darhol tugatiladi)
+- [x] Oʻchirilgan admin (`isActive=false`) — sessiyalari tugatiladi, kirish urinishi `401` (holat oshkor qilinmaydi). — 3.5 (kirish 401), 3.7 (oʻchirish amali, sessiyalar tugatiladi)
 
 ## 2. Cheklovlar (rate limiting) va suiisteʼmolga qarshi
 
@@ -35,11 +35,11 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 
 ## 3. Ruxsatlar va audit (ADR-0009)
 
-- [ ] Har bir endpoint ruxsatni backendda tekshiradi (kontraktdagi `summary` da koʻrsatilgan). Interfeysdagi yashirish — faqat qulaylik. — umumiy tekshiruv (`IsAdmin`, `admin_permission`) — 3.5; endpointlar — 3.6–3.7
-- [ ] Administrator va rollarni oʻzgartirish — **faqat Root**; `staff.manage` — faqat koʻrish. Root API orqali oʻzgarmaydi.
-- [ ] Amaldagi ruxsatlar = rollar ∪ alohida ruxsatlar; manbasi bilan qaytariladi. — hisoblash (`/admin/me`) — 3.5; manbalar bilan roʻyxat — 3.7
+- [x] Har bir endpoint ruxsatni backendda tekshiradi (kontraktdagi `summary` da koʻrsatilgan). Interfeysdagi yashirish — faqat qulaylik. — 3.5–3.7 (`AdminView` + `admin_permission`; har endpointda testlar)
+- [x] Administrator va rollarni oʻzgartirish — **faqat Root**; `staff.manage` — faqat koʻrish. Root API orqali oʻzgarmaydi. — 3.7 (Root'ga `root_immutable`)
+- [x] Amaldagi ruxsatlar = rollar ∪ alohida ruxsatlar; manbasi bilan qaytariladi. — 3.5 (`/admin/me`), 3.7 (manbalar bilan)
 - [x] Audit jurnali **faqat qoʻshiladi**: DB darajasida UPDATE/DELETE huquqi yoʻq. Kirishlar (`auth.login`) ham yoziladi. — 3.5 (DB trigger UPDATE/DELETE/TRUNCATE'ni rad etadi; `auth.login`, `auth.setup`, `auth.logout` yoziladi)
-- [ ] Shaxsiy maʼlumotlar eng kam ruxsat bilan: soʻrovlardagi telefonlar — `business.edit`; foydalanuvchilar roʻyxatida kontaktlar qaytarilmaydi.
+- [x] Shaxsiy maʼlumotlar eng kam ruxsat bilan: soʻrovlardagi telefonlar — `business.edit`; foydalanuvchilar roʻyxatida kontaktlar qaytarilmaydi. — 3.7
 
 ## 4. Maʼlumotlar va biznes qoidalari
 
@@ -48,9 +48,9 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 - [x] Masofa boʻyicha saralash — PostGIS; "hozir ochiq" filtri serverda Toshkent vaqti bilan. — 3.3
 - [x] Telefonlar E.164 (`+998XXXXXXXXX`) ga keltiriladi. — 3.3 (soʻrovlar), 3.6 (biznes telefonlari)
 - [x] Eʼlon qilish uchun joylashuv, manzil va egasining roziligi majburiy (ADR-0007). — 3.2 (DB cheklovi)
-- [ ] Kategoriya slug'i oʻzgarmaydi; biznesi yoki ichki kategoriyasi bor kategoriya oʻchirilmaydi (409).
+- [x] Kategoriya slug'i oʻzgarmaydi; biznesi yoki ichki kategoriyasi bor kategoriya oʻchirilmaydi (409). — 3.7 (`has_children`, `has_businesses`); nomi oʻzgarsa bizneslar qidiruv matni yangilanadi
 - [x] Sharh va shikoyat biznesga ID orqali bogʻlanadi (slug oʻzgarishi ularni uzmaydi). — 3.2
-- [ ] Moderatsiya navbatlari — eng eskisi birinchi; chop etilgan sharh reytingni qayta hisoblaydi.
+- [x] Moderatsiya navbatlari — eng eskisi birinchi; chop etilgan sharh reytingni qayta hisoblaydi. — 3.7 (reyting faqat chop etilganlik holati oʻzgarganda)
 - [x] Sozlamalar: `reviewsPremoderation=false` boʻlsa sharh darhol chop etiladi; `businessRequestsOpen=false` boʻlsa soʻrov `403 requests_closed`. — 3.3–3.4
 - [x] Lokalizatsiya: `lang` parametri boʻyicha kategoriya/tuman nomlari; "Oʻchirilgan foydalanuvchi" yorligʻi ham tilga mos. — 3.3
 

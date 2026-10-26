@@ -16,4 +16,10 @@ urlpatterns = [
         "admin/businesses/<uuid:business_id>/items/<uuid:item_id>",
         views.AdminItemDetailView.as_view(),
     ),
+    path("admin/business-requests", views.AdminRequestListView.as_view()),
+    path("admin/business-requests/<uuid:request_id>", views.AdminRequestDetailView.as_view()),
+    path(
+        "admin/business-requests/<uuid:request_id>/convert",
+        views.AdminRequestConvertView.as_view(),
+    ),
 ]

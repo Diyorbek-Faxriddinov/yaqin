@@ -12,6 +12,10 @@ urlpatterns = [
     path("api/v1/", include("apps.community.urls")),
     path("api/v1/", include("apps.staff.urls")),
     path("api/v1/", include("apps.businesses.admin_urls")),
+    path("api/v1/", include("apps.catalog.admin_urls")),
+    path("api/v1/", include("apps.community.admin_urls")),
+    path("api/v1/", include("apps.accounts.admin_urls")),
+    path("api/v1/", include("apps.core.admin_urls")),
 ]
 
 # Yuklangan rasmlar: ishlab chiqishda Django beradi; productionda — veb-server yoki S3-mos

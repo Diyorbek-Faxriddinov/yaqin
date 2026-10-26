@@ -71,7 +71,7 @@ export function ReviewQueue({ initialFilter }: { initialFilter: ReviewFilter }) 
                   {review.business.name}
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  {review.author.displayName} ·{" "}
+                  {review.author?.displayName ?? t("deletedAuthor")} ·{" "}
                   <time dateTime={review.createdAt}>{formatDate(review.createdAt, locale)}</time>
                 </p>
               </div>

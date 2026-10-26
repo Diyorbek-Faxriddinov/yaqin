@@ -99,7 +99,7 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 
 ## Qidiruv
 
-`search_text` — biznes nomi, kategoriya va ota-kategoriya (ikkala tilda), tuman nomlarining normallashtirilgan matni (`apps/core/text.py`, frontend `normalize.ts` bilan bir xil). Indeks — GIN `gin_trgm_ops`: aniq qism (`icontains`) va imlo xatolariga chidamli oʻxshashlik (`trigram_word_similar`). Kategoriya yoki tuman nomi oʻzgarganda bogʻliq bizneslarning `search_text`i yangilanadi (3.7).
+`search_text` — biznes nomi, kategoriya va ota-kategoriya (ikkala tilda), tuman nomlarining normallashtirilgan matni (`apps/core/text.py`, frontend `normalize.ts` bilan bir xil). Indeks — GIN `gin_trgm_ops`: aniq qism (`icontains`) va imlo xatolariga chidamli oʻxshashlik (`trigram_word_similar`). Kategoriya nomi oʻzgarganda oʻzi va ichki kategoriyalaridagi bizneslarning `search_text`i yangilanadi (3.7). Tumanlar API orqali oʻzgartirilmaydi.
 
 ## Kontrakt bilan moslik
 

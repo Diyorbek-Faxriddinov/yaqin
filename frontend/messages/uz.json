@@ -639,6 +639,7 @@
       "emptyQueue": "Navbat boʻsh — barcha sharhlar koʻrib chiqilgan",
       "empty": "Sharhlar yoʻq",
       "noText": "Izohsiz, faqat baho",
+      "deletedAuthor": "Oʻchirilgan foydalanuvchi",
       "reason": "Sabab: {reason}",
       "publish": "Chop etish",
       "reject": "Rad etish",

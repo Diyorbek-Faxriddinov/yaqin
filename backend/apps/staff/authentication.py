@@ -14,6 +14,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
+from rest_framework.views import APIView
 
 from apps.accounts.authentication import SAFE_METHODS, check_csrf
 from apps.core.api import ApiError
@@ -63,3 +64,12 @@ class IsAdmin(BasePermission):
         if not admin.has_permission(required):
             raise ApiError(403, "permission_denied", "Bu amal uchun ruxsatingiz yoʻq")
         return True
+
+
+class AdminView(APIView):
+    """Barcha admin endpointlari uchun asos: admin sessiyasi, CSRF va ruxsat tekshiruvi."""
+
+    authentication_classes = [AdminSessionAuthentication]
+    permission_classes = [IsAdmin]
+    admin_permission: str | None = None
+    admin_permissions: dict[str, str | None] = {}

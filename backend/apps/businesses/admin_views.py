@@ -14,18 +14,26 @@ from django.db.models import Count, Max, Q, QuerySet
 from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.businesses import public
-from apps.businesses.admin_input import apply_item, apply_update, invalid, parse_create, text
-from apps.businesses.models import Business, BusinessPhoto, Item
+from apps.businesses.admin_input import apply_item, apply_update, parse_create, text
+from apps.businesses.models import Business, BusinessPhoto, BusinessRequest, Item
 from apps.businesses.photos import process_photo
 from apps.businesses.slugs import unique_business_slug, unique_item_slug
 from apps.catalog.views import category_ref, district_ref
-from apps.core.api import ApiError, Lang, lang_of, not_found, page_params, page_slice
+from apps.core.api import (
+    ApiError,
+    Lang,
+    invalid,
+    lang_of,
+    not_found,
+    page_params,
+    page_payload,
+    page_slice,
+)
 from apps.core.revalidate import revalidate
 from apps.staff.audit import audit
-from apps.staff.authentication import AdminSessionAuthentication, IsAdmin, current_admin
+from apps.staff.authentication import AdminView, current_admin
 from apps.staff.models import AuditEntry
 from apps.staff.permissions import Permission
 
@@ -33,11 +41,8 @@ Target = AuditEntry.TargetType
 MAX_PHOTOS = 12
 
 
-class AdminView(APIView):
-    authentication_classes = [AdminSessionAuthentication]
-    permission_classes = [IsAdmin]
+class BusinessAdminView(AdminView):
     admin_permission: str | None = Permission.BUSINESS_VIEW
-    admin_permissions: dict[str, str | None] = {}
 
 
 def body_of(request: Request) -> dict[str, Any]:
@@ -126,7 +131,7 @@ def list_item(business: Any, lang: Lang) -> dict[str, Any]:
     }
 
 
-class AdminBusinessListView(AdminView):
+class AdminBusinessListView(BusinessAdminView):
     admin_permissions = {"POST": Permission.BUSINESS_EDIT}
 
     def get(self, request: Request) -> Response:
@@ -173,7 +178,7 @@ class AdminBusinessListView(AdminView):
         return Response(admin_business(business, lang_of(request), request), status=201)
 
 
-class AdminBusinessDetailView(AdminView):
+class AdminBusinessDetailView(BusinessAdminView):
     def get(self, request: Request, business_id: UUID) -> Response:
         return Response(admin_business(get_business(business_id), lang_of(request), request))
 
@@ -211,7 +216,7 @@ class AdminBusinessDetailView(AdminView):
         return Response(admin_business(business, lang_of(request), request))
 
 
-class AdminPhotoUploadView(AdminView):
+class AdminPhotoUploadView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def post(self, request: Request, business_id: UUID) -> Response:
@@ -255,7 +260,7 @@ class AdminPhotoUploadView(AdminView):
         return Response(photo_payload(photo, request), status=201)
 
 
-class AdminPhotoOrderView(AdminView):
+class AdminPhotoOrderView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def put(self, request: Request, business_id: UUID) -> Response:
@@ -275,7 +280,7 @@ class AdminPhotoOrderView(AdminView):
         return Response(status=204)
 
 
-class AdminPhotoDetailView(AdminView):
+class AdminPhotoDetailView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def delete(self, request: Request, business_id: UUID, photo_id: UUID) -> Response:
@@ -297,7 +302,7 @@ class AdminPhotoDetailView(AdminView):
         return Response(status=204)
 
 
-class AdminItemListView(AdminView):
+class AdminItemListView(BusinessAdminView):
     admin_permissions = {"POST": Permission.BUSINESS_EDIT}
 
     def get(self, request: Request, business_id: UUID) -> Response:
@@ -320,7 +325,7 @@ class AdminItemListView(AdminView):
         return Response(public.item(item), status=201)
 
 
-class AdminItemDetailView(AdminView):
+class AdminItemDetailView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def _get(self, business: Business, item_id: UUID) -> Item:
@@ -358,3 +363,100 @@ class AdminItemDetailView(AdminView):
             )
             refresh_public(business)
         return Response(status=204)
+
+
+# --- "Biznesingizni qo'shing" so'rovlari (telefon raqamlari bor — business.edit) ---
+
+
+def admin_request(entry: BusinessRequest, lang: Lang) -> dict[str, Any]:
+    return {
+        "id": str(entry.id),
+        "businessName": entry.business_name,
+        "activity": entry.activity or None,
+        "district": district_ref(entry.district, lang) if entry.district else None,
+        "address": entry.address or None,
+        "contactName": entry.contact_name,
+        "phone": entry.phone,
+        "note": entry.note or None,
+        "status": entry.status,
+        "adminNote": entry.admin_note or None,
+        "businessId": str(entry.business_id) if entry.business_id else None,
+        "createdAt": entry.created_at.isoformat(),
+        "updatedAt": entry.updated_at.isoformat(),
+    }
+
+
+def get_request(request_id: UUID) -> BusinessRequest:
+    entry = (
+        BusinessRequest.objects.select_for_update(of=("self",))
+        .select_related("district")
+        .filter(pk=request_id)
+        .first()
+    )
+    if entry is None:
+        raise not_found()
+    if entry.status == BusinessRequest.Status.CONVERTED:
+        raise ApiError(409, "already_converted", "Soʻrovdan biznes yaratilgan — holati oʻzgarmaydi")
+    return entry
+
+
+class RequestAdminView(BusinessAdminView):
+    admin_permission = Permission.BUSINESS_EDIT
+
+
+class AdminRequestListView(RequestAdminView):
+    def get(self, request: Request) -> Response:
+        lang = lang_of(request)
+        entries = BusinessRequest.objects.select_related("district")
+        status = request.query_params.get("status")
+        if status is not None:
+            if status not in BusinessRequest.Status.values:
+                raise invalid({"status": ["Holat notoʻgʻri"]})
+            entries = entries.filter(status=status)
+        entries = entries.order_by("-created_at", "id")
+        return Response(page_payload(entries, request, lambda e: admin_request(e, lang)))
+
+
+class AdminRequestDetailView(RequestAdminView):
+    def patch(self, request: Request, request_id: UUID) -> Response:
+        body = body_of(request)
+        admin = current_admin(request)
+        with transaction.atomic():
+            entry = get_request(request_id)
+            status = body.get("status")
+            if status not in ("new", "contacted", "rejected"):
+                raise invalid({"status": ["Holat notoʻgʻri"]})
+            note = text(body["adminNote"]) if "adminNote" in body else entry.admin_note
+            if len(note) > 500:
+                raise invalid({"adminNote": ["Koʻpi bilan 500 belgi"]})
+            if status == BusinessRequest.Status.REJECTED and len(note) < 3:
+                raise invalid({"adminNote": ["Rad etish sababini yozing (kamida 3 belgi)"]})
+            entry.status, entry.admin_note = status, note
+            # Yopilgan so'rov 12 oy ichida o'chiriladi (maxfiylik siyosati) — hisob shu vaqtdan
+            entry.closed_at = timezone.now() if status == BusinessRequest.Status.REJECTED else None
+            entry.save()
+            audit(admin, f"request.{status}", Target.REQUEST, entry.id, entry.business_name)
+        return Response(admin_request(entry, lang_of(request)))
+
+
+class AdminRequestConvertView(RequestAdminView):
+    def post(self, request: Request, request_id: UUID) -> Response:
+        name, category, district = parse_create(body_of(request))
+        admin = current_admin(request)
+        with transaction.atomic():
+            entry = get_request(request_id)
+            # Joylashuv, rasmlar va rozilik — joyiga borganda (ADR-0007)
+            business = Business.objects.create(
+                slug=unique_business_slug(name),
+                name=name,
+                category=category,
+                district=district,
+                address_text=entry.address,
+                phones=[{"number": entry.phone, "label": None}],
+            )
+            entry.status, entry.business = BusinessRequest.Status.CONVERTED, business
+            entry.closed_at = timezone.now()
+            entry.save()
+            audit(admin, "request.convert", Target.REQUEST, entry.id, f"Qoralama: {name}")
+            audit(admin, "business.create", Target.BUSINESS, business.id, f"Soʻrovdan: {name}")
+        return Response(admin_business(business, lang_of(request), request), status=201)

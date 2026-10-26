@@ -15,7 +15,7 @@ from django.utils.dateparse import parse_datetime
 from apps.businesses.models import Business, Item
 from apps.businesses.slugs import slugify
 from apps.catalog.models import Category, District
-from apps.core.api import ApiError
+from apps.core.api import invalid
 from apps.core.schedule import schedule_problem
 
 Fields = dict[str, list[str]]
@@ -25,10 +25,6 @@ MAX_ATTRIBUTES = 20
 PHONE = re.compile(r"^\+998\d{9}$")
 TELEGRAM = re.compile(r"^[A-Za-z0-9_]{5,32}$")
 INSTAGRAM = re.compile(r"^[A-Za-z0-9_.]{1,30}$")
-
-
-def invalid(fields: Fields) -> ApiError:
-    return ApiError(400, "validation_error", "Maʼlumotlar notoʻgʻri", fields)
 
 
 def text(value: Any) -> str:

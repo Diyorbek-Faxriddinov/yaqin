@@ -26,6 +26,7 @@ import {
 } from "./admin-common";
 import { createDraftBusiness, parseBusinessCreate, toAdminBusiness } from "./admin-handlers";
 import {
+  DELETED_USER_ID,
   demoState,
   findBusinessRecord,
   type StoredBusinessRequest,
@@ -73,7 +74,8 @@ function toAdminReview(review: StoredReview): AdminReview | null {
   return {
     id: review.id,
     business,
-    author: userRef(review.userId),
+    // Akkaunti o'chirilgan muallif — null (backend bilan bir xil)
+    author: review.userId === DELETED_USER_ID ? null : userRef(review.userId),
     rating: review.rating,
     text: review.text,
     status: review.status,
