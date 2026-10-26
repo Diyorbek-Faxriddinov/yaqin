@@ -55,4 +55,6 @@ Namuna — [`.env.example`](.env.example).
 - MapLibre worker `predev`/`prebuild` da `public/vendor/` ga koʻchiriladi (`scripts/copy-vendor.mjs`) — bu papka Git'ga kirmaydi.
 - API tiplari `docs/api/openapi.yaml` dan: `npm run api:types` (`src/lib/api/schema.d.ts` ni qoʻlda tahrirlamang).
 - Har bir oʻzgaruvchi admin harakati kesh teglarini yangilaydi (`businesses`, `business:{slug}`, `categories`, `settings` ...).
+- **Tarjimalar:** ommaviy layout `Admin` namespace'ini brauzerga yubormaydi (tarjimalarning ~58 %); admin matnlari faqat `app/[locale]/admin/layout.tsx` dagi provider orqali. Ommaviy client komponentda `useTranslations("Admin…")` ishlatmang.
+- **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
