@@ -1,7 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { isBackend } from "./support/backend";
+import { stubLoginWidgets } from "./support/providers";
 
 const PROFILE = "/biznes/ustoz-sartaroshxonasi";
+
+// Telegram/Google skriptlari internetdan yuklanmaydi (testlar tashqi tarmoqqa bog'liq emas)
+test.beforeEach(async ({ page }) => {
+  if (isBackend) await stubLoginWidgets(page);
+});
 
 /** Demo foydalanuvchi sifatida kirish va `next` sahifasiga qaytish */
 async function loginDemo(page: Page, next = "/profil") {
@@ -15,8 +22,14 @@ test.describe("Kirish va himoyalangan sahifalar", () => {
     await page.goto("/profil/sevimlilar");
     await expect(page).toHaveURL(/\/kirish\?next=%2Fprofil%2Fsevimlilar$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kirish");
-    // Haqiqiy provayderlar demo rejimida faol emas
-    await expect(page.getByRole("button", { name: "Telegram orqali kirish" })).toBeDisabled();
+    if (isBackend) {
+      // Haqiqiy backend: sozlangan provayderlarning rasmiy vidjetlari
+      await expect(page.getByTestId("telegram-login")).toBeAttached();
+      await expect(page.getByTestId("google-login")).toBeAttached();
+    } else {
+      // Demo rejimida haqiqiy provayderlar faol emas (mock imzoni tekshira olmaydi)
+      await expect(page.getByRole("button", { name: "Telegram orqali kirish" })).toBeDisabled();
+    }
 
     await page.getByRole("button", { name: "Demo foydalanuvchi sifatida kirish" }).click();
     await expect(page).toHaveURL(/\/profil\/sevimlilar$/);
@@ -31,7 +44,12 @@ test.describe("Kirish va himoyalangan sahifalar", () => {
 
   test("kirish sahifasi accessibility", async ({ page }) => {
     await page.goto("/kirish");
-    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    // Uchinchi tomon vidjetlari (Telegram, Google iframe'lari) bizning nazoratimizda emas
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .exclude('[data-testid="telegram-login"]')
+      .exclude('[data-testid="google-login"]')
+      .analyze();
     expect(results.violations).toEqual([]);
   });
 

@@ -84,10 +84,17 @@ def verify_google(credential: str) -> Profile:
     client_id = settings.GOOGLE_CLIENT_ID
     if not client_id:
         raise _unavailable("Google")
+    from google.auth.exceptions import TransportError
+
     try:
         claims = _google_verify(credential, client_id)
     except ValueError:
         raise _invalid() from None
+    except TransportError:
+        # Google kalitlarini olib bo'lmadi (tarmoq) — 500 emas, tushunarli rad etish
+        raise ApiError(
+            401, "provider_unavailable", "Google bilan bogʻlanib boʻlmadi. Keyinroq urinib koʻring."
+        ) from None
     if claims.get("iss") not in {"accounts.google.com", "https://accounts.google.com"}:
         raise _invalid()
     if not claims.get("email_verified", False):

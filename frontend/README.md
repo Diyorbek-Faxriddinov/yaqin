@@ -40,15 +40,17 @@ scripts/            build yordamchilari; export-demo-data.ts — demo maʼlumotl
 
 Namuna — [`.env.example`](.env.example).
 
-| Oʻzgaruvchi                 | Vazifasi                                                                                                                                  |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`      | Ommaviy manzil: canonical, sitemap, Open Graph                                                                                            |
-| `NEXT_PUBLIC_DEMO_MODE`     | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq                                                                |
-| `API_URL`                   | Backend manzili (server tomoni, demo oʻchganda)                                                                                           |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | Xarita uslubi (standart — OpenFreeMap)                                                                                                    |
-| `REVALIDATE_SECRET`         | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                                                                                 |
-| `NEXT_PUBLIC_DEMO_LOGIN`    | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG) |
-| `NEXT_DIST_DIR`             | Build papkasi (standart `.next`; backend E2E — `.next-backend`)                                                                           |
+| Oʻzgaruvchi                    | Vazifasi                                                                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`         | Ommaviy manzil: canonical, sitemap, Open Graph                                                                                            |
+| `NEXT_PUBLIC_DEMO_MODE`        | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq                                                                |
+| `API_URL`                      | Backend manzili (server tomoni, demo oʻchganda)                                                                                           |
+| `NEXT_PUBLIC_MAP_STYLE_URL`    | Xarita uslubi (standart — OpenFreeMap)                                                                                                    |
+| `REVALIDATE_SECRET`            | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                                                                                 |
+| `NEXT_PUBLIC_TELEGRAM_BOT`     | Telegram bot nomi (`@` siz) — kirish vidjeti; tokeni faqat backendda. Sozlash: [docs/auth-setup.md](../docs/auth-setup.md)                |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID — kirish tugmasi (backend `GOOGLE_CLIENT_ID` bilan bir xil)                                                        |
+| `NEXT_PUBLIC_DEMO_LOGIN`       | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG) |
+| `NEXT_DIST_DIR`                | Build papkasi (standart `.next`; backend E2E — `.next-backend`)                                                                           |
 
 ## Muhim kelishuvlar
 

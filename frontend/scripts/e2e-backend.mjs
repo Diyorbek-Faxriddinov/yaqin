@@ -60,6 +60,9 @@ try {
       NEXT_DIST_DIR: ".next-backend",
       NEXT_PUBLIC_DEMO_MODE: "false",
       NEXT_PUBLIC_DEMO_LOGIN: "true",
+      // ⚠ Faqat E2E (e2e/support/providers.ts bilan bir xil) — haqiqiy bot va client ID emas
+      NEXT_PUBLIC_TELEGRAM_BOT: "yaqin_e2e_bot",
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: "e2e-only.apps.googleusercontent.com",
       NEXT_PUBLIC_SITE_URL: SITE,
       API_URL: `http://127.0.0.1:${BACKEND_PORT}/api/v1`,
     },

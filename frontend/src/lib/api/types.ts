@@ -20,6 +20,7 @@ export type Review = Schemas["Review"];
 export type ReviewPage = Schemas["ReviewPage"];
 export type MapMarker = Schemas["MapMarker"];
 export type Me = Schemas["Me"];
+export type TelegramAuth = Schemas["TelegramAuth"];
 export type MyReview = Schemas["MyReview"];
 export type ReviewInput = Schemas["ReviewInput"];
 export type Complaint = Schemas["Complaint"];

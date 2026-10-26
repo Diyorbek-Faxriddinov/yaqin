@@ -43,6 +43,9 @@ const backendServers: PlaywrightTestConfig["webServer"] = [
       DJANGO_NUM_PROXIES: "1",
       FRONTEND_REVALIDATE_URL: `http://127.0.0.1:${FRONTEND_PORT}/api/revalidate`,
       REVALIDATE_SECRET: revalidateSecret,
+      // ⚠ Faqat E2E: sinov bot tokeni va client ID (e2e/support/providers.ts bilan bir xil)
+      TELEGRAM_BOT_TOKEN: "123456789:e2e-only-not-a-real-bot-token",
+      GOOGLE_CLIENT_ID: "e2e-only.apps.googleusercontent.com",
     },
   },
   {

@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 from django.test import Client, override_settings
 from django.utils import timezone
+from google.auth.exceptions import TransportError
 from rest_framework.throttling import ScopedRateThrottle
 
 from apps.accounts.models import CustomerSession, User
@@ -174,6 +175,8 @@ def test_google_login_does_not_store_email(client: Client) -> None:
         {"side_effect": ValueError("Token expired")},
         {"return_value": {**GOOGLE_CLAIMS, "email_verified": False}},
         {"return_value": {**GOOGLE_CLAIMS, "iss": "https://evil.example.com"}},
+        # Google kalitlarini olib bo'lmadi (tarmoq) — 500 emas
+        {"side_effect": TransportError("timeout")},  # type: ignore[no-untyped-call]
     ],
 )
 def test_google_rejects_invalid_tokens(client: Client, verify: dict[str, Any]) -> None:

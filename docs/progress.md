@@ -53,6 +53,22 @@ Oxirgi yangilanish: 2026-10-26
 | 4.5   | Telefonda sinov                                        | ⏳    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
 
+## 4.2 natijalari
+
+- **Mijoz kirishi haqiqiy rejimda:** Telegram Login Widget va Google Identity Services rasmiy skriptlari (`provider-buttons.tsx`). Skript faqat kirish sahifasida va faqat sozlangan boʻlsa yuklanadi (`NEXT_PUBLIC_TELEGRAM_BOT`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`); sozlanmagan provayder ishlayotgandek koʻrsatilmaydi ("hali sozlanmagan"). Imzo va ID token faqat backendda tekshiriladi.
+- **Xato xabarlari:** bloklangan akkaunt, provayder ishlamayapti, juda koʻp urinish, vidjet yuklanmadi — har biri uchun tushunarli matn (uz/ru).
+- **Telegram — E2E'da boshidan oxirigacha:** sinov bot tokeni bilan Telegram algoritmida imzolangan maʼlumot → frontend vidjet callback'i → backend imzoni tekshiradi → sessiya → profil. Soxta imzo rad etiladi. Google'da haqiqiy imzoni yaratib boʻlmaydi — frontend → backend yoʻli va rad etish sinaldi.
+- **Backend:** Google kalitlarini olishda tarmoq xatosi 500 emas, tushunarli `401 provider_unavailable`.
+- **Testlarda tashqi tarmoq yoʻq:** E2E Telegram/Google skriptlarini sinov skriptlari bilan almashtiradi; accessibility tekshiruvi uchinchi tomon vidjetlarini hisobga olmaydi.
+- **Cloudflare Tunnel** (`D:\tools\cloudflared`, 2026.10.0, SHA256 tekshirilgan) va `start.ps1 -Tunnel`: vaqtinchalik `https://….trycloudflare.com` manzil, u avtomatik ruxsat etilgan saytlar roʻyxatiga qoʻshiladi; Telegram uchun `/setdomain` koʻrsatmasi chiqadi.
+- **Yoʻriqnoma:** [auth-setup.md](auth-setup.md) — Telegram bot, Google Client ID, admin 2FA va muammolar jadvali.
+- Testlar: backend 472 (+1), frontend unit 207 (+2), E2E backend 232 (+9: 3 ta provayder testi × 3 ekran), demo 221.
+
+**Hali sinalmagan (sizning qadamingiz kerak):**
+
+- **Haqiqiy Telegram va Google akkaunti bilan kirish.** Kod va E2E tayyor, lekin haqiqiy bot va Client ID sizning akkauntlaringizda yaratiladi — [auth-setup.md](auth-setup.md). Natijani menga aytsangiz, kerak boʻlsa tuzataman.
+- **Tunnel'ni men ishga tushira olmadim:** kompyuterdagi saytni internetga ochishga xavfsizlik tizimi ruxsat bermadi (toʻgʻri qaror — bu tashqi amal). Skript sintaksisi tekshirildi, tunnelsiz rejim sinaldi; tunnel'ni siz ishga tushirasiz.
+
 ## 4.1 natijalari
 
 **Frontend E2E testlari haqiqiy backend bilan oʻtdi: 223 ta** (221 asosiy + 2 ta admin sessiyasi), demo rejimda ham — 221 ta.

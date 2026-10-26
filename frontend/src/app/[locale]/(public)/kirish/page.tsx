@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoginPanel } from "@/features/auth/components/login-panel";
-import { isDemoLoginEnabled } from "@/lib/env";
+import { googleClientId, isDemoLoginEnabled, isDemoMode, telegramBot } from "@/lib/env";
 import { safeNextPath } from "@/lib/safe-redirect";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,7 +19,15 @@ async function LoginContent({
   const raw = (await searchParams).next;
   // Faqat o'z saytimiz ichidagi manzil (open redirect himoyasi)
   const next = safeNextPath(Array.isArray(raw) ? raw[0] : raw);
-  return <LoginPanel next={next} demoMode={isDemoLoginEnabled} />;
+  return (
+    <LoginPanel
+      next={next}
+      demoLogin={isDemoLoginEnabled}
+      demoMode={isDemoMode}
+      telegramBot={telegramBot}
+      googleClientId={googleClientId}
+    />
+  );
 }
 
 export default function LoginPage({ searchParams }: PageProps<"/[locale]/kirish">) {

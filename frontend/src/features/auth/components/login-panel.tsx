@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Send, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,8 +8,20 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
-import { browserApi, call } from "@/lib/api/browser";
+import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
+import type { Me, TelegramAuth } from "@/lib/api/types";
 import { meQueryKey, useMe } from "../use-me";
+import { GoogleLoginButton, TelegramLoginButton } from "./provider-buttons";
+
+/** Backend xatosi → foydalanuvchiga tushunarli xabar */
+function loginErrorMessage(error: unknown, t: ReturnType<typeof useTranslations<"Auth">>): string {
+  if (error instanceof BrowserApiError) {
+    if (error.body?.code === "account_blocked") return t("blocked");
+    if (error.body?.code === "provider_unavailable") return t("providerUnavailable");
+    if (error.status === 429) return t("tooMany");
+  }
+  return t("loginError");
+}
 
 function GoogleIcon() {
   return (
@@ -37,7 +49,20 @@ function GoogleIcon() {
   );
 }
 
-export function LoginPanel({ next, demoMode }: { next: string; demoMode: boolean }) {
+export function LoginPanel({
+  next,
+  demoLogin: showDemoLogin,
+  demoMode,
+  telegramBot,
+  googleClientId,
+}: {
+  next: string;
+  /** "Demo foydalanuvchi" tugmasi (demo rejim yoki ishlab chiqish/E2E) */
+  demoLogin: boolean;
+  demoMode: boolean;
+  telegramBot: string | null;
+  googleClientId: string | null;
+}) {
   const t = useTranslations("Auth");
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -48,15 +73,32 @@ export function LoginPanel({ next, demoMode }: { next: string; demoMode: boolean
     if (me) router.replace(next);
   }, [me, next, router]);
 
+  const onLoggedIn = (user: Me) => {
+    queryClient.setQueryData(meQueryKey, user);
+    router.replace(next);
+    router.refresh();
+  };
+  const onLoginError = (error: unknown) => toast.error(loginErrorMessage(error, t));
+
   const demoLogin = useMutation({
     mutationFn: () => call(browserApi.POST("/auth/demo")),
-    onSuccess: (user) => {
-      queryClient.setQueryData(meQueryKey, user);
-      router.replace(next);
-      router.refresh();
-    },
-    onError: () => toast.error(t("loginError")),
+    onSuccess: onLoggedIn,
+    onError: onLoginError,
   });
+  const telegramLogin = useMutation({
+    mutationFn: (user: TelegramAuth) => call(browserApi.POST("/auth/telegram", { body: user })),
+    onSuccess: onLoggedIn,
+    onError: onLoginError,
+  });
+  const googleLogin = useMutation({
+    mutationFn: (credential: string) =>
+      call(browserApi.POST("/auth/google", { body: { credential } })),
+    onSuccess: onLoggedIn,
+    onError: onLoginError,
+  });
+  const onWidgetError = useCallback(() => toast.error(t("widgetError")), [t]);
+  const pending = telegramLogin.isPending || googleLogin.isPending;
+  const configured = Boolean(telegramBot || googleClientId);
 
   return (
     <div className="space-y-6">
@@ -65,34 +107,58 @@ export function LoginPanel({ next, demoMode }: { next: string; demoMode: boolean
         <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
-      <div className="space-y-3">
-        {/* Haqiqiy provayderlar backend bilan birga ulanadi (4-bosqich) — ishlayotgandek ko'rsatilmaydi */}
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full"
-          disabled
-          aria-describedby="providers-pending"
-        >
-          <Send aria-hidden="true" />
-          {t("telegram")}
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full"
-          disabled
-          aria-describedby="providers-pending"
-        >
-          <GoogleIcon />
-          {t("google")}
-        </Button>
-        <p id="providers-pending" className="text-center text-sm text-muted-foreground">
-          {t("providersPending")}
-        </p>
+      <div className="space-y-3" aria-busy={pending}>
+        {telegramBot && (
+          <TelegramLoginButton
+            bot={telegramBot}
+            onAuth={(user) => telegramLogin.mutate(user)}
+            onError={onWidgetError}
+          />
+        )}
+        {googleClientId && (
+          <GoogleLoginButton
+            clientId={googleClientId}
+            onCredential={(credential) => googleLogin.mutate(credential)}
+            onError={onWidgetError}
+          />
+        )}
+        {pending && (
+          <p role="status" className="flex items-center justify-center gap-2 text-sm">
+            <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+            {t("checking")}
+          </p>
+        )}
+        {!configured && (
+          <>
+            {/* Sozlanmagan provayder ishlayotgandek ko'rsatilmaydi */}
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full"
+              disabled
+              aria-describedby="providers-note"
+            >
+              <Send aria-hidden="true" />
+              {t("telegram")}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full"
+              disabled
+              aria-describedby="providers-note"
+            >
+              <GoogleIcon />
+              {t("google")}
+            </Button>
+            <p id="providers-note" className="text-center text-sm text-muted-foreground">
+              {demoMode ? t("providersDemo") : t("providersNotConfigured")}
+            </p>
+          </>
+        )}
       </div>
 
-      {demoMode && (
+      {showDemoLogin && (
         <>
           <div className="flex items-center gap-3 text-sm text-muted-foreground" aria-hidden="true">
             <span className="h-px flex-1 bg-border" />
@@ -114,7 +180,7 @@ export function LoginPanel({ next, demoMode }: { next: string; demoMode: boolean
               {t("demo")}
             </Button>
             <Alert>
-              <AlertDescription>{t("demoNote")}</AlertDescription>
+              <AlertDescription>{demoMode ? t("demoNote") : t("devLoginNote")}</AlertDescription>
             </Alert>
           </div>
         </>

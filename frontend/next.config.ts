@@ -6,6 +6,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   // Haqiqiy backend bilan E2E alohida build'da (demo build'ni buzmaslik uchun): NEXT_DIST_DIR=.next-backend
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // Faqat dev: start.ps1 -Tunnel (Cloudflare Tunnel) orqali ochilganda HMR va dev resurslari
+  allowedDevOrigins: ["*.trycloudflare.com"],
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
