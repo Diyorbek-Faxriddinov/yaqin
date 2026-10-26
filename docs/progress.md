@@ -66,10 +66,11 @@ Oxirgi yangilanish: 2026-10-26
 
 **Sizning sinovingizdan keyin (2026-10-26):** Google tugmasi chiqdi, lekin kirish "Kirib boʻlmadi" bilan tugadi — sabab `backend/.env` dagi `GOOGLE_CLIENT_ID` oldida tasodifiy `https://` edi (frontend qiymati bilan mos emas → backend token'ni rad etdi); tuzatildi. Telegram "Bot domain invalid" — sayt `localhost` orqali ochilgan, tunnel manzili kerak. Shundan kelib chiqib: backend endi notoʻgʻri formatdagi `GOOGLE_CLIENT_ID` / `TELEGRAM_BOT_TOKEN` bilan aniq xabar berib ishga tushmaydi; rad etish sabablari backend logida yoziladi; Google tekshiruvida 10 soniyalik soat farqi qabul qilinadi; kirish sahifasida `localhost` da Telegram uchun izoh chiqadi.
 
-**Hali sinalmagan (sizning qadamingiz kerak):**
+**Haqiqiy akkauntlar bilan tasdiqlandi (2026-10-26, siz sinadingiz):**
 
-- **Haqiqiy Telegram va Google akkaunti bilan kirish.** Kod va E2E tayyor, lekin haqiqiy bot va Client ID sizning akkauntlaringizda yaratiladi — [auth-setup.md](auth-setup.md). Natijani menga aytsangiz, kerak boʻlsa tuzataman.
-- **Tunnel'ni men ishga tushira olmadim:** kompyuterdagi saytni internetga ochishga xavfsizlik tizimi ruxsat bermadi (toʻgʻri qaror — bu tashqi amal). Skript sintaksisi tekshirildi, tunnelsiz rejim sinaldi; tunnel'ni siz ishga tushirasiz.
+- **Google** — `http://localhost:8090` da haqiqiy Google akkaunti bilan kirish ishladi.
+- **Telegram** — `start.ps1 -Tunnel` manzili orqali (@yaqin_xizmat_bot, `/setdomain` — `https://` siz host) haqiqiy Telegram akkaunti bilan kirish ishladi.
+- Tunnel'ni men ishga tushira olmadim (kompyuterdagi saytni internetga ochishga xavfsizlik tizimi ruxsat bermadi) — uni siz ishga tushirdingiz.
 
 ## 4.1 natijalari
 
