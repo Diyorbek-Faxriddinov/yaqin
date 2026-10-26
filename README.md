@@ -87,11 +87,31 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 └── .github/workflows/     CI
 ```
 
-## Backend'ni ishga tushirish
+## Frontend + backend birga (lokal)
 
-PostgreSQL + PostGIS va Python 3.13 kerak — batafsil [backend/README.md](backend/README.md). Frontend backendga ulanishi uchun `frontend/.env.local` da `NEXT_PUBLIC_DEMO_MODE=false` va `API_URL=http://127.0.0.1:8000/api/v1` (brauzer soʻrovlari uchun reverse proxy — 4-bosqich).
+Brauzer bitta manzilni ochadi — `http://localhost:8090`. [Caddy](scripts/local/Caddyfile) `/api/v1` soʻrovlarini (rasmlar ham) Django'ga, qolganini Next.js'ga yoʻnaltiradi — productiondagi tartib bilan bir xil.
 
-Birinchi administrator (Root) faqat serverda yaratiladi: `python manage.py createroot --username root --display-name "Bosh administrator"` — keyin `/admin` da kirib, 2FA'ni sozlaysiz.
+**Bir martalik sozlash:**
+
+1. PostgreSQL + PostGIS va backend muhiti — [backend/README.md](backend/README.md) dagi "Birinchi sozlash".
+2. Caddy — [rasmiy relizdan](https://github.com/caddyserver/caddy/releases) `caddy_<versiya>_windows_amd64.zip`, ichidagi `caddy.exe` → `D:\tools\caddy\caddy.exe`.
+3. `backend/.env` ga: `DJANGO_ALLOWED_ORIGINS` (`http://localhost:8090` bilan), `DJANGO_NUM_PROXIES=1`, `FRONTEND_REVALIDATE_URL=http://127.0.0.1:3000/api/revalidate`, `REVALIDATE_SECRET`; `frontend/.env.local` ga — xuddi shu `REVALIDATE_SECRET` (admin oʻzgarishlari saytda darhol koʻrinishi uchun).
+4. Birinchi administrator (Root) — faqat serverda:
+
+   ```powershell
+   cd backend
+   .venv\Scripts\python manage.py createroot --username root --display-name "Bosh administrator"
+   ```
+
+**Ishga tushirish** (PostgreSQL ishlamayotgan boʻlsa, uni ham yoqadi; uchta oyna ochiladi — toʻxtatish uchun yoping):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\local\start.ps1
+```
+
+Keyin `http://localhost:8090/admin` → login va parol → telefondagi autentifikator ilovasi (Google Authenticator, Aegis…) bilan QR'ni skanerlang → kod. Bizneslarni admin panelda qoʻshasiz — eʼlon qilingach saytda paydo boʻladi.
+
+Bu rejimda hali ishlamaydi (4-bosqich): mijozning Telegram/Google orqali kirishi (bot va Google client ID kerak), shuning uchun sevimlilar, sharh va shikoyat yozish ham. Demo rejim (`npm run dev`, `http://localhost:3000`) avvalgidek ishlaydi.
 
 ## Tekshiruvlar
 

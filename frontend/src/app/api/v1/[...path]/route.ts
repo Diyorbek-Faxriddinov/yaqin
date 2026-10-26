@@ -3,16 +3,23 @@ import { isDemoMode } from "@/lib/env";
 
 const REVALIDATE_HEADER = "x-demo-revalidate";
 
+const MEDIA_PREFIX = "/api/v1/media/";
+
 /**
  * Brauzerdan keladigan API so'rovlari (/api/v1/*).
  * - Demo rejim: mock handler'lar javob beradi (ADR-0011). Admin o'zgarishlaridan keyin mock
  *   `x-demo-revalidate` sarlavhasida keshning qaysi teglari eskirganini aytadi — shu yerda
  *   yangilanadi (productionda buni backend /api/revalidate orqali qiladi).
  * - Production: bu yo'l reverse proxy (Caddy/Nginx) orqali backendga yo'naltiriladi va
- *   Next.js'ga yetib kelmaydi; yetib kelsa — 404.
+ *   Next.js'ga yetib kelmaydi. Istisno — rasmlar: `next/image` optimizatori ularni proksisiz,
+ *   Next.js'ning o'zidan so'raydi, shuning uchun backenddan olib beriladi. Boshqasi — 404.
  */
 async function handle(request: Request): Promise<Response> {
   if (!isDemoMode) {
+    const { pathname } = new URL(request.url);
+    if (request.method === "GET" && pathname.startsWith(MEDIA_PREFIX) && process.env.API_URL) {
+      return proxyMedia(pathname.slice(MEDIA_PREFIX.length));
+    }
     return Response.json({ code: "not_found", message: "Not found" }, { status: 404 });
   }
   const { mockFetch } = await import("@/mocks/fetch");
@@ -31,3 +38,22 @@ async function handle(request: Request): Promise<Response> {
 }
 
 export { handle as GET, handle as POST, handle as PUT, handle as PATCH, handle as DELETE };
+
+/** Rasm faylini backenddan (API_URL/media/...) oqim sifatida qaytaradi */
+async function proxyMedia(path: string): Promise<Response> {
+  // Yo'l faqat fayl nomlari: `..` yoki to'liq URL bilan boshqa manzilga chiqib bo'lmaydi
+  if (path.split("/").some((part) => part === ".." || part === "") || path.includes(":")) {
+    return Response.json({ code: "not_found", message: "Not found" }, { status: 404 });
+  }
+  const upstream = await fetch(`${process.env.API_URL}/media/${path}`, { cache: "no-store" });
+  if (!upstream.ok || !upstream.body) {
+    return Response.json({ code: "not_found", message: "Not found" }, { status: 404 });
+  }
+  const headers = new Headers({
+    "Content-Type": upstream.headers.get("Content-Type") ?? "application/octet-stream",
+    "X-Content-Type-Options": "nosniff",
+    // Fayl nomi rasm ID'si — mazmuni o'zgarmaydi
+    "Cache-Control": "public, max-age=31536000, immutable",
+  });
+  return new Response(upstream.body, { status: 200, headers });
+}

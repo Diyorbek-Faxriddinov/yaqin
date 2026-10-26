@@ -108,7 +108,7 @@ scripts/
 - Kirish talab qiladigan view: `authentication_classes = [CustomerSessionAuthentication]`, `permission_classes = [IsCustomer]`, joriy foydalanuvchi — `customer(request)`. O'zgartiruvchi so'rovlarda CSRF (`X-CSRFToken` = cookie = sessiya) avtomatik tekshiriladi.
 - Admin view: `AdminView` dan meros (`apps/staff/authentication.py`) va `admin_permission = Permission.BUSINESS_EDIT` (yoki `ROOT`; usul boʻyicha — `admin_permissions = {"POST": ...}`); joriy admin — `current_admin(request)`. Roʻyxatlar — `page_payload(queryset, request, presenter)`, forma xatolari — `invalid({"maydon": ["xabar"]})` (`apps/core/api.py`).
 - Har bir admin amali audit jurnaliga yoziladi: `apps.staff.audit.audit(admin, action, target_type, target_id, summary)`. Jurnal faqat qoʻshiladi (DB trigger); `summary` ga parol, token va shaxsiy maʼlumot yozilmaydi.
-- Yuklangan rasm faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da; ishlab chiqishda `/media/` ni Django beradi (faqat `DEBUG`).
+- Yuklangan rasm faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da, manzili saytga nisbatan — `/api/v1/media/...` (frontend `next/image` shu yoʻlni kutadi); ishlab chiqishda Django beradi (faqat `DEBUG`), productionda — veb-server (5-bosqich).
 - Yangi ruxsat qoʻshilsa — avval kontraktdagi `AdminPermission` ga, keyin `apps/staff/permissions.py` ga (test ikkalasini solishtiradi).
 - Sessiya va boshqa maxfiy tokenlar bazada faqat SHA-256 xeshi ko'rinishida; admin 2FA kalitlari — shifrlangan.
 - Ommaviy maʼlumotni o'zgartiradigan amal frontend keshini yangilaydi: `apps.core.revalidate.revalidate(*teglar)` (tranzaksiyadan keyin).

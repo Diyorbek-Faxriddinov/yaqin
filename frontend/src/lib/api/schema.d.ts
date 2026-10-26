@@ -1266,7 +1266,10 @@ export interface components {
             lng: number;
         };
         Image: {
-            /** Format: uri */
+            /**
+             * Format: uri-reference
+             * @description Saytga nisbatan yoʻl (`/api/v1/media/...`) yoki CDN'dagi toʻliq URL
+             */
             url: string;
             width: number;
             height: number;

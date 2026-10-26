@@ -141,8 +141,10 @@ def apply_sort(queryset: QuerySet[Business], sort: str, origin: Point | None) ->
 
 
 def image(photo: BusinessPhoto, request: Request) -> dict[str, Any]:
+    # Saytga nisbatan yo'l (`/api/v1/media/...`): brauzer uni sayt manzili orqali oladi (reverse
+    # proxy → Django yoki veb-server), frontend rasm optimizatori — o'zining /api/v1 yo'li orqali
     return {
-        "url": request.build_absolute_uri(photo.file.url),
+        "url": photo.file.url,
         "width": photo.width,
         "height": photo.height,
         "alt": photo.alt or None,

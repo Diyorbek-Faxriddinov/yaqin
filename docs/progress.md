@@ -42,6 +42,14 @@ Oxirgi yangilanish: 2026-10-26
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅ (tasdiq kutilmoqda) |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
 
+## Lokal integratsiya (3.8 dan keyin)
+
+Frontend va backend birga ishga tushirildi va sinaldi: `scripts/local/start.ps1` — Django, Next.js (demo oʻchiq) va Caddy (`http://localhost:8090`, productiondagi tartib). Caddy — `D:\tools\caddy` (v2.11.7, checksum tekshirilgan). Caddy orqali sinaldi: admin kirishi (2FA bilan), biznes yaratish va eʼlon qilish → ommaviy sahifada paydo boʻlishi (kesh yangilash webhook'i bilan), rasm yuklash va koʻrsatish, begona `Origin` rad etilishi.
+
+**Topilgan va tuzatilgan:** rasmli biznes paydo boʻlishi bilan bosh sahifa va qidiruv xato berardi — backend toʻliq URL (`http://127.0.0.1:8000/media/...`) qaytarardi, frontend esa mock'dagidek `/api/v1/media/...` kutadi. Endi backend rasmlarni `/api/v1/media/...` yoʻli bilan beradi (kontraktda `uri-reference`), Next.js rasm optimizatori esa ularni backenddan oladi (`app/api/v1/[...path]/route.ts`).
+
+**Bu rejimda hali ishlamaydi (4-bosqich):** mijozning Telegram/Google orqali kirishi (frontendda vidjetlar yoʻq; bot va client ID kerak) — demak sevimlilar, sharh va shikoyat. Dev rejimida Next.js biznes sahifasi uchun tezlik maslahatini chiqaradi (`params` Suspense'dan tashqarida) — xato emas, optimallashtirish roʻyxatida.
+
 ## 3.8 natijalari
 
 | Endpoint / vosita                                    | Imkoniyatlar                                                                                                                                                                                                                                              |

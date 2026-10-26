@@ -68,7 +68,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Yuklangan fayllar (rasmlar) — ishlab chiqishda diskda; productionda S3-mos xotira (3.6, ADR-0004)
 MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "/media/"
+MEDIA_URL = "/api/v1/media/"
 
 LANGUAGE_CODE = "uz"
 TIME_ZONE = "Asia/Tashkent"
