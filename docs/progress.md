@@ -36,11 +36,40 @@ Oxirgi yangilanish: 2026-10-26
 | 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅                     |
 | 3.3   | Ommaviy API                                                                          | ✅                     |
 | 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅                     |
-| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅ (tasdiq kutilmoqda) |
-| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ⏳                     |
+| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅                     |
+| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅ (tasdiq kutilmoqda) |
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.6 natijalari
+
+| Endpoint                                          | Imkoniyatlar                                                                                                                                                                                                                                                            |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET/POST /admin/businesses`                      | Barcha holatlar; qidiruv (nom, slug), holat va "roziliksiz" filtrlari, rasmlar va mahsulotlar soni, oxirgi oʻzgargani birinchi. Yangi biznes — qoralama (saytda koʻrinmaydi)                                                                                            |
+| `GET/PATCH /admin/businesses/{id}`                | Qisman yangilash: nom, tavsif, kategoriya (faqat ichki), tuman, manzil, joylashuv, telefonlar (E.164, 5 tagacha), Telegram/Instagram (`@` olib tashlanadi), ish vaqti, rozilik, holat. Eʼlon qilish — joylashuv, manzil va roziliksiz 400 (`fields` da yetishmaganlari) |
+| `POST /admin/businesses/{id}/photos`              | Rasm yuklash (pastga qarang)                                                                                                                                                                                                                                            |
+| `PUT .../photos/order`, `DELETE .../photos/{id}`  | Tartib (birinchisi — muqova; roʻyxat aynan mos boʻlishi shart), oʻchirish (fayl ham)                                                                                                                                                                                    |
+| `GET/POST .../items`, `PUT/DELETE .../items/{id}` | Mahsulot va xizmatlar: narx turlari (aniq, "...dan", oraliq, soʻrov boʻyicha), davomiylik faqat xizmatda, 20 tagacha xususiyat; slug biznes ichida noyob va tahrirda oʻzgarmaydi                                                                                        |
+
+- **Ruxsatlar:** koʻrish — `business.view`; tahrirlash, rasm va katalog — `business.edit`; holat (eʼlon qilish, yashirish) — `business.publish`. Ikkalasi bir soʻrovda boʻlsa — ikkala ruxsat kerak.
+- **Rasmlar:** fayl mazmuni boʻyicha faqat JPEG, PNG, WebP (boshqa format dekoderlari umuman chaqirilmaydi); 5 MB (413), 40 megapiksel, kichik tomoni kamida 200 px; biznesga 12 ta. Har doim WebP'ga qayta kodlanadi: EXIF, jumladan GPS, olib tashlanadi, burilish qoʻllanadi, uzun tomoni 2000 px gacha; shaffoflik va rang profili saqlanadi. Klient yuborgan oʻlchamlarga ishonilmaydi. Saqlash xatosida diskda yetim fayl qolmaydi.
+- **Slug:** kirill nomlar lotinga oʻgiriladi; nom oʻzgarsa slug faqat biznes hali hech qachon eʼlon qilinmagan boʻlsa oʻzgaradi — eʼlon qilingan sahifa manzili (havolalar, qidiruv tizimlari) buzilmaydi. Mock ham shunday qilindi.
+- **Audit:** `business.create`, `business.update`, `business.status.*`, `photo.*`, `item.*`.
+- **Frontend keshi:** har oʻzgarishda `businesses` va `business:{slug}` (eski slug ham); holat yoki kategoriya oʻzgarsa — `categories`.
+- **Haqiqiy HTTP orqali sinov** (vaqtinchalik bazada, keyin oʻchirildi): Root yaratish → kirish va 2FA sozlash → biznes → rasm (WebP, EXIF'siz) → mahsulot → eʼlon qilish → ommaviy sahifada koʻrinadi → chiqish.
+- Pillow 13.0.0: 2 haftadan yosh, lekin 12.3.0 da ~40 ta zaiflik (`pip-audit`) — xavfsizlik istisnosi.
+- Testlar: backend 222 (+37), frontend unit 205.
+
+**Kontrakt toʻldirildi:** rasm va katalog endpointlariga 401 (va kerakli joylarda 404); bizneslar roʻyxatiga 400 (notoʻgʻri filtr yoki sahifa).
+
+**Hali ishlamaydi / qoldi:**
+
+- Brauzerdagi admin panel hali backendga ulanmagan (reverse proxy — 4-bosqich); hozircha API testlar va HTTP smoke orqali tekshirildi.
+- Rasmlar lokal diskda; production xotirasi (Oʻzbekistondagi disk yoki S3-mos), `immutable` kesh va `nosniff` sarlavhalari — 5-bosqich. Ishlab chiqishda rasmlarni Django beradi (faqat `DEBUG`).
+- Frontend `next/image` uchun backend rasm domeni sozlamasi — 4-bosqich.
+- Soʻrovdan biznes yaratish (`/admin/business-requests/{id}/convert`) — 3.7 (umumiy tekshiruv tayyor: `parse_create`).
+- Mahsulot rasmlari MVP'da yoʻq (`Item.images` — boʻsh roʻyxat).
 
 ## 3.5 natijalari
 

@@ -46,7 +46,7 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 - [x] Pul — tiyinda, butun son; vaqt — ISO 8601; ish vaqti Asia/Tashkent boʻyicha, yarim tundan oʻtadigan oraliqlar (ADR-0010). — 3.2–3.3
 - [x] Qidiruv: lotin va kirill yozuvi, tutuq belgilari (ʻ ʼ ' `) farqsiz — frontenddagi `src/lib/text/normalize.ts`qoidalari; PostgreSQL`unaccent` + trigram. — 3.2–3.3 (normalizatsiya ilovada + pg_trgm)
 - [x] Masofa boʻyicha saralash — PostGIS; "hozir ochiq" filtri serverda Toshkent vaqti bilan. — 3.3
-- [x] Telefonlar E.164 (`+998XXXXXXXXX`) ga keltiriladi. — 3.3 (soʻrovlar); biznes telefonlari — 3.6
+- [x] Telefonlar E.164 (`+998XXXXXXXXX`) ga keltiriladi. — 3.3 (soʻrovlar), 3.6 (biznes telefonlari)
 - [x] Eʼlon qilish uchun joylashuv, manzil va egasining roziligi majburiy (ADR-0007). — 3.2 (DB cheklovi)
 - [ ] Kategoriya slug'i oʻzgarmaydi; biznesi yoki ichki kategoriyasi bor kategoriya oʻchirilmaydi (409).
 - [x] Sharh va shikoyat biznesga ID orqali bogʻlanadi (slug oʻzgarishi ularni uzmaydi). — 3.2
@@ -56,8 +56,8 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 
 ## 5. Rasmlar
 
-- [ ] JPEG/PNG/WebP, 5 MB gacha, biznesga 12 tagacha; serverda qayta kodlash (EXIF, jumladan GPS, olib tashlanadi), oʻlcham tekshiruvi.
-- [ ] Saqlash — Oʻzbekistondagi disk yoki S3-mos xotira; `X-Content-Type-Options: nosniff`, oʻzgarmas kesh (`immutable`).
+- [x] JPEG/PNG/WebP, 5 MB gacha, biznesga 12 tagacha; serverda qayta kodlash (EXIF, jumladan GPS, olib tashlanadi), oʻlcham tekshiruvi. — 3.6 (Pillow: faqat shu 3 format dekoderi, WebP'ga qayta kodlash, 2000 px, 40 MP chegarasi, kamida 200 px)
+- [ ] Saqlash — Oʻzbekistondagi disk yoki S3-mos xotira; `X-Content-Type-Options: nosniff`, oʻzgarmas kesh (`immutable`). — lokal disk va ishlab chiqishda Django orqali — 3.6; production xotirasi va sarlavhalar — 5-bosqich
 
 ## 6. Kesh yangilash (frontend bilan bogʻliqlik)
 

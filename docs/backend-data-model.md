@@ -73,6 +73,9 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 | `complaint_other_has_text`, `complaint_closed_has_note`       | "Boshqa" sababida izoh; yopilgan shikoyatda javob                              |
 | `request_converted_has_business`, `request_rejected_has_note` | Soʻrov holati qoidalari                                                        |
 | `user_provider_uid`, `user_blocked_has_reason`                | Bir provayder hisobi — bitta foydalanuvchi; bloklashda sabab                   |
+| `admin_single_root`, `admin_root_active`                      | Root faqat bitta va uni oʻchirib (bloklab) boʻlmaydi                           |
+| `admin_username_format`                                       | Login: `^[a-z][a-z0-9_.-]{2,31}$` (kontraktdagi bilan bir xil)                 |
+| Trigger `staff_auditentry_no_update_delete`, `…_no_truncate`  | Audit jurnali faqat qoʻshiladi: UPDATE, DELETE, TRUNCATE rad etiladi           |
 | `platform_settings_singleton`                                 | Sozlamalar — bitta yozuv                                                       |
 
 ## Oʻchirish qoidalari
@@ -82,6 +85,17 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 | Foydalanuvchi     | Sharhlari muallifsiz qoladi (`SET NULL` → "Oʻchirilgan foydalanuvchi"), shikoyat va sevimlilari oʻchadi. Moderatsiyadagi sharhlarni oʻchirish — servis qatlamida (3.4) |
 | Biznes            | Rasmlar, katalog, sharhlar, shikoyatlar, sevimlilar bilan (`CASCADE`); soʻrovdagi havola `NULL`                                                                        |
 | Kategoriya, tuman | Bogʻlangan biznes boʻlsa — taqiqlangan (`PROTECT`)                                                                                                                     |
+| Administrator     | Audit jurnalida yozuvi boʻlsa — taqiqlangan (`PROTECT`); administrator faqat oʻchiriladi (`is_active=false`). Sessiyalari va kirish challenge'lari — `CASCADE`         |
+| Biznes rasmi      | Yozuv bilan birga fayl ham oʻchadi (tranzaksiya muvaffaqiyatli yakunlangach)                                                                                           |
+
+## Administratorlar (3.5)
+
+`apps/staff`: `AdminUser` (parol — Argon2 xeshi; TOTP kaliti — Fernet bilan shifrlangan; `must_change_password`; `totp_last_step` — kodni qayta ishlatishga qarshi), `Role` (ruxsatlar roʻyxati, tizim rollari `is_built_in`), `AdminUser.roles` (M2M) va `extra_permissions`, `AdminSession` (token — faqat SHA-256 xeshi, 8 soat), `LoginChallenge` (5 daqiqa; sozlashda yangi parol va kalit shu yerda kutadi), `AuditEntry` (faqat qoʻshiladi). Ruxsatlar roʻyxati — `apps/staff/permissions.py`, kontraktdagi `AdminPermission` bilan bir xil (test).
+
+## Slug qoidalari
+
+- Biznes slug'i nomdan yaratiladi (kirill lotinga oʻgiriladi), butun platformada noyob (`-2`, `-3` …). Nom oʻzgarsa, slug faqat biznes hali hech qachon eʼlon qilinmagan boʻlsa (`published_at` boʻsh) yangilanadi — eʼlon qilingan sahifa manzili barqaror.
+- Mahsulot slug'i biznes ichida noyob va tahrirda oʻzgarmaydi.
 
 ## Qidiruv
 

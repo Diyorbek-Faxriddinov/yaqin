@@ -199,6 +199,7 @@ export function createDraftBusiness(
     address: { text: "", landmark: null },
     phones: [],
     status: "draft",
+    publishedAt: null,
     consent: null,
     telegram: null,
     instagram: null,
@@ -569,7 +570,11 @@ export const adminHandlers = [
     if (Object.keys(fields).length > 0)
       return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", fields);
 
-    if (next.name !== record.name) next.slug = uniqueSlug(slugify(next.name), record.id);
+    // Backend bilan bir xil: slug faqat hali e'lon qilinmagan biznesda nom bilan o'zgaradi
+    if (next.name !== record.name && !record.publishedAt)
+      next.slug = uniqueSlug(slugify(next.name), record.id);
+    if (next.status === "published" && !next.publishedAt)
+      next.publishedAt = new Date().toISOString();
     next.updatedAt = new Date().toISOString();
     Object.assign(record, next);
     audit(

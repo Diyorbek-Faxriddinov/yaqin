@@ -42,6 +42,8 @@ export type DemoBusinessRecord = Omit<DemoBusiness, "location"> & {
   telegram: string | null;
   instagram: string | null;
   updatedAt: string;
+  /** Birinchi marta e'lon qilingan vaqt; shundan keyin slug (sahifa manzili) o'zgarmaydi */
+  publishedAt: string | null;
 };
 
 export type DemoAdmin = {
@@ -249,6 +251,7 @@ function seedBusinesses(): DemoBusinessRecord[] {
     telegram: null,
     instagram: null,
     updatedAt: business.createdAt,
+    publishedAt: business.createdAt,
   }));
 }
 

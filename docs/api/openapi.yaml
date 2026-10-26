@@ -727,6 +727,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AdminBusinessPage" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -843,6 +845,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "413":
           description: Fayl juda katta
           content:
@@ -873,8 +877,12 @@ paths:
           description: Saqlandi
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /admin/businesses/{businessId}/photos/{photoId}:
     parameters:
@@ -891,6 +899,8 @@ paths:
       responses:
         "204":
           description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -912,6 +922,8 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/Item" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -934,8 +946,12 @@ paths:
               schema: { $ref: "#/components/schemas/Item" }
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /admin/businesses/{businessId}/items/{itemId}:
     parameters:
@@ -962,6 +978,8 @@ paths:
               schema: { $ref: "#/components/schemas/Item" }
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -974,6 +992,8 @@ paths:
       responses:
         "204":
           description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":

@@ -237,6 +237,23 @@ describe("bizneslar", () => {
       )
     ).json()) as BusinessPage;
     expect(publicList.items.map((b) => b.id)).toContain(draft.id);
+
+    // E'lon qilingandan keyin nom o'zgarsa ham sahifa manzili (slug) o'zgarmaydi
+    const renamed = await call(`/admin/businesses/${draft.id}`, session, {
+      method: "PATCH",
+      body: JSON.stringify({ name: "Boshqa nom" }),
+    });
+    expect(((await renamed.json()) as AdminBusiness).slug).toBe(draft.slug);
+  });
+
+  it("qoralamada slug nom bilan birga o'zgaradi", async () => {
+    const session = await adminLogin();
+    const draft = await createDraft(session, "Eski qoralama nomi");
+    const renamed = await call(`/admin/businesses/${draft.id}`, session, {
+      method: "PATCH",
+      body: JSON.stringify({ name: "Yangi qoralama nomi" }),
+    });
+    expect(((await renamed.json()) as AdminBusiness).slug).toBe("yangi-qoralama-nomi");
   });
 
   it("qoralama ommaviy saytda ko'rinmaydi", async () => {

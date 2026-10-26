@@ -75,13 +75,14 @@ apps/
   core/        umumiy: health, xato formati, sozlamalar, matn normalizatsiyasi, ish vaqti
   catalog/     tumanlar, kategoriyalar (seed.py — boshlangʻich maʼlumot)
   accounts/    mijozlar: Telegram/Google kirishi, sessiyalar, CSRF, /me
-  businesses/  bizneslar, rasmlar, katalog, soʻrovlar
+  businesses/  bizneslar, rasmlar, katalog, soʻrovlar; admin API — admin_views.py, tekshiruv — admin_input.py, rasmlarni qayta kodlash — photos.py
   community/   sharhlar, shikoyatlar, sevimlilar (reyting — services.py)
   stats/       kunlik statistika hodisalari
   staff/       administratorlar: parol + TOTP kirishi, rollar va ruxsatlar (RBAC), admin sessiyalari, audit jurnali
 tests/
   contract.py  javoblarni openapi.yaml ga qarshi tekshirish
   factories.py test maʼlumotlari (tiplangan yordamchilar)
+  admin_api.py admin sessiyasi va CSRF bilan soʻrovlar (AdminClient)
 scripts/
   setup-db.sql bazani bir martalik tayyorlash
 ```
@@ -93,6 +94,7 @@ scripts/
 - Kirish talab qiladigan view: `authentication_classes = [CustomerSessionAuthentication]`, `permission_classes = [IsCustomer]`, joriy foydalanuvchi — `customer(request)`. O'zgartiruvchi so'rovlarda CSRF (`X-CSRFToken` = cookie = sessiya) avtomatik tekshiriladi.
 - Admin view: `authentication_classes = [AdminSessionAuthentication]`, `permission_classes = [IsAdmin]`, `admin_permission = "business.edit"` (yoki `"root"`; usul boʻyicha — `admin_permissions = {"PATCH": ...}`), joriy admin — `current_admin(request)` (`apps/staff/authentication.py`).
 - Har bir admin amali audit jurnaliga yoziladi: `apps.staff.audit.audit(admin, action, target_type, target_id, summary)`. Jurnal faqat qoʻshiladi (DB trigger); `summary` ga parol, token va shaxsiy maʼlumot yozilmaydi.
+- Yuklangan rasm faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da; ishlab chiqishda `/media/` ni Django beradi (faqat `DEBUG`).
 - Yangi ruxsat qoʻshilsa — avval kontraktdagi `AdminPermission` ga, keyin `apps/staff/permissions.py` ga (test ikkalasini solishtiradi).
 - Sessiya va boshqa maxfiy tokenlar bazada faqat SHA-256 xeshi ko'rinishida; admin 2FA kalitlari — shifrlangan.
 - Ommaviy maʼlumotni o'zgartiradigan amal frontend keshini yangilaydi: `apps.core.revalidate.revalidate(*teglar)` (tranzaksiyadan keyin).
