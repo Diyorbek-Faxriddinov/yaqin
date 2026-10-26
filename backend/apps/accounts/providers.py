@@ -6,6 +6,7 @@ Sozlanmagan bo'lsa (token/client ID yo'q) — halol rad etiladi, "ishlaydi" deb 
 
 import hashlib
 import hmac
+import logging
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -13,6 +14,10 @@ from typing import Any
 from django.conf import settings
 
 from apps.core.api import ApiError
+
+logger = logging.getLogger(__name__)
+# Kompyuter va Google soatlari orasidagi kichik farq ("Token used too early") rad etilmaydi
+GOOGLE_CLOCK_SKEW_SECONDS = 10
 
 
 @dataclass(frozen=True)
@@ -53,12 +58,15 @@ def verify_telegram(data: dict[str, Any]) -> Profile:
     if not received or "id" not in fields or "auth_date" not in fields:
         raise _invalid()
     if not hmac.compare_digest(telegram_check_hash(fields, bot_token), received):
+        # Ko'pincha: bot tokeni boshqa botniki yoki maʼlumot o'zgartirilgan
+        logger.warning("Telegram kirishi rad etildi: imzo mos emas")
         raise _invalid()
     try:
         age = time.time() - int(fields["auth_date"])
     except (TypeError, ValueError):
         raise _invalid() from None
     if age > settings.TELEGRAM_AUTH_MAX_AGE or age < -60:
+        logger.warning("Telegram kirishi rad etildi: auth_date eskirgan (%d s)", int(age))
         raise _invalid("Kirish havolasi eskirgan. Qaytadan urinib koʻring.")
     name = " ".join(str(fields[k]) for k in ("first_name", "last_name") if fields.get(k)).strip()
     return Profile(
@@ -75,7 +83,10 @@ def _google_verify(credential: str, client_id: str) -> dict[str, Any]:
     from google.oauth2 import id_token
 
     claims: dict[str, Any] = id_token.verify_oauth2_token(  # type: ignore[no-untyped-call]
-        credential, google_requests.Request(), client_id
+        credential,
+        google_requests.Request(),
+        client_id,
+        clock_skew_in_seconds=GOOGLE_CLOCK_SKEW_SECONDS,
     )
     return claims
 
@@ -88,16 +99,21 @@ def verify_google(credential: str) -> Profile:
 
     try:
         claims = _google_verify(credential, client_id)
-    except ValueError:
+    except ValueError as error:
+        # Sabab (masalan, "wrong audience" — client ID mos emas) — maxfiy maʼlumotsiz
+        logger.warning("Google kirishi rad etildi: %s", str(error)[:200])
         raise _invalid() from None
     except TransportError:
+        logger.warning("Google kirishi: Google kalitlarini olib bo'lmadi (tarmoq)")
         # Google kalitlarini olib bo'lmadi (tarmoq) — 500 emas, tushunarli rad etish
         raise ApiError(
             401, "provider_unavailable", "Google bilan bogʻlanib boʻlmadi. Keyinroq urinib koʻring."
         ) from None
     if claims.get("iss") not in {"accounts.google.com", "https://accounts.google.com"}:
+        logger.warning("Google kirishi rad etildi: iss notoʻgʻri")
         raise _invalid()
     if not claims.get("email_verified", False):
+        logger.warning("Google kirishi rad etildi: email tasdiqlanmagan")
         raise _invalid("Google akkaunti tasdiqlanmagan")
     # Email saqlanmaydi (maxfiylik siyosati) — faqat Google'dagi doimiy identifikator `sub`
     return Profile(

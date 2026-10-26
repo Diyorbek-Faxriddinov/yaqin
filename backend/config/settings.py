@@ -1,5 +1,6 @@
 """Yaqin backend sozlamalari. Maxfiy va muhitga bog'liq qiymatlar — muhit o'zgaruvchilaridan."""
 
+import re
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -124,6 +125,18 @@ TELEGRAM_BOT_TOKEN = env_str("TELEGRAM_BOT_TOKEN")
 TELEGRAM_AUTH_MAX_AGE = 24 * 60 * 60  # auth_date necha soniyagacha amal qiladi
 # Google Identity Services: OAuth mijoz ID'si; bo'sh — Google orqali kirish o'chiq
 GOOGLE_CLIENT_ID = env_str("GOOGLE_CLIENT_ID")
+# Nusxalashdagi xato (https://, bo'shliq, token o'rniga boshqa qiymat) jimgina "kirib bo'lmadi"ga
+# aylanmasin — ilova darhol aniq sabab bilan to'xtaydi
+if TELEGRAM_BOT_TOKEN and not re.fullmatch(r"\d+:[A-Za-z0-9_-]+", TELEGRAM_BOT_TOKEN):
+    raise ImproperlyConfigured(
+        "TELEGRAM_BOT_TOKEN formati: 123456789:AA... (@BotFather bergan token)"
+    )
+if GOOGLE_CLIENT_ID and not re.fullmatch(
+    r"[a-z0-9-]+\.apps\.googleusercontent\.com", GOOGLE_CLIENT_ID
+):
+    raise ImproperlyConfigured(
+        "GOOGLE_CLIENT_ID formati: <raqam>-<...>.apps.googleusercontent.com (https:// siz)"
+    )
 # Demo kirish (POST /auth/demo) — faqat ishlab chiqish va integratsiya sinovlari
 DEMO_LOGIN_ENABLED = env_bool("DEMO_LOGIN_ENABLED", DEBUG)
 if DEMO_LOGIN_ENABLED and not DEBUG:

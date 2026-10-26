@@ -24,11 +24,11 @@ Telegram Login Widget faqat botga bogʻlangan **domen**da ishlaydi (`localhost` 
    Oxirida `https://<tasodifiy>.trycloudflare.com` manzil chiqadi.
 
 5. BotFather → `/setdomain` → botingiz → tunnel manzilining **host** qismi (masalan, `abc-def.trycloudflare.com`).
-6. Tunnel manzilini brauzerda oching → **Kirish** → Telegram tugmasi → Telegram'da tasdiqlang → saytga kirgan holda qaytasiz.
+6. Brauzerda **tunnel manzilini** oching (`http://localhost:8090` emas — u yerda Telegram "Bot domain invalid" deydi) → **Kirish** → Telegram tugmasi → Telegram'da tasdiqlang → saytga kirgan holda qaytasiz.
 
 Eslatmalar:
 
-- Tunnel manzili har ishga tushirishda oʻzgaradi — har safar `/setdomain` qilinadi. Doimiy domen — 5-bosqichda.
+- Tunnel manzili har ishga tushirishda oʻzgaradi — har safar `/setdomain` qilinadi (oldingi manzil endi ishlamaydi). `-Tunnel` siz ishga tushirilsa, tunnel umuman ochilmaydi. Doimiy domen — 5-bosqichda.
 - Tunnel ochiq paytda saytingiz internetdan koʻrinadi. Sinovdan keyin "Yaqin tunnel" oynasini yoping.
 - Shu tunnel manzili telefonda ham ochiladi (4.5-qadam: joylashuv va kamera faqat HTTPS'da ishlaydi).
 
@@ -43,7 +43,7 @@ Google `http://localhost` manzilida ishlaydi — tunnel shart emas.
 3. **Clients** (yoki "Credentials → Create credentials → OAuth client ID") → turi **Web application**:
    - **Authorized JavaScript origins:** `http://localhost:8090` va `http://localhost`.
    - Redirect URI kerak emas (popup rejimi).
-4. **Client ID** ni nusxalang (`....apps.googleusercontent.com`). Client secret ishlatilmaydi — uni hech qayerga yozmang.
+4. **Client ID** ni nusxalang (`....apps.googleusercontent.com`) — oldiga `https://` qoʻshmang. Client secret ishlatilmaydi — uni hech qayerga yozmang.
 5. Ikkala faylga bir xil qiymat:
    - `backend/.env`: `GOOGLE_CLIENT_ID=<client id>`
    - `frontend/.env.local`: `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<client id>`
@@ -66,10 +66,12 @@ Backend email'ni saqlamaydi — faqat Google'dagi doimiy identifikator, ism va r
 
 ## Muammo boʻlsa
 
-| Belgisi                                                               | Sababi                                                                                                                           |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Kirish sahifasida "Telegram va Google orqali kirish hali sozlanmagan" | `frontend/.env.local` da `NEXT_PUBLIC_TELEGRAM_BOT` / `NEXT_PUBLIC_GOOGLE_CLIENT_ID` yoʻq yoki oynalar qayta ishga tushirilmagan |
-| Telegram vidjetida "Bot domain invalid"                               | `/setdomain` qilinmagan yoki tunnel manzili oʻzgargan                                                                            |
-| "Bu usul bilan kirish hozircha ishlamayapti"                          | `backend/.env` da `TELEGRAM_BOT_TOKEN` / `GOOGLE_CLIENT_ID` yoʻq                                                                 |
-| Google: "access blocked"                                              | Akkauntingiz "Test users" roʻyxatida yoʻq yoki origin `http://localhost:8090` qoʻshilmagan                                       |
-| Admin kodi notoʻgʻri                                                  | Telefon vaqti avtomatik emas — sozlamalarda "Avtomatik vaqt" ni yoqing                                                           |
+| Belgisi                                                                                      | Sababi                                                                                                                           |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Kirish sahifasida "Telegram va Google orqali kirish hali sozlanmagan"                        | `frontend/.env.local` da `NEXT_PUBLIC_TELEGRAM_BOT` / `NEXT_PUBLIC_GOOGLE_CLIENT_ID` yoʻq yoki oynalar qayta ishga tushirilmagan |
+| Telegram vidjetida "Bot domain invalid"                                                      | Sayt `localhost` orqali ochilgan (tunnel manzili kerak), `/setdomain` qilinmagan yoki tunnel manzili oʻzgargan                   |
+| Backend oynasi darhol yopiladi: "GOOGLE_CLIENT_ID formati" yoki "TELEGRAM_BOT_TOKEN formati" | Qiymat notoʻgʻri nusxalangan (masalan, `https://` bilan) — xabardagi formatga keltiring                                          |
+| "Kirib boʻlmadi"                                                                             | Sababi backend oynasida yoziladi: `Google kirishi rad etildi: …` yoki `Telegram kirishi rad etildi: …`                           |
+| "Bu usul bilan kirish hozircha ishlamayapti"                                                 | `backend/.env` da `TELEGRAM_BOT_TOKEN` / `GOOGLE_CLIENT_ID` yoʻq                                                                 |
+| Google: "access blocked"                                                                     | Akkauntingiz "Test users" roʻyxatida yoʻq yoki origin `http://localhost:8090` qoʻshilmagan                                       |
+| Admin kodi notoʻgʻri                                                                         | Telefon vaqti avtomatik emas — sozlamalarda "Avtomatik vaqt" ni yoqing                                                           |

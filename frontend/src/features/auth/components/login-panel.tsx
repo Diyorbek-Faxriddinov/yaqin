@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
 import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
 import type { Me, TelegramAuth } from "@/lib/api/types";
+import { useHydrated } from "@/lib/use-hydrated";
 import { meQueryKey, useMe } from "../use-me";
 import { GoogleLoginButton, TelegramLoginButton } from "./provider-buttons";
 
@@ -99,6 +100,9 @@ export function LoginPanel({
   const onWidgetError = useCallback(() => toast.error(t("widgetError")), [t]);
   const pending = telegramLogin.isPending || googleLogin.isPending;
   const configured = Boolean(telegramBot || googleClientId);
+  // Faqat lokal ishlab chiqishda: brauzer manzili localhost bo'lsa (server renderida — yo'q)
+  const hydrated = useHydrated();
+  const onLocalhost = hydrated && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
   return (
     <div className="space-y-6">
@@ -109,11 +113,17 @@ export function LoginPanel({
 
       <div className="space-y-3" aria-busy={pending}>
         {telegramBot && (
-          <TelegramLoginButton
-            bot={telegramBot}
-            onAuth={(user) => telegramLogin.mutate(user)}
-            onError={onWidgetError}
-          />
+          <>
+            <TelegramLoginButton
+              bot={telegramBot}
+              onAuth={(user) => telegramLogin.mutate(user)}
+              onError={onWidgetError}
+            />
+            {/* Telegram vidjeti faqat botga bog'langan domenda ishlaydi ("Bot domain invalid") */}
+            {onLocalhost && (
+              <p className="text-center text-xs text-muted-foreground">{t("telegramLocalhost")}</p>
+            )}
+          </>
         )}
         {googleClientId && (
           <GoogleLoginButton

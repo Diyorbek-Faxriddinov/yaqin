@@ -237,6 +237,7 @@
     "providersNotConfigured": "Telegram va Google orqali kirish hali sozlanmagan.",
     "checking": "Tekshirilmoqda…",
     "widgetError": "Kirish tugmasi yuklanmadi. Internetni tekshirib, sahifani yangilang.",
+    "telegramLocalhost": "Telegram kirishi localhost'da ishlamaydi — saytni bot domeni orqali oching (lokal sinovda: start.ps1 -Tunnel manzili).",
     "or": "yoki",
     "demo": "Demo foydalanuvchi sifatida kirish",
     "demoNote": "Demo rejim: haqiqiy akkaunt yaratilmaydi. Maʼlumotlaringiz (sevimlilar, sharhlar) server qayta ishga tushganda oʻchadi.",

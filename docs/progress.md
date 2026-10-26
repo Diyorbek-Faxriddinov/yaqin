@@ -64,6 +64,8 @@ Oxirgi yangilanish: 2026-10-26
 - **Yoʻriqnoma:** [auth-setup.md](auth-setup.md) — Telegram bot, Google Client ID, admin 2FA va muammolar jadvali.
 - Testlar: backend 472 (+1), frontend unit 207 (+2), E2E backend 232 (+9: 3 ta provayder testi × 3 ekran), demo 221.
 
+**Sizning sinovingizdan keyin (2026-10-26):** Google tugmasi chiqdi, lekin kirish "Kirib boʻlmadi" bilan tugadi — sabab `backend/.env` dagi `GOOGLE_CLIENT_ID` oldida tasodifiy `https://` edi (frontend qiymati bilan mos emas → backend token'ni rad etdi); tuzatildi. Telegram "Bot domain invalid" — sayt `localhost` orqali ochilgan, tunnel manzili kerak. Shundan kelib chiqib: backend endi notoʻgʻri formatdagi `GOOGLE_CLIENT_ID` / `TELEGRAM_BOT_TOKEN` bilan aniq xabar berib ishga tushmaydi; rad etish sabablari backend logida yoziladi; Google tekshiruvida 10 soniyalik soat farqi qabul qilinadi; kirish sahifasida `localhost` da Telegram uchun izoh chiqadi.
+
 **Hali sinalmagan (sizning qadamingiz kerak):**
 
 - **Haqiqiy Telegram va Google akkaunti bilan kirish.** Kod va E2E tayyor, lekin haqiqiy bot va Client ID sizning akkauntlaringizda yaratiladi — [auth-setup.md](auth-setup.md). Natijani menga aytsangiz, kerak boʻlsa tuzataman.
