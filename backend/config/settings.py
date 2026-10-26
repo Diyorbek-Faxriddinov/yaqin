@@ -84,12 +84,40 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [],
     "UNAUTHENTICATED_USER": None,
     # Kirishsiz endpointlar uchun IP bo'yicha cheklov (handoff, 2-bo'lim)
-    "DEFAULT_THROTTLE_RATES": {"events": "120/min", "business_requests": "5/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "events": "120/min",
+        "business_requests": "5/hour",
+        "auth": "20/min",
+        # Kirgan foydalanuvchi bo'yicha (ScopedRateThrottle foydalanuvchi ID'sini ishlatadi)
+        "reviews": "10/hour",
+        "complaints": "10/hour",
+    },
     # Reverse proxy (Caddy/Nginx) ortida: X-Forwarded-For'dan nechta proksi ishonchli
     "NUM_PROXIES": int(env_str("DJANGO_NUM_PROXIES", "0")) or None,
     # Xatolar kontraktdagi Error sxemasida: {code, message, fields}
     "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
 }
+
+# --- Mijoz kirishi (ADR-0006, ADR-0012) ---
+# Telegram Login Widget: @BotFather'dan bot tokeni; bo'sh — Telegram orqali kirish o'chiq
+TELEGRAM_BOT_TOKEN = env_str("TELEGRAM_BOT_TOKEN")
+TELEGRAM_AUTH_MAX_AGE = 24 * 60 * 60  # auth_date necha soniyagacha amal qiladi
+# Google Identity Services: OAuth mijoz ID'si; bo'sh — Google orqali kirish o'chiq
+GOOGLE_CLIENT_ID = env_str("GOOGLE_CLIENT_ID")
+# Demo kirish (POST /auth/demo) — faqat ishlab chiqish va integratsiya sinovlari
+DEMO_LOGIN_ENABLED = env_bool("DEMO_LOGIN_ENABLED", DEBUG)
+if DEMO_LOGIN_ENABLED and not DEBUG:
+    raise ImproperlyConfigured("DEMO_LOGIN_ENABLED faqat DEBUG rejimida")
+# Cookie'lar faqat HTTPS orqali (productionda); lokal HTTP ishlab chiqishda o'chiq
+SESSION_COOKIES_SECURE = env_bool("SESSION_COOKIES_SECURE", not DEBUG)
+# CSRF — o'zimizning double-submit tekshiruvimiz (sessiyaga bog'langan,
+# apps/accounts/authentication.py); Django CsrfViewMiddleware ishlatilmaydi —
+# DRF APIView'lar baribir uni chetlab o'tadi
+SILENCED_SYSTEM_CHECKS = ["security.W003"]
+
+# --- Frontend keshini yangilash (docs/backend-handoff.md, 6-bo'lim) ---
+FRONTEND_REVALIDATE_URL = env_str("FRONTEND_REVALIDATE_URL")
+REVALIDATE_SECRET = env_str("REVALIDATE_SECRET")
 
 # Kesh (cheklovlar hisoblagichlari): ishlab chiqishda — xotirada; productionda Redis (3.8)
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}

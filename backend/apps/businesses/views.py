@@ -4,16 +4,19 @@ from typing import Any
 
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.throttling import BaseThrottle, ScopedRateThrottle
 from rest_framework.views import APIView
 
+from apps.accounts.authentication import CustomerSessionAuthentication, IsCustomer
 from apps.businesses import public
 from apps.businesses.models import Business, BusinessRequest
 from apps.catalog.models import Category, District
 from apps.catalog.views import category_ref
 from apps.community.models import Review
+from apps.community.views import create_review
 from apps.core.api import ApiError, Lang, lang_of, not_found, page_params, page_slice
 from apps.core.models import PlatformSettings
 from apps.core.phone import normalize_uz_phone
@@ -81,6 +84,21 @@ class BusinessItemView(APIView):
 
 
 class BusinessReviewsView(APIView):
+    """GET — ommaviy (chop etilgan sharhlar); POST — sharh qoldirish (kirish talab qilinadi)."""
+
+    authentication_classes = [CustomerSessionAuthentication]
+
+    def get_permissions(self) -> list[BasePermission]:
+        return [IsCustomer()] if self.request.method == "POST" else []
+
+    def get_throttles(self) -> list[BaseThrottle]:
+        return [ScopedRateThrottle()] if self.request.method == "POST" else []
+
+    throttle_scope = "reviews"
+
+    def post(self, request: Request, slug: str) -> Response:
+        return create_review(request, slug)
+
     def get(self, request: Request, slug: str) -> Response:
         business = get_published(slug)
         page, page_size = page_params(request)

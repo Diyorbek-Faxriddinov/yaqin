@@ -3,3 +3,6 @@
 Django==5.2.18
 djangorestframework==3.18.3
 psycopg[binary]==3.3.6
+# Google ID tokenini tekshirish (rasmiy kutubxona) va uning HTTP transporti
+google-auth==2.61.0
+requests==2.34.2

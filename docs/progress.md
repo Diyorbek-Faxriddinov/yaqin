@@ -34,13 +34,40 @@ Oxirgi yangilanish: 2026-10-26
 | ----- | ------------------------------------------------------------------------------------ | ---------------------- |
 | 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅                     |
 | 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅                     |
-| 3.3   | Ommaviy API                                                                          | ✅ (tasdiq kutilmoqda) |
-| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ⏳                     |
+| 3.3   | Ommaviy API                                                                          | ✅                     |
+| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅ (tasdiq kutilmoqda) |
 | 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ⏳                     |
 | 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ⏳                     |
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ⏳                     |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ⏳                     |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ⏳                     |
+
+## 3.4 natijalari
+
+| Endpoint                                                                    | Imkoniyatlar                                                                                                                       |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /auth/telegram`                                                       | Telegram Login Widget imzosi (HMAC-SHA256, kalit — bot tokenining xeshi), `auth_date` muddati (24 soat), faqat Telegram maydonlari |
+| `POST /auth/google`                                                         | Rasmiy `google-auth` bilan ID token (imzo, muddat, `aud`, `iss`, tasdiqlangan email); email saqlanmaydi — faqat `sub`              |
+| `POST /auth/demo`                                                           | Faqat `DEBUG` rejimida (integratsiya sinovlari); productionda 404, `DEBUG` siz yoqilsa ilova ishga tushmaydi                       |
+| `POST /auth/logout`, `GET/PATCH/DELETE /me`                                 | Chiqish, ismni oʻzgartirish, akkauntni oʻchirish (chop etilgan sharhlar muallifsiz qoladi, qolganlari oʻchadi)                     |
+| `/me/favorites`, `/me/favorites/ids`, `PUT/DELETE /me/favorites/{id}`       | Sevimlilar (faqat eʼlon qilinganlar, oxirgi qoʻshilgani birinchi)                                                                  |
+| `POST /businesses/{slug}/reviews`, `/me/reviews`, `DELETE /me/reviews/{id}` | Sharh (bitta biznesga bitta — 409), moderatsiya sozlamasiga koʻra; chop etilganda reyting atomar yangilanadi                       |
+| `POST /complaints`, `/me/complaints`                                        | Shikoyat ("Boshqa" — kamida 10 belgi)                                                                                              |
+
+- **Sessiya:** `sessionid` — HttpOnly, SameSite=Lax, 30 kun, productionda Secure; token bazada faqat SHA-256 xeshi. `csrftoken` — double-submit: sarlavha = cookie = sessiyadagi token (vaqtga chidamli taqqoslash).
+- **Cheklovlar:** kirish — IP boʻyicha (20/daqiqa); sharh va shikoyat — foydalanuvchi boʻyicha (10/soat).
+- Bloklangan foydalanuvchi kira olmaydi (403 `account_blocked`), sessiyasi ham ishlamaydi.
+- Provayder sozlanmagan boʻlsa (token yoki client ID yoʻq) — halol `401 provider_unavailable`.
+- **Frontend keshini yangilash** (`apps/core/revalidate.py`): oʻzgarishdan keyin frontendning `/api/revalidate` webhook'i chaqiriladi — faqat tranzaksiya muvaffaqiyatli yakunlanganda; frontend javob bermasa ham foydalanuvchi soʻrovi buzilmaydi.
+- Testlar: 139 (backend), har bir javob kontraktga qarshi.
+
+**Kontrakt toʻldirildi:** kirish endpointlarida 403 (bloklangan) va 429, demo — 404 (productionda), chiqish — 403 (CSRF), sharh va shikoyatda — 429.
+
+**Hali ishlamaydi / sinalmagan:**
+
+- **Telegram va Google orqali haqiqiy kirish sinalmagan.** Imzo tekshiruvi testlarda Telegram hujjatidagi algoritm bilan sinaldi, lekin haqiqiy bot (@BotFather, bepul) va Google OAuth mijozi (bepul) domen bilan birga kerak — 4/5-bosqichda.
+- Frontend brauzer soʻrovlari (`/api/v1`) backendga reverse proxy orqali yetadi — 4-bosqich.
+- Bloklash amali (admin) — 3.7; productionda cookie'lar faqat HTTPS — `SESSION_COOKIES_SECURE` (standart: DEBUG oʻchiq boʻlsa yoqiq).
 
 ## 3.3 natijalari
 

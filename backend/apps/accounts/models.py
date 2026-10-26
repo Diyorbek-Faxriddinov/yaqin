@@ -13,6 +13,9 @@ class User(UUIDModel):
     class Provider(models.TextChoices):
         TELEGRAM = "telegram"
         GOOGLE = "google"
+        # Faqat ishlab chiqish va integratsiya sinovlari uchun (DEMO_LOGIN_ENABLED);
+        # productionda o'chiq
+        DEMO = "demo"
 
     provider = models.CharField(max_length=16, choices=Provider.choices)
     provider_uid = models.CharField(max_length=64, help_text="Provayderdagi hisob identifikatori")
@@ -35,3 +38,23 @@ class User(UUIDModel):
 
     def __str__(self) -> str:
         return self.display_name
+
+    @property
+    def is_authenticated(self) -> bool:
+        """DRF (cheklovlar, ruxsatlar) uchun: haqiqiy foydalanuvchi doim autentifikatsiyalangan."""
+        return True
+
+
+class CustomerSession(models.Model):
+    """Mijoz sessiyasi (ADR-0012). Token bazada faqat SHA-256 xeshi ko'rinishida — baza sizib
+    chiqsa ham sessiyani o'g'irlab bo'lmaydi. CSRF tokeni sessiyaga bog'langan (double-submit).
+    """
+
+    token_hash = models.CharField(max_length=64, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sessions")
+    csrf_token = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(db_index=True)
+
+    def __str__(self) -> str:
+        return f"{self.user} ({self.created_at:%Y-%m-%d})"

@@ -2291,6 +2291,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     listMapMarkers: {
@@ -2333,6 +2334,16 @@ export interface operations {
         responses: {
             200: components["responses"]["LoggedIn"];
             401: components["responses"]["Unauthorized"];
+            /** @description Akkaunt bloklangan (`account_blocked`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
         };
     };
     loginGoogle: {
@@ -2353,6 +2364,16 @@ export interface operations {
         responses: {
             200: components["responses"]["LoggedIn"];
             401: components["responses"]["Unauthorized"];
+            /** @description Akkaunt bloklangan (`account_blocked`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
         };
     };
     loginDemo: {
@@ -2365,6 +2386,7 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["LoggedIn"];
+            404: components["responses"]["NotFound"];
         };
     };
     logout: {
@@ -2382,6 +2404,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description CSRF tekshiruvi oʻtmadi (sessiya bor, lekin sarlavha notoʻgʻri) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };
@@ -2613,6 +2644,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            429: components["responses"]["TooManyRequests"];
         };
     };
     listMyComplaints: {

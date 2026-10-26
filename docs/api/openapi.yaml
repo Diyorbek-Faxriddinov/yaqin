@@ -263,6 +263,8 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /map/markers:
     get:
@@ -310,6 +312,13 @@ paths:
           $ref: "#/components/responses/LoggedIn"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Akkaunt bloklangan (`account_blocked`)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /auth/google:
     post:
@@ -330,6 +339,13 @@ paths:
           $ref: "#/components/responses/LoggedIn"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Akkaunt bloklangan (`account_blocked`)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /auth/demo:
     post:
@@ -340,6 +356,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/LoggedIn"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /auth/logout:
     post:
@@ -350,6 +368,11 @@ paths:
       responses:
         "204":
           description: Chiqildi
+        "403":
+          description: CSRF tekshiruvi oʻtmadi (sessiya bor, lekin sarlavha notoʻgʻri)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
 
   /me:
     get:
@@ -535,6 +558,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /me/complaints:
     get:

@@ -13,12 +13,12 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 
 ## 1. Autentifikatsiya va sessiyalar (ADR-0006, ADR-0012)
 
-- [ ] Telegram Login: `hash` ni bot tokeni bilan tekshirish, `auth_date` muddati; Google OAuth (ID token tekshiruvi).
-- [ ] Mijoz sessiyasi: `sessionid` — `HttpOnly; Secure; SameSite=Lax`, 30 kun; `csrftoken` — JS oʻqiy oladigan cookie (double-submit, `X-CSRFToken`).
+- [x] Telegram Login: `hash` ni bot tokeni bilan tekshirish, `auth_date` muddati; Google OAuth (ID token tekshiruvi). — 3.4 (imzo testlarda; haqiqiy bot va Google client ID bilan — 4/5-bosqich)
+- [x] Mijoz sessiyasi: `sessionid` — `HttpOnly; Secure; SameSite=Lax`, 30 kun; `csrftoken` — JS oʻqiy oladigan cookie (double-submit, `X-CSRFToken`). — 3.4 (token bazada xesh ko'rinishida)
 - [ ] Admin sessiyasi alohida: `adminsessionid` — `SameSite=Strict`, 8 soat.
 - [ ] Admin parollari — Argon2; TOTP — har bir admin uchun alohida maxfiy kalit, birinchi kirishda QR orqali sozlash; vaqtinchalik parol bilan kirganda parolni almashtirish majburiy.
 - [ ] Root faqat serverdagi CLI buyrugʻi bilan yaratiladi (API orqali emas).
-- [ ] Bloklangan foydalanuvchi: sessiyalari darhol tugatiladi, qayta kirishda `403 account_blocked`.
+- [ ] Bloklangan foydalanuvchi: sessiyalari darhol tugatiladi, qayta kirishda `403 account_blocked`. — kirishda 403 — 3.4; bloklash amali va sessiyalarni tugatish — 3.7
 - [ ] Oʻchirilgan admin (`isActive=false`) — sessiyalari tugatiladi, kirish urinishi `401` (holat oshkor qilinmaydi).
 
 ## 2. Cheklovlar (rate limiting) va suiisteʼmolga qarshi
@@ -43,16 +43,16 @@ Mock'dagi demo maʼlumotlar (`fixtures/`) productionga **koʻchirilmaydi** — h
 
 ## 4. Maʼlumotlar va biznes qoidalari
 
-- [ ] Pul — tiyinda, butun son; vaqt — ISO 8601; ish vaqti Asia/Tashkent boʻyicha, yarim tundan oʻtadigan oraliqlar (ADR-0010).
-- [ ] Qidiruv: lotin va kirill yozuvi, tutuq belgilari (ʻ ʼ ' `) farqsiz — frontenddagi `src/lib/text/normalize.ts`qoidalari; PostgreSQL`unaccent` + trigram.
-- [ ] Masofa boʻyicha saralash — PostGIS; "hozir ochiq" filtri serverda Toshkent vaqti bilan.
-- [ ] Telefonlar E.164 (`+998XXXXXXXXX`) ga keltiriladi.
-- [ ] Eʼlon qilish uchun joylashuv, manzil va egasining roziligi majburiy (ADR-0007).
+- [x] Pul — tiyinda, butun son; vaqt — ISO 8601; ish vaqti Asia/Tashkent boʻyicha, yarim tundan oʻtadigan oraliqlar (ADR-0010). — 3.2–3.3
+- [x] Qidiruv: lotin va kirill yozuvi, tutuq belgilari (ʻ ʼ ' `) farqsiz — frontenddagi `src/lib/text/normalize.ts`qoidalari; PostgreSQL`unaccent` + trigram. — 3.2–3.3 (normalizatsiya ilovada + pg_trgm)
+- [x] Masofa boʻyicha saralash — PostGIS; "hozir ochiq" filtri serverda Toshkent vaqti bilan. — 3.3
+- [x] Telefonlar E.164 (`+998XXXXXXXXX`) ga keltiriladi. — 3.3 (soʻrovlar); biznes telefonlari — 3.6
+- [x] Eʼlon qilish uchun joylashuv, manzil va egasining roziligi majburiy (ADR-0007). — 3.2 (DB cheklovi)
 - [ ] Kategoriya slug'i oʻzgarmaydi; biznesi yoki ichki kategoriyasi bor kategoriya oʻchirilmaydi (409).
-- [ ] Sharh va shikoyat biznesga ID orqali bogʻlanadi (slug oʻzgarishi ularni uzmaydi).
+- [x] Sharh va shikoyat biznesga ID orqali bogʻlanadi (slug oʻzgarishi ularni uzmaydi). — 3.2
 - [ ] Moderatsiya navbatlari — eng eskisi birinchi; chop etilgan sharh reytingni qayta hisoblaydi.
-- [ ] Sozlamalar: `reviewsPremoderation=false` boʻlsa sharh darhol chop etiladi; `businessRequestsOpen=false` boʻlsa soʻrov `403 requests_closed`.
-- [ ] Lokalizatsiya: `lang` parametri boʻyicha kategoriya/tuman nomlari; "Oʻchirilgan foydalanuvchi" yorligʻi ham tilga mos.
+- [x] Sozlamalar: `reviewsPremoderation=false` boʻlsa sharh darhol chop etiladi; `businessRequestsOpen=false` boʻlsa soʻrov `403 requests_closed`. — 3.3–3.4
+- [x] Lokalizatsiya: `lang` parametri boʻyicha kategoriya/tuman nomlari; "Oʻchirilgan foydalanuvchi" yorligʻi ham tilga mos. — 3.3
 
 ## 5. Rasmlar
 
@@ -74,7 +74,7 @@ Demo rejimda xuddi shu teglar `x-demo-revalidate` sarlavhasi orqali yangilanadi 
 
 ## 7. Statistika va hisobot havolasi
 
-- [ ] Hodisalar (`profile_view`, `call_click`, `telegram_click`, `direction_click`) — kunlik agregat jadval (`business_id`, `date`, sonlar); IP, user-agent va boshqa shaxsiy maʼlumot **saqlanmaydi**.
+- [x] Hodisalar (`profile_view`, `call_click`, `telegram_click`, `direction_click`) — kunlik agregat jadval (`business_id`, `date`, sonlar); IP, user-agent va boshqa shaxsiy maʼlumot **saqlanmaydi**. — 3.3
 - [ ] Hisobot tokeni ~250 bit tasodifiy; faqat SHA-256 xeshi saqlanadi; yangisi eskisini bekor qiladi; javob `Cache-Control: no-store`, `Referrer-Policy: no-referrer`; ochilishlar soni va oxirgi vaqt.
 
 ## 8. Maxfiylik siyosatidagi vaʼdalar (bajarilishi shart)
@@ -83,8 +83,8 @@ Demo rejimda xuddi shu teglar `x-demo-revalidate` sarlavhasi orqali yangilanadi 
 
 - [ ] Maʼlumotlar Oʻzbekistondagi serverlarda (ADR-0005).
 - [ ] "Biznesingizni qoʻshing" maʼlumotlari soʻrov yopilgandan keyin **12 oy ichida oʻchiriladi** (davriy vazifa).
-- [ ] Akkaunt oʻchirilganda shaxsiy maʼlumotlar oʻchiriladi; chop etilgan sharhlar "Oʻchirilgan foydalanuvchi" nomi bilan qoladi, qolgan yozuvlar oʻchiriladi.
-- [ ] Joylashuv serverda saqlanmaydi (soʻrovlardagi `lat/lng` loglanmaydi).
+- [x] Akkaunt oʻchirilganda shaxsiy maʼlumotlar oʻchiriladi; chop etilgan sharhlar "Oʻchirilgan foydalanuvchi" nomi bilan qoladi, qolgan yozuvlar oʻchiriladi. — 3.4
+- [ ] Joylashuv serverda saqlanmaydi (soʻrovlardagi `lat/lng` loglanmaydi). — saqlanmaydi (3.3); access log'larda query string — 3.8
 - [ ] Analitika va reklama cookie'lari yoʻq.
 
 ⚠ Huquqiy matnlar — loyiha: ishga tushirishdan oldin huquqshunos tekshiradi.
