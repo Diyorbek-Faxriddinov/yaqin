@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { isBackend } from "./support/backend";
+import { adminLogin } from "./support/admin";
 
 async function expectNoA11yViolations(page: Page) {
   await page.waitForFunction(() =>
@@ -71,14 +73,7 @@ test.describe("Biznesingizni qo'shing", () => {
     await page.getByRole("button", { name: "Yuborish" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Rahmat!" })).toBeVisible();
 
-    await page.goto("/admin/kirish");
-    await page.getByLabel("Login").fill("root");
-    await page.getByLabel("Parol").fill("yaqin-demo");
-    await page.getByRole("button", { name: "Davom etish" }).click();
-    await page.getByLabel("Kod").fill("123456");
-    await page.getByRole("button", { name: "Kirish" }).click();
-    await expect(page).toHaveURL(/\/admin$/);
-    await page.goto("/admin/sorovlar");
+    await adminLogin(page, "root", "/admin/sorovlar");
     const card = page.locator("article").filter({ hasText: name });
     await expect(card).toContainText("Kalit yasash");
     await expect(card).toContainText("+998 90 000 00 07");
@@ -107,9 +102,20 @@ test.describe("SEO", () => {
     expect(JSON.parse(jsonLd ?? "{}")).toMatchObject({ "@type": "WebSite", name: "Yaqin" });
   });
 
-  test("demo rejimda indekslash yopiq; sitemap va OG rasm ishlaydi", async ({ request }) => {
-    const robots = await (await request.get("/robots.txt")).text();
-    expect(robots).toContain("Disallow: /");
+  test("indekslash: demo'da yopiq, haqiqiy rejimda ochiq; sitemap va OG rasm", async ({
+    request,
+  }) => {
+    const robots = (await (await request.get("/robots.txt")).text()).split("\n");
+    if (isBackend) {
+      // Haqiqiy maʼlumot — indekslanadi, shaxsiy sahifalar va API'dan tashqari
+      expect(robots).toContain("Allow: /");
+      expect(robots).toContain("Disallow: /admin");
+      expect(robots.some((line) => line.startsWith("Sitemap: "))).toBe(true);
+    } else {
+      // To'qib chiqarilgan demo maʼlumot — butunlay yopiq
+      expect(robots).toContain("Disallow: /");
+      expect(robots).not.toContain("Allow: /");
+    }
 
     const sitemap = await (await request.get("/sitemap.xml")).text();
     expect(sitemap).toContain("/biznes/ustoz-sartaroshxonasi</loc>");

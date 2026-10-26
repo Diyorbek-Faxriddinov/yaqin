@@ -3,8 +3,10 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\local\start.ps1
 #
 # Uchta oyna ochiladi: Django (127.0.0.1:8000), Next.js (127.0.0.1:3000, demo rejim o'chiq) va
-# Caddy (localhost:8090 — API'ni Django'ga, sahifalarni Next.js'ga yo'naltiradi). To'xtatish —
-# oynalarni yoping (PostgreSQL ishlashda qoladi). Talablar: README.md, "Frontend + backend birga".
+# Caddy (localhost:8090 — API'ni Django'ga, sahifalarni Next.js'ga yo'naltiradi).
+# Mijoz sifatida "Demo foydalanuvchi" tugmasi bilan kiriladi (backend buni faqat DEBUG'da beradi).
+# To'xtatish — oynalarni yoping (PostgreSQL ishlashda qoladi). Talablar: README.md,
+# "Frontend + backend birga".
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -42,7 +44,7 @@ Start-Process powershell -ArgumentList @(
 )
 Start-Process powershell -ArgumentList @(
     "-NoExit", "-Command",
-    "`$Host.UI.RawUI.WindowTitle = 'Yaqin frontend :3000'; Set-Location '$Root\frontend'; `$env:NEXT_PUBLIC_DEMO_MODE = 'false'; `$env:API_URL = 'http://127.0.0.1:8000/api/v1'; `$env:NEXT_PUBLIC_SITE_URL = 'http://localhost:8090'; npm run dev"
+    "`$Host.UI.RawUI.WindowTitle = 'Yaqin frontend :3000'; Set-Location '$Root\frontend'; `$env:NEXT_PUBLIC_DEMO_MODE = 'false'; `$env:NEXT_PUBLIC_DEMO_LOGIN = 'true'; `$env:API_URL = 'http://127.0.0.1:8000/api/v1'; `$env:NEXT_PUBLIC_SITE_URL = 'http://localhost:8090'; npm run dev"
 )
 Start-Process powershell -ArgumentList @(
     "-NoExit", "-Command",

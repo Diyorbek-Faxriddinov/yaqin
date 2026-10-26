@@ -1,18 +1,19 @@
 # Lokal integratsiya (frontend + backend): brauzerda http://localhost:8090 ochiladi.
 # Productiondagi tartib bilan bir xil — bitta sayt, API va rasmlar Django'ga, qolgani Next.js'ga.
 # Ishga tushirish: D:\tools\caddy\caddy.exe run --config scripts/local/Caddyfile
+# Portlar muhitdan (E2E boshqa portlarda ishlaydi): YAQIN_PORT, YAQIN_BACKEND, YAQIN_FRONTEND
 {
 	admin off
 	auto_https off
 }
 
-http://localhost:8090 {
-	# API va yuklangan rasmlar (/api/v1/media/) — Django (127.0.0.1:8000)
+http://localhost:{$YAQIN_PORT:8090} {
+	# API va yuklangan rasmlar (/api/v1/media/) — Django
 	handle /api/v1/* {
-		reverse_proxy 127.0.0.1:8000
+		reverse_proxy {$YAQIN_BACKEND:127.0.0.1:8000}
 	}
-	# Qolgan hammasi (sahifalar, /api/revalidate) — Next.js (127.0.0.1:3000)
+	# Qolgan hammasi (sahifalar, /api/revalidate) — Next.js
 	handle {
-		reverse_proxy 127.0.0.1:3000
+		reverse_proxy {$YAQIN_FRONTEND:127.0.0.1:3000}
 	}
 }

@@ -53,6 +53,7 @@ Namuna — [`.env.example`](.env.example). Maxfiy qiymatlar faqat muhitda yoki l
 | `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET`                                 | Oʻzgarishdan keyin frontend keshini yangilash webhook'i                                                              |
 | `DJANGO_NUM_PROXIES`                                                           | Reverse proxy ortida — IP boʻyicha cheklovlar uchun                                                                  |
 | `TOTP_ENCRYPTION_KEY`                                                          | Admin 2FA kalitlarini shifrlash (Fernet); productionda majburiy. Yoʻqolsa — barcha adminlar 2FA'ni qaytadan sozlaydi |
+| `DJANGO_THROTTLE_OVERRIDES`                                                    | Faqat `DEBUG` va E2E: cheklovlarni yumshatish, masalan `auth=1000/min` (productionda ilova ishga tushmaydi)          |
 | `REDIS_URL`                                                                    | Productionda kesh (cheklov va bloklash hisoblagichlari); boʻsh — jarayon xotirasi (`check --deploy` ogohlantiradi)   |
 | `DJANGO_ALLOWED_ORIGINS`                                                       | Oʻzgartiruvchi soʻrovlar qabul qilinadigan saytlar (`Origin`); standart — `http://localhost:3000`                    |
 | `DJANGO_BEHIND_HTTPS_PROXY`, `DJANGO_SSL_REDIRECT`                             | HTTPS reverse proxy ortida (`X-Forwarded-Proto`), HTTP → HTTPS                                                       |
@@ -60,17 +61,19 @@ Namuna — [`.env.example`](.env.example). Maxfiy qiymatlar faqat muhitda yoki l
 
 ## Buyruqlar
 
-| Buyruq                                                                        | Vazifasi                                                                                                            |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `python manage.py runserver 8000`                                             | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health>                                                      |
-| `waitress-serve --listen=127.0.0.1:8000 --threads=16 config.wsgi:application` | Koʻp oqimli lokal server (frontend build'i backendga ulanganda)                                                     |
-| `pytest`                                                                      | Testlar (test bazasi avtomatik yaratiladi)                                                                          |
-| `ruff check . && ruff format --check .`                                       | Lint va formatlash                                                                                                  |
-| `mypy .`                                                                      | Tiplar (strict)                                                                                                     |
-| `pip-audit -r requirements.txt`                                               | Bogʻliqliklardagi zaifliklar                                                                                        |
-| `python manage.py check --deploy`                                             | Production sozlamalari tekshiruvi                                                                                   |
-| `python manage.py cleanup [--dry-run]`                                        | Davriy tozalash: muddati oʻtgan sessiyalar, 12 oydan eski yopilgan soʻrovlar — productionda kuniga bir marta (cron) |
-| `python manage.py createroot --username root --display-name "..."`            | Yagona Root administratorni yaratish (parol soʻraladi yoki `--password-stdin`); 2FA birinchi kirishda sozlanadi     |
+| Buyruq                                                                        | Vazifasi                                                                                                                          |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `python manage.py runserver 8000`                                             | Ishlab chiqish serveri — <http://localhost:8000/api/v1/health>                                                                    |
+| `waitress-serve --listen=127.0.0.1:8000 --threads=16 config.wsgi:application` | Koʻp oqimli lokal server (frontend build'i backendga ulanganda)                                                                   |
+| `pytest`                                                                      | Testlar (test bazasi avtomatik yaratiladi)                                                                                        |
+| `ruff check . && ruff format --check .`                                       | Lint va formatlash                                                                                                                |
+| `mypy .`                                                                      | Tiplar (strict)                                                                                                                   |
+| `pip-audit -r requirements.txt`                                               | Bogʻliqliklardagi zaifliklar                                                                                                      |
+| `python manage.py check --deploy`                                             | Production sozlamalari tekshiruvi                                                                                                 |
+| `python manage.py seed_demo [--reset \| --remove]`                            | ⚠ Demo bizneslar, katalog, sharhlar va navbatlar (faqat `DEBUG`; maʼlumot — `demo/demo-data.json`, frontend fixture'laridan)      |
+| `DATABASE_NAME=yaqin_e2e python manage.py e2e_prepare`                        | E2E bazasini noldan: oʻchirib qayta yaratadi, migratsiya, demo maʼlumot va E2E administratorlari (faqat `DEBUG` va `_e2e` bazasi) |
+| `python manage.py cleanup [--dry-run]`                                        | Davriy tozalash: muddati oʻtgan sessiyalar, 12 oydan eski yopilgan soʻrovlar — productionda kuniga bir marta (cron)               |
+| `python manage.py createroot --username root --display-name "..."`            | Yagona Root administratorni yaratish (parol soʻraladi yoki `--password-stdin`); 2FA birinchi kirishda sozlanadi                   |
 
 ## Tuzilma
 

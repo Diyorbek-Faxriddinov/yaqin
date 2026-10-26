@@ -4,17 +4,18 @@ Next.js (App Router) + TypeScript ilovasi. Umumiy maʼlumot, arxitektura va qaro
 
 ## Buyruqlar
 
-| Buyruq              | Vazifasi                                                   |
-| ------------------- | ---------------------------------------------------------- |
-| `npm run dev`       | Ishlab chiqish serveri — <http://localhost:3000>           |
-| `npm run build`     | Production build                                           |
-| `npm run start`     | Build'ni ishga tushirish                                   |
-| `npm run lint`      | ESLint                                                     |
-| `npm run typecheck` | Route tiplarini generatsiya qilish + TypeScript tekshiruvi |
-| `npm run format`    | Prettier bilan formatlash                                  |
-| `npm test`          | Unit testlar (Vitest)                                      |
-| `npm run e2e`       | E2E testlar (Playwright, avval `npm run build` kerak)      |
-| `npm run check`     | lint + typecheck + format + unit testlar                   |
+| Buyruq                | Vazifasi                                                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`         | Ishlab chiqish serveri — <http://localhost:3000>                                                                        |
+| `npm run build`       | Production build                                                                                                        |
+| `npm run start`       | Build'ni ishga tushirish                                                                                                |
+| `npm run lint`        | ESLint                                                                                                                  |
+| `npm run typecheck`   | Route tiplarini generatsiya qilish + TypeScript tekshiruvi                                                              |
+| `npm run format`      | Prettier bilan formatlash                                                                                               |
+| `npm test`            | Unit testlar (Vitest)                                                                                                   |
+| `npm run e2e`         | E2E testlar demo rejimda (Playwright, avval `npm run build` kerak)                                                      |
+| `npm run e2e:backend` | E2E testlar haqiqiy backend bilan: `yaqin_e2e` bazasi noldan, alohida build (`.next-backend`), Caddy → Django + Next.js |
+| `npm run check`       | lint + typecheck + format + unit testlar                                                                                |
 
 ## Tuzilma
 
@@ -31,20 +32,23 @@ src/
 ├── lib/            yordamchi funksiyalar: API klient, formatlash, SEO
 └── mocks/          demo API (MSW): handler'lar, demo holat, fixtures, testlar
 messages/           tarjimalar: uz.json, ru.json
-e2e/                Playwright testlari (375 / 768 / 1280 px)
+e2e/                Playwright testlari (375 / 768 / 1280 px); support/ — admin kirishi, TOTP, rejim
+scripts/            build yordamchilari; export-demo-data.ts — demo maʼlumotlarni backend'ga, e2e-backend.mjs
 ```
 
 ## Muhit oʻzgaruvchilari
 
 Namuna — [`.env.example`](.env.example).
 
-| Oʻzgaruvchi                 | Vazifasi                                                                   |
-| --------------------------- | -------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`      | Ommaviy manzil: canonical, sitemap, Open Graph                             |
-| `NEXT_PUBLIC_DEMO_MODE`     | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq |
-| `API_URL`                   | Backend manzili (server tomoni, demo oʻchganda)                            |
-| `NEXT_PUBLIC_MAP_STYLE_URL` | Xarita uslubi (standart — OpenFreeMap)                                     |
-| `REVALIDATE_SECRET`         | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                  |
+| Oʻzgaruvchi                 | Vazifasi                                                                                                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`      | Ommaviy manzil: canonical, sitemap, Open Graph                                                                                            |
+| `NEXT_PUBLIC_DEMO_MODE`     | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq                                                                |
+| `API_URL`                   | Backend manzili (server tomoni, demo oʻchganda)                                                                                           |
+| `NEXT_PUBLIC_MAP_STYLE_URL` | Xarita uslubi (standart — OpenFreeMap)                                                                                                    |
+| `REVALIDATE_SECRET`         | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                                                                                 |
+| `NEXT_PUBLIC_DEMO_LOGIN`    | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG) |
+| `NEXT_DIST_DIR`             | Build papkasi (standart `.next`; backend E2E — `.next-backend`)                                                                           |
 
 ## Muhim kelishuvlar
 
@@ -58,3 +62,10 @@ Namuna — [`.env.example`](.env.example).
 - **Tarjimalar:** ommaviy layout `Admin` namespace'ini brauzerga yubormaydi (tarjimalarning ~58 %); admin matnlari faqat `app/[locale]/admin/layout.tsx` dagi provider orqali. Ommaviy client komponentda `useTranslations("Admin…")` ishlatmang.
 - **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
+
+## E2E: ikki rejim
+
+- **Demo** (`npm run build && npm run e2e`) — mock API, tez, tashqi talab yoʻq. CI'da har push'da.
+- **Haqiqiy backend** (`npm run e2e:backend`) — PostgreSQL + PostGIS, backend muhiti (`backend/.venv` yoki `BACKEND_PYTHON`) va Caddy (`D:\tools\caddy\caddy.exe` yoki `CADDY_BIN`) kerak. Skript `yaqin_e2e` bazasini noldan tayyorlaydi (`manage.py e2e_prepare`), demo rejimsiz build qiladi va testlarni Caddy (8091) → Django (8001) + Next.js (3101) orqali ishlatadi.
+- Admin kirishi: demo'da forma orqali (kod `123456`); backendda setup project (`e2e/backend.setup.ts`) haqiqiy TOTP bilan bir marta kiradi, testlar sessiyani ulaydi — backend bir kodni qayta qabul qilmaydi. Yangi testlarda `adminLogin()` (`e2e/support/admin.ts`) ishlating.
+- Rejimga bogʻliq tekshiruv: `isBackend` (`e2e/support/backend.ts`). Demo maʼlumot fixture'lari oʻzgarsa — `npx jiti scripts/export-demo-data.ts` (backend `seed_demo` shu faylni yuklaydi).

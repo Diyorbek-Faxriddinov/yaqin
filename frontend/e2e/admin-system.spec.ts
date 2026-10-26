@@ -1,18 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { adminLogin, setupCode } from "./support/admin";
 
 // Har bir test o'z yozuvlari bilan ishlaydi: noyob login, alohida qoralama biznes.
 // Global sozlamalar (moderatsiya rejimi, so'rov formasi) o'zgartirilmaydi — parallel testlarga ta'sir qiladi.
-
-async function adminLogin(page: Page, username = "root", password = "yaqin-demo") {
-  await page.goto("/admin/kirish");
-  await page.getByLabel("Login").fill(username);
-  await page.getByLabel("Parol").fill(password);
-  await page.getByRole("button", { name: "Davom etish" }).click();
-  await page.getByLabel("Kod").fill("123456");
-  await page.getByRole("button", { name: "Kirish" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
-}
 
 /** Yangi administrator: vaqtinchalik parol → o'z paroli → 2FA sozlash (QR) → kod */
 async function firstLogin(page: Page, username: string, temporaryPassword: string) {
@@ -34,7 +25,7 @@ async function firstLogin(page: Page, username: string, temporaryPassword: strin
     page.getByRole("img", { name: "Autentifikator ilovasi uchun QR kod" }),
   ).toBeVisible();
   await expectNoA11yViolations(page);
-  await page.getByLabel("Kod").fill("123456");
+  await page.getByLabel("Kod").fill(await setupCode(page));
   await page.getByRole("button", { name: "Kirish" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 }

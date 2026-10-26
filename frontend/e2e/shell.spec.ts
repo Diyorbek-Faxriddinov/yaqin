@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { isBackend } from "./support/backend";
 
 test.describe("Sayt karkasi", () => {
-  test("demo rejim ogohlantirishi ko'rinadi", async ({ page }) => {
+  test("demo rejim ogohlantirishi faqat demo rejimda", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText(/Demo rejim/)).toBeVisible();
+    // Haqiqiy backend bilan ogohlantirish yo'q (mock maʼlumot ogohlantirishsiz ko'rinmaydi)
+    await expect(page.getByText(/Demo rejim/)).toHaveCount(isBackend ? 0 : 1);
   });
 
   test("pastki navigatsiya faqat telefonda, qidiruv qatori esa planshet va desktopda", async ({

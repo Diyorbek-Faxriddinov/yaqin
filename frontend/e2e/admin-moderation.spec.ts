@@ -1,18 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
+import { adminLogin } from "./support/admin";
 
 // Har bir test o'z yozuvlari bilan ishlaydi (noyob belgi) — parallel ekranlar va boshqa testlar
 // (masalan, Ustoz sartaroshxonasi sharhlari soni) bir-biriga xalaqit bermaydi.
-
-async function adminLogin(page: Page, username = "root") {
-  await page.goto("/admin/kirish");
-  await page.getByLabel("Login").fill(username);
-  await page.getByLabel("Parol").fill("yaqin-demo");
-  await page.getByRole("button", { name: "Davom etish" }).click();
-  await page.getByLabel("Kod").fill("123456");
-  await page.getByRole("button", { name: "Kirish" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
-}
 
 /** Alohida brauzer kontekstidagi demo mijoz: API so'rovlari CSRF bilan */
 async function customer(browser: Browser) {

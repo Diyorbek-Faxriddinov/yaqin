@@ -2,18 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { solidPng } from "./fixtures/png";
+import { adminLogin } from "./support/admin";
 
 const PNG = solidPng();
-
-async function adminLogin(page: Page, username = "root", next = "/admin") {
-  await page.goto(`/admin/kirish?next=${encodeURIComponent(next)}`);
-  await page.getByLabel("Login").fill(username);
-  await page.getByLabel("Parol").fill("yaqin-demo");
-  await page.getByRole("button", { name: "Davom etish" }).click();
-  await page.getByLabel("Kod").fill("123456");
-  await page.getByRole("button", { name: "Kirish" }).click();
-  await expect(page).toHaveURL(new RegExp(`${next.replace(/\//g, "\\/")}$`));
-}
 
 async function selectOption(page: Page, label: string, option: string) {
   await page.getByRole("combobox", { name: label }).click();

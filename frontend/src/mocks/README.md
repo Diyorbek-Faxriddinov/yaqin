@@ -7,6 +7,10 @@
 - `handlers.ts` — MSW handler'lari, [docs/api/openapi.yaml](../../../docs/api/openapi.yaml) kontraktiga mos.
 - `fetch.ts` — `mockFetch(request)`: so'rovni tarmoqsiz, shu handler'lar orqali javoblaydi.
 
+## Backend bilan bir xil maʼlumot
+
+Fixture'lar `scripts/export-demo-data.ts` orqali `backend/demo/demo-data.json` ga eksport qilinadi — backend `manage.py seed_demo` aynan shu maʼlumotni yuklaydi, E2E testlar ikkala rejimda bir xil natija kutadi. Fixture oʻzgarsa, eksportni qayta ishga tushiring.
+
 ## Admin kirishi (demo)
 
 - Hamma demo administratorlar uchun kod — `123456` (`totpCode`); parollar ochiq matnda. Backendda — Argon2 xeshi va har bir admin uchun shifrlangan TOTP kaliti.

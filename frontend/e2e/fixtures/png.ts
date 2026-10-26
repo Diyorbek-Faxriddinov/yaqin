@@ -19,10 +19,13 @@ function chunk(type: string, data: Buffer): Buffer {
   return Buffer.concat([length, body, crc]);
 }
 
-/** Bir rangli haqiqiy PNG (RGB, 8 bit) — rasm yuklash oqimini sinash uchun */
+/**
+ * Bir rangli haqiqiy PNG (RGB, 8 bit) — rasm yuklash oqimini sinash uchun. Standart o'lcham
+ * backend talabidan (kichik tomoni kamida 200 px) katta.
+ */
 export function solidPng(
-  width = 64,
-  height = 48,
+  width = 320,
+  height = 240,
   rgb: [number, number, number] = [15, 118, 110],
 ): Buffer {
   const header = Buffer.alloc(13);

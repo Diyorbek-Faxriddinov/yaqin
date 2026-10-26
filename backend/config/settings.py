@@ -75,6 +75,21 @@ TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 USE_TZ = True
 
+# Kirishsiz endpointlar uchun IP bo'yicha cheklov (handoff, 2-bo'lim)
+THROTTLE_RATES: dict[str, str] = {
+    "events": "120/min",
+    "business_requests": "5/hour",
+    "auth": "20/min",
+    # Kirgan foydalanuvchi bo'yicha (ScopedRateThrottle foydalanuvchi ID'sini ishlatadi)
+    "reviews": "10/hour",
+    "complaints": "10/hour",
+    # Admin kirishi (login, setup, 2fa) — IP bo'yicha; qo'shimcha IP + login bloklash —
+    # apps/staff/lockout.py
+    "admin_auth": "30/min",
+    # Hisobot havolasi — tokenni tanlab topishga qarshi (to'g'ri havola egasi uchun yetarli)
+    "reports": "30/min",
+}
+
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": [
@@ -85,25 +100,23 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": [],
     "UNAUTHENTICATED_USER": None,
-    # Kirishsiz endpointlar uchun IP bo'yicha cheklov (handoff, 2-bo'lim)
-    "DEFAULT_THROTTLE_RATES": {
-        "events": "120/min",
-        "business_requests": "5/hour",
-        "auth": "20/min",
-        # Kirgan foydalanuvchi bo'yicha (ScopedRateThrottle foydalanuvchi ID'sini ishlatadi)
-        "reviews": "10/hour",
-        "complaints": "10/hour",
-        # Admin kirishi (login, setup, 2fa) — IP bo'yicha; qo'shimcha IP + login bloklash —
-        # apps/staff/lockout.py
-        "admin_auth": "30/min",
-        # Hisobot havolasi — tokenni tanlab topishga qarshi (to'g'ri havola egasi uchun yetarli)
-        "reports": "30/min",
-    },
+    "DEFAULT_THROTTLE_RATES": THROTTLE_RATES,
     # Reverse proxy (Caddy/Nginx) ortida: X-Forwarded-For'dan nechta proksi ishonchli
     "NUM_PROXIES": int(env_str("DJANGO_NUM_PROXIES", "0")) or None,
     # Xatolar kontraktdagi Error sxemasida: {code, message, fields}
     "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
 }
+
+# E2E testlar uchun (barcha so'rovlar bitta IP'dan): "auth=1000/min,business_requests=1000/hour".
+# Faqat DEBUG rejimida — productionda cheklovlarni muhit orqali bo'shatib bo'lmaydi.
+if env_str("DJANGO_THROTTLE_OVERRIDES"):
+    if not DEBUG:
+        raise ImproperlyConfigured("DJANGO_THROTTLE_OVERRIDES faqat DEBUG rejimida")
+    for pair in env_list("DJANGO_THROTTLE_OVERRIDES", ""):
+        scope, _, rate = pair.partition("=")
+        if scope not in THROTTLE_RATES or not rate:
+            raise ImproperlyConfigured(f"Notoʻgʻri DJANGO_THROTTLE_OVERRIDES: {pair}")
+        THROTTLE_RATES[scope] = rate
 
 # --- Mijoz kirishi (ADR-0006, ADR-0012) ---
 # Telegram Login Widget: @BotFather'dan bot tokeni; bo'sh — Telegram orqali kirish o'chiq

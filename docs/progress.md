@@ -4,14 +4,14 @@ Oxirgi yangilanish: 2026-10-26
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat                                                 |
-| ------- | --------------------------------- | ----------------------------------------------------- |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                                       |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                                       |
-| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                                       |
-| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))             |
-| 4       | Integratsiya va yakuniy tekshiruv | 📝 Reja tasdiq kutmoqda ([reja](integration-plan.md)) |
-| 5       | Hosting va domen                  | ⏳                                                    |
+| Bosqich | Mazmuni                           | Holat                                      |
+| ------- | --------------------------------- | ------------------------------------------ |
+| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                            |
+| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                            |
+| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                            |
+| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))  |
+| 4       | Integratsiya va yakuniy tekshiruv | 🔄 Jarayonda ([reja](integration-plan.md)) |
+| 5       | Hosting va domen                  | ⏳                                         |
 
 ## 2-bosqich qadamlari
 
@@ -52,6 +52,27 @@ Oxirgi yangilanish: 2026-10-26
 | 4.4   | Mustahkamlik va tezlik                                 | ⏳    |
 | 4.5   | Telefonda sinov                                        | ⏳    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
+
+## 4.1 natijalari
+
+**Frontend E2E testlari haqiqiy backend bilan oʻtdi: 223 ta** (221 asosiy + 2 ta admin sessiyasi), demo rejimda ham — 221 ta.
+
+- **`npm run e2e:backend`** — bitta buyruq: `yaqin_e2e` bazasi noldan (`manage.py e2e_prepare`), demo rejimsiz build (`.next-backend`; build vaqtida vaqtinchalik backend), Playwright Caddy (8091) → Django (8001) + Next.js (3101) orqali — productiondagi tartib bilan bir xil. Ish bazangizga tegilmaydi.
+- **Demo maʼlumot bir manbadan:** `frontend/scripts/export-demo-data.ts` mock fixture'larini `backend/demo/demo-data.json` ga eksport qiladi; `manage.py seed_demo` uni yuklaydi (53 biznes, 181 mahsulot, 1867 sharh, kategoriya atributlari, moderatsiya navbatlari, 90 kunlik namunaviy statistika). Faqat `DEBUG` rejimida; qatʼiy ID'lar — `--reset` faqat demo yozuvlarni oʻchiradi. Reyting — mock'dagi kabi fixture qiymati.
+- **Admin 2FA haqiqiy:** setup project demo administratorlar bilan haqiqiy TOTP orqali bir marta kiradi, testlar sessiyani ulaydi (backend kodni qayta qabul qilmaydi, parallel testlar bir 30 soniyada kiradi). Yangi administratorning birinchi kirishi (parol + QR + kod) backendda toʻliq forma orqali sinaladi — kod sahifadagi kalitdan hisoblanadi (RFC 6238, `pyotp` bilan bir xil natija tekshirildi).
+- **Mijoz kirishi lokal va E2E'da:** `NEXT_PUBLIC_DEMO_LOGIN=true` bilan haqiqiy backendda ham "Demo foydalanuvchi" tugmasi (backend uni faqat `DEBUG`'da beradi). `start.ps1` ham shuni yoqadi — siz sevimlilar, sharh va shikoyatni lokal sinay olasiz.
+- **Cheklovlar E2E'da:** barcha testlar bitta IP'dan — `DJANGO_THROTTLE_OVERRIDES` bilan yumshatiladi; faqat `DEBUG`'da, productionda ilova ishga tushmaydi.
+
+**Topilgan va tuzatilgan:**
+
+- SEO testi zaif edi: `"Disallow: /"` qatori `"Disallow: /admin"` ichida ham uchragani uchun ikkala rejimda oʻtardi — endi har rejim aniq tekshiriladi (demo — butunlay yopiq, haqiqiy — ochiq, shaxsiy sahifalar yopiq, sitemap bor).
+- Test rasmi (64×48) backend talabidan (kamida 200 px) kichik edi — 320×240.
+- Kategoriya atributlari (masalan, kafe uchun "Porsiya") backend seed'ida yoʻq edi — endi `seed_demo` yuklaydi (faqat atributsiz kategoriyalarga).
+- Windows konsolida oʻzbekcha ʻ ʼ belgili chiqishda `manage.py` buyruqlari yiqilardi — chiqish UTF-8.
+
+Testlar: backend 471 (+4: `seed_demo`), frontend unit 205, E2E demo 221 / backend 223.
+
+**Hali qilinmagan:** backend rejimidagi E2E CI'da — 4.6; Telegram va Google — 4.2.
 
 ## 3.9 natijalari — 3-bosqich yakuni
 

@@ -110,16 +110,17 @@ Brauzer bitta manzilni ochadi — `http://localhost:8090`. [Caddy](scripts/local
 powershell -ExecutionPolicy Bypass -File scripts\local\start.ps1
 ```
 
-Keyin `http://localhost:8090/admin` → login va parol → telefondagi autentifikator ilovasi (Google Authenticator, Aegis…) bilan QR'ni skanerlang → kod. Bizneslarni admin panelda qoʻshasiz — eʼlon qilingach saytda paydo boʻladi.
+Keyin `http://localhost:8090/admin` → login va parol → telefondagi autentifikator ilovasi (Google Authenticator, Aegis…) bilan QR'ni skanerlang → kod. Bizneslarni admin panelda qoʻshasiz — eʼlon qilingach saytda paydo boʻladi. Demo bizneslar bilan sinamoqchi boʻlsangiz (⚠ toʻqib chiqarilgan maʼlumot): `cd backend; .venv\Scripts\python manage.py seed_demo`; olib tashlash — `seed_demo --remove`.
 
-Bu rejimda hali ishlamaydi (4-bosqich): mijozning Telegram/Google orqali kirishi (bot va Google client ID kerak), shuning uchun sevimlilar, sharh va shikoyat yozish ham. Demo rejim (`npm run dev`, `http://localhost:3000`) avvalgidek ishlaydi.
+Mijoz sifatida — "Demo foydalanuvchi sifatida kirish" (faqat lokal, backend `DEBUG` rejimida): sevimlilar, sharh va shikoyatni sinash mumkin. Telegram va Google orqali kirish — 4.2-qadamda. Demo rejim (`npm run dev`, `http://localhost:3000`) avvalgidek ishlaydi.
 
 ## Tekshiruvlar
 
 ```bash
 cd frontend
 npm run check                # lint + typecheck + format + unit testlar
-npm run build && npm run e2e # E2E (birinchi marta: npx playwright install chromium)
+npm run build && npm run e2e # E2E demo rejimda (birinchi marta: npx playwright install chromium)
+npm run e2e:backend          # E2E haqiqiy backend bilan (PostgreSQL, backend muhiti va Caddy kerak)
 
 cd ../backend
 ruff check . && ruff format --check . && mypy . && pytest

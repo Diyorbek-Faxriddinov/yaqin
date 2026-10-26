@@ -10,6 +10,7 @@
 
 # Next.js
 /.next/
+/.next-backend/
 /out/
 /build
 next-env.d.ts
@@ -29,3 +30,4 @@ npm-debug.log*
 
 # Ko'chiriladigan vendor fayllar (scripts/copy-vendor.mjs)
 /public/vendor/
+/e2e/.auth/
