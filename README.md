@@ -82,6 +82,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 │   ├── api/openapi.yaml   API kontrakti
 │   ├── adr/               arxitektura qarorlari
 │   ├── backend-handoff.md 3-bosqich uchun topshiriqlar
+│   ├── integration-plan.md 4-bosqich (integratsiya) rejasi
 │   ├── design-system.md   dizayn tizimi
 │   └── progress.md        bajarilgan va qolgan ishlar
 └── .github/workflows/     CI

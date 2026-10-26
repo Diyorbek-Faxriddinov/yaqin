@@ -4,14 +4,14 @@ Oxirgi yangilanish: 2026-10-26
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat                                  |
-| ------- | --------------------------------- | -------------------------------------- |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                        |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                        |
-| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                        |
-| 3       | Backend                           | 🔄 Jarayonda ([reja](backend-plan.md)) |
-| 4       | Integratsiya va yakuniy tekshiruv | ⏳                                     |
-| 5       | Hosting va domen                  | ⏳                                     |
+| Bosqich | Mazmuni                           | Holat                                                 |
+| ------- | --------------------------------- | ----------------------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                                       |
+| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                                       |
+| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                                       |
+| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))             |
+| 4       | Integratsiya va yakuniy tekshiruv | 📝 Reja tasdiq kutmoqda ([reja](integration-plan.md)) |
+| 5       | Hosting va domen                  | ⏳                                                    |
 
 ## 2-bosqich qadamlari
 
@@ -30,17 +30,28 @@ Oxirgi yangilanish: 2026-10-26
 
 ## 3-bosqich qadamlari
 
-| Qadam | Mazmuni                                                                              | Holat                  |
-| ----- | ------------------------------------------------------------------------------------ | ---------------------- |
-| 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅                     |
-| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅                     |
-| 3.3   | Ommaviy API                                                                          | ✅                     |
-| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅                     |
-| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅                     |
-| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅                     |
-| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅                     |
-| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅                     |
-| 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ✅ (tasdiq kutilmoqda) |
+| Qadam | Mazmuni                                                                              | Holat |
+| ----- | ------------------------------------------------------------------------------------ | ----- |
+| 3.1   | Poydevor: Django, PostgreSQL + PostGIS, sozlamalar, testlar, kontrakt tekshiruvi, CI | ✅    |
+| 3.2   | Maʼlumot modeli va migratsiyalar                                                     | ✅    |
+| 3.3   | Ommaviy API                                                                          | ✅    |
+| 3.4   | Mijoz autentifikatsiyasi, kabinet                                                    | ✅    |
+| 3.5   | Admin autentifikatsiyasi, RBAC, audit                                                | ✅    |
+| 3.6   | Admin API: bizneslar, rasmlar, katalog                                               | ✅    |
+| 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅    |
+| 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅    |
+| 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ✅    |
+
+## 4-bosqich qadamlari
+
+| Qadam | Mazmuni                                                | Holat |
+| ----- | ------------------------------------------------------ | ----- |
+| 4.1   | Haqiqiy backend uchun maʼlumotlar (`seed_demo`) va E2E | ⏳    |
+| 4.2   | Mijoz kirishi: Telegram va Google                      | ⏳    |
+| 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ⏳    |
+| 4.4   | Mustahkamlik va tezlik                                 | ⏳    |
+| 4.5   | Telefonda sinov                                        | ⏳    |
+| 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
 
 ## 3.9 natijalari — 3-bosqich yakuni
 
