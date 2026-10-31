@@ -25,7 +25,8 @@ const data = {
   generatedFrom: "frontend/src/mocks/fixtures (scripts/export-demo-data.ts)",
   businesses: BUSINESSES.map((business) => ({
     ...business,
-    items: itemsFor(business),
+    // Rasmlar fixture'da yo'q (mock xotirasidagi yuklashlar uchun maydon)
+    items: itemsFor(business).map(({ photos: _photos, ...item }) => item),
     // Ommaviy sharhlar roʻyxati (mock'dagi kabi, eng ko'pi 150 ta); reyting — fixture'dagi qiymat
     reviews: reviewsFor(business, BASE_DATE),
   })),

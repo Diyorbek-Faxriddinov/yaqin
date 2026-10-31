@@ -16,6 +16,18 @@ urlpatterns = [
         "admin/businesses/<uuid:business_id>/items/<uuid:item_id>",
         views.AdminItemDetailView.as_view(),
     ),
+    path(
+        "admin/businesses/<uuid:business_id>/items/<uuid:item_id>/photos",
+        views.AdminItemPhotoUploadView.as_view(),
+    ),
+    path(
+        "admin/businesses/<uuid:business_id>/items/<uuid:item_id>/photos/order",
+        views.AdminItemPhotoOrderView.as_view(),
+    ),
+    path(
+        "admin/businesses/<uuid:business_id>/items/<uuid:item_id>/photos/<uuid:photo_id>",
+        views.AdminItemPhotoDetailView.as_view(),
+    ),
     path("admin/business-requests", views.AdminRequestListView.as_view()),
     path("admin/business-requests/<uuid:request_id>", views.AdminRequestDetailView.as_view()),
     path(

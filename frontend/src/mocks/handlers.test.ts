@@ -8,6 +8,7 @@ import type {
   Item,
   MapMarker,
   ReviewPage,
+  SearchSuggestions,
 } from "@/lib/api/types";
 import { mockFetch } from "./fetch";
 
@@ -126,5 +127,39 @@ describe("demo API (kontraktga moslik)", () => {
     const beauty = await get<MapMarker[]>("/map/markers?category=gozallik");
     expect(all.body.length).toBeGreaterThan(beauty.body.length);
     expect(beauty.body.every((m) => typeof m.location.lat === "number")).toBe(true);
+  });
+});
+
+describe("mahsulot bo'yicha qidiruv va xususiyatlar (ADR-0014)", () => {
+  it("mahsulot nomi bilan topiladi; natijada qaysi mahsulot mos kelgani", async () => {
+    const { body } = await get<BusinessPage>("/businesses?q=krossovka&pageSize=50");
+    expect(body.total).toBeGreaterThan(0);
+    for (const business of body.items) {
+      expect(business.category.slug).toBe("poyabzal");
+      expect(business.matchedItems).toEqual([{ slug: "krossovka", name: "Krossovka" }]);
+    }
+    // Kirill yozuvida ham
+    const cyrillic = await get<BusinessPage>("/businesses?q=кроссовка&pageSize=50");
+    expect(cyrillic.body.total).toBe(body.total);
+    // Biznes nomi yoki kategoriya bo'yicha topilganda — bo'sh
+    const byCategory = await get<BusinessPage>("/businesses?q=poyabzal");
+    expect(byCategory.body.items.every((b) => b.matchedItems.length === 0)).toBe(true);
+  });
+
+  it("qidiruv takliflarida mahsulotlar", async () => {
+    const { body } = await get<SearchSuggestions>("/search/suggest?q=krossovka");
+    expect(body.items.length).toBeGreaterThan(0);
+    expect(body.items[0]).toMatchObject({ slug: "krossovka", name: "Krossovka" });
+  });
+
+  it("kategoriya xususiyatlari so'ralgan tilda", async () => {
+    const shops = await get<BusinessPage>("/businesses?category=kiyim-kechak");
+    const slug = shops.body.items[0]!.slug;
+    const ru = await get<Item>(`/businesses/${slug}/items/erkaklar-koylagi?lang=ru`);
+    expect(ru.body.attributes).toEqual([
+      { key: "size", name: "Размер", value: "S, M, L, XL, XXL" },
+      { key: "rang", name: "Rang", value: "Oq, koʻk" },
+      { key: "material", name: "Материал", value: "Paxta" },
+    ]);
   });
 });

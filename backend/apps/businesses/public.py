@@ -27,13 +27,17 @@ from django.db.models.functions import Cast, Coalesce, Ln
 from rest_framework import serializers
 from rest_framework.request import Request
 
-from apps.businesses.models import Business, BusinessPhoto, Item
+from apps.businesses import attributes as item_attributes
+from apps.businesses.models import Business, BusinessPhoto, Item, ItemPhoto
 from apps.catalog.views import category_ref, district_ref
 from apps.core.api import Lang, money
 from apps.core.schedule import is_open_now
 from apps.core.text import normalize_for_search
 
 SORTS = ("recommended", "rating", "distance", "newest")
+MAX_MATCHED_ITEMS = 3
+# Qisqa so'zlar ("a", "va") deyarli har bir mahsulot nomida bor — "nima uchun topildi" uchun emas
+MIN_MATCH_TOKEN = 3
 
 
 class ListParams(serializers.Serializer[dict[str, Any]]):
@@ -88,6 +92,11 @@ def published() -> QuerySet[Business]:
     )
 
 
+def _stems(q: str) -> list[str]:
+    """Qidiruv so'zlari: 5+ harflilarning oxirgi harfisiz (qo'shimchalar)."""
+    return [token[:-1] if len(token) >= 5 else token for token in normalize_for_search(q).split()]
+
+
 def _query_filter(q: str) -> Q:
     """Har bir so'z mos kelishi kerak: aniq qism yoki (imlo xatosi uchun) trigram o'xshashlik.
 
@@ -140,7 +149,53 @@ def apply_sort(queryset: QuerySet[Business], sort: str, origin: Point | None) ->
     return queryset.annotate(score=score).order_by("-score", "-created_at", "id")
 
 
-def image(photo: BusinessPhoto, request: Request) -> dict[str, Any]:
+def attach_matched_items(businesses: list[Business], q: str) -> None:
+    """`matchedItems`: nomida qidiruv so'zlaridan biri bor mahsulotlar (sahifadagi bizneslar)."""
+    stems = [stem for stem in _stems(q) if len(stem) >= MIN_MATCH_TOKEN]
+    if not stems or not businesses:
+        return
+    condition = Q()
+    for stem in stems:
+        condition |= Q(search_text__contains=stem)
+    matched: dict[Any, list[dict[str, str]]] = {}
+    entries = (
+        Item.objects.filter(condition, business_id__in=[b.pk for b in businesses])
+        .order_by("business_id", "position", "created_at")
+        .values_list("business_id", "slug", "name")
+    )
+    for business_id, slug, name in entries:
+        found = matched.setdefault(business_id, [])
+        if len(found) < MAX_MATCHED_ITEMS:
+            found.append({"slug": slug, "name": name})
+    for business in businesses:
+        business.matched_items = matched.get(business.pk, [])  # type: ignore[attr-defined]
+
+
+def suggest_items(q: str, limit: int) -> list[dict[str, str]]:
+    """Qidiruv takliflari: nomida barcha so'zlar bor mahsulotlar (e'lon qilingan bizneslardan)."""
+    stems = _stems(q)
+    if not stems:
+        return []
+    condition = Q()
+    for stem in stems:
+        condition &= Q(search_text__contains=stem)
+    entries = (
+        Item.objects.filter(condition, business__status=Business.Status.PUBLISHED)
+        .select_related("business")
+        .order_by("name", "id")[:limit]
+    )
+    return [
+        {
+            "slug": entry.slug,
+            "name": entry.name,
+            "businessSlug": entry.business.slug,
+            "businessName": entry.business.name,
+        }
+        for entry in entries
+    ]
+
+
+def image(photo: BusinessPhoto | ItemPhoto, request: Request | None = None) -> dict[str, Any]:
     # Saytga nisbatan yo'l (`/api/v1/media/...`): brauzer uni sayt manzili orqali oladi (reverse
     # proxy → Django yoki veb-server), frontend rasm optimizatori — o'zining /api/v1 yo'li orqali
     return {
@@ -180,6 +235,7 @@ def summary(business: Business, lang: Lang, request: Request) -> dict[str, Any]:
         "distanceMeters": round(distance.m) if distance is not None else None,
         "isVerified": business.is_verified,
         "createdAt": business.created_at.isoformat(),
+        "matchedItems": getattr(business, "matched_items", []),
     }
 
 
@@ -211,7 +267,12 @@ def marker(business: Business, lang: Lang) -> dict[str, Any]:
     }
 
 
-def item(entry: Item) -> dict[str, Any]:
+def items_queryset(business: Business) -> QuerySet[Item]:
+    return business.items.prefetch_related(Prefetch("photos", queryset=ItemPhoto.objects.all()))
+
+
+def item(entry: Item, lang: Lang, known: dict[str, Any]) -> dict[str, Any]:
+    """`known` — biznes kategoriyasining xususiyat ta'riflari (attributes.definitions)."""
     return {
         "id": str(entry.id),
         "slug": entry.slug,
@@ -225,10 +286,7 @@ def item(entry: Item) -> dict[str, Any]:
             "max": money(entry.price_max),
         },
         "durationMinutes": entry.duration_minutes,
-        "attributes": [
-            {"key": a["key"], "name": a["name"], "value": a["value"]} for a in entry.attributes
-        ],
-        # Mahsulot rasmlari MVP'da yo'q (docs/backend-data-model.md)
-        "images": [],
+        "attributes": item_attributes.public_attributes(entry.attributes, known, lang),
+        "images": [image(photo) for photo in entry.photos.all()],
         "isAvailable": entry.is_available,
     }

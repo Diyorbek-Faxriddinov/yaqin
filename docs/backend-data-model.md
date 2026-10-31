@@ -9,6 +9,7 @@ erDiagram
     Category ||--o{ Business : "kategoriya (faqat ichki)"
     Business ||--o{ BusinessPhoto : "rasmlar"
     Business ||--o{ Item : "katalog"
+    Item ||--o{ ItemPhoto : "rasmlar (5 tagacha)"
     Business ||--o{ Review : "sharhlar"
     Business ||--o{ Complaint : "shikoyatlar"
     Business ||--o{ Favorite : ""
@@ -46,7 +47,8 @@ erDiagram
         text price_type
         bigint price_min "tiyin"
         bigint price_max "tiyin"
-        jsonb attributes
+        jsonb attributes "erkin yoki kategoriya xususiyati (raw)"
+        text search_text "normallashtirilgan nom, GIN trigram"
     }
     Review {
         uuid id
@@ -87,6 +89,7 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 | Kategoriya, tuman | Bogʻlangan biznes boʻlsa — taqiqlangan (`PROTECT`)                                                                                                                     |
 | Administrator     | Audit jurnalida yozuvi boʻlsa — taqiqlangan (`PROTECT`); administrator faqat oʻchiriladi (`is_active=false`). Sessiyalari va kirish challenge'lari — `CASCADE`         |
 | Biznes rasmi      | Yozuv bilan birga fayl ham oʻchadi (tranzaksiya muvaffaqiyatli yakunlangach)                                                                                           |
+| Mahsulot, rasmi   | Mahsulot rasmlari bilan (`CASCADE`); fayllar tranzaksiyadan keyin oʻchadi — biznes qoralamasi oʻchirilganda ham                                                        |
 
 ## Administratorlar (3.5)
 
@@ -103,7 +106,7 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 
 ## Qidiruv
 
-`search_text` — biznes nomi, kategoriya va ota-kategoriya (ikkala tilda), tuman nomlarining normallashtirilgan matni (`apps/core/text.py`, frontend `normalize.ts` bilan bir xil). Indeks — GIN `gin_trgm_ops`: aniq qism (`icontains`) va imlo xatolariga chidamli oʻxshashlik (`trigram_word_similar`). Kategoriya nomi oʻzgarganda oʻzi va ichki kategoriyalaridagi bizneslarning `search_text`i yangilanadi (3.7). Tumanlar API orqali oʻzgartirilmaydi.
+`search_text` — biznes nomi, kategoriya va ota-kategoriya (ikkala tilda), tuman nomlari, katalogdagi mahsulot nomlari va boʻlimlarining normallashtirilgan matni (ADR-0014; mahsulot qoʻshilganda, oʻzgarganda va oʻchirilganda qayta hisoblanadi) (`apps/core/text.py`, frontend `normalize.ts` bilan bir xil). Indeks — GIN `gin_trgm_ops`: aniq qism (`icontains`) va imlo xatolariga chidamli oʻxshashlik (`trigram_word_similar`). Kategoriya nomi oʻzgarganda oʻzi va ichki kategoriyalaridagi bizneslarning `search_text`i yangilanadi (3.7). Tumanlar API orqali oʻzgartirilmaydi.
 
 ## Kontrakt bilan moslik
 
@@ -114,4 +117,6 @@ API'ni chetlab oʻtgan kod (skript, migratsiya, xato) ham quyidagilarni buzolmay
 | `coverImage`, `gallery`, `AdminBusiness.photos` | `BusinessPhoto` (birinchisi — muqova)                              |
 | `Consent`                                       | `consent_given_by / _at / _note`                                   |
 | `Review.authorName`                             | `User.display_name` qisqartmasi yoki "Oʻchirilgan foydalanuvchi"   |
-| `Item.images`                                   | Hozircha boʻsh roʻyxat (mahsulot rasmlari MVP'da yoʻq)             |
+| `Item.images`, `AdminItem.photos`               | `ItemPhoto` (birinchisi — asosiy; ADR-0014)                        |
+| `Item.attributes`, `AdminItem.attributeValues`  | `Item.attributes` + kategoriya taʼriflari (`attributes.py`)        |
+| `BusinessSummary.matchedItems`                  | `Item.search_text` — sahifadagi bizneslar uchun bitta soʻrov       |

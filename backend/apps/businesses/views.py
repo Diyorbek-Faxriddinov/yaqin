@@ -11,6 +11,7 @@ from rest_framework.throttling import BaseThrottle, ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apps.accounts.authentication import CustomerSessionAuthentication, IsCustomer
+from apps.businesses import attributes as item_attributes
 from apps.businesses import public
 from apps.businesses.models import Business, BusinessRequest
 from apps.catalog.models import Category, District
@@ -52,11 +53,12 @@ class BusinessListView(APIView):
         total = queryset.count()
         ordered = public.apply_sort(queryset, filters["sort"], origin)
         lang = lang_of(request)
+        businesses = list(page_slice(ordered, page, page_size))
+        if filters.get("q"):
+            public.attach_matched_items(businesses, filters["q"])
         return Response(
             {
-                "items": [
-                    public.summary(b, lang, request) for b in page_slice(ordered, page, page_size)
-                ],
+                "items": [public.summary(b, lang, request) for b in businesses],
                 "total": total,
                 "page": page,
                 "pageSize": page_size,
@@ -72,15 +74,24 @@ class BusinessDetailView(APIView):
 class BusinessItemsView(APIView):
     def get(self, request: Request, slug: str) -> Response:
         business = get_published(slug)
-        return Response([public.item(entry) for entry in business.items.all()[:MAX_ITEMS]])
+        known = item_attributes.definitions(business.category.attributes)
+        lang = lang_of(request)
+        return Response(
+            [
+                public.item(entry, lang, known)
+                for entry in public.items_queryset(business)[:MAX_ITEMS]
+            ]
+        )
 
 
 class BusinessItemView(APIView):
     def get(self, request: Request, slug: str, item_slug: str) -> Response:
-        entry = get_published(slug).items.filter(slug=item_slug).first()
+        business = get_published(slug)
+        entry = public.items_queryset(business).filter(slug=item_slug).first()
         if entry is None:
             raise not_found()
-        return Response(public.item(entry))
+        known = item_attributes.definitions(business.category.attributes)
+        return Response(public.item(entry, lang_of(request), known))
 
 
 class BusinessReviewsView(APIView):
@@ -183,7 +194,8 @@ class SuggestView(APIView):
             for b in public.apply_sort(candidates, "recommended", None)[:50]
             if _matches_name(b.name, tokens)
         ][:SUGGEST_LIMIT]
-        return Response({"categories": categories, "businesses": businesses})
+        items = public.suggest_items(query, SUGGEST_LIMIT)
+        return Response({"categories": categories, "businesses": businesses, "items": items})
 
 
 class BusinessRequestInput(serializers.Serializer[dict[str, Any]]):

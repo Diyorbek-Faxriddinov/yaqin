@@ -43,7 +43,8 @@ class Business(TimestampedModel):
     # Reyting — chop etilgan sharhlardan (moderatsiyada yangilanadi); o'rtacha = sum / count
     rating_count = models.PositiveIntegerField(default=0)
     rating_sum = models.PositiveIntegerField(default=0)
-    # Qidiruv: nom, kategoriya (ikki tilda, ota-kategoriya bilan), tuman — normallashtirilgan
+    # Qidiruv: nom, kategoriya (ikki tilda, ota-kategoriya bilan), tuman, katalogdagi mahsulot
+    # nomlari va bo'limlari — normallashtirilgan
     search_text = models.TextField(blank=True, editable=False)
 
     class Meta:
@@ -94,7 +95,16 @@ class Business(TimestampedModel):
         if category.parent:
             parts += [category.parent.name_uz, category.parent.name_ru]
         parts += [self.district.name_uz, self.district.name_ru]
+        # Yangi (hali saqlanmagan) biznesda katalog yo'q
+        if not self._state.adding:
+            for name, group in self.items.values_list("name", "group"):
+                parts += [name, group]
         return normalize_for_search(" ".join(parts))
+
+    def refresh_search_text(self) -> None:
+        """Katalog o'zgarganda — mahsulot nomlari bo'yicha ham topilsin."""
+        self.search_text = self.build_search_text()
+        Business.objects.filter(pk=self.pk).update(search_text=self.search_text)
 
     def save(self, *args: object, **kwargs: object) -> None:
         self.search_text = self.build_search_text()
@@ -153,12 +163,19 @@ class Item(TimestampedModel):
         null=True, blank=True, validators=[MinValueValidator(5), MaxValueValidator(1440)]
     )
     # [{"key": "size", "name": "Oʻlcham", "value": "M, L"}] — kontraktdagi ItemAttribute
+    # Erkin: {"key", "name", "value"}; kategoriya xususiyati — qo'shimcha "raw" (xom qiymat),
+    # name/value — saqlangan paytdagi ko'rinish (apps/businesses/attributes.py)
     attributes = models.JSONField(default=list, blank=True)
     is_available = models.BooleanField(default=True)
     position = models.PositiveIntegerField(default=0)
+    # Qidiruv takliflari va "nima uchun topildi" — normallashtirilgan nom
+    search_text = models.CharField(max_length=200, blank=True, editable=False)
 
     class Meta:
         ordering = ["position", "created_at"]
+        indexes = [
+            GinIndex(OpClass(F("search_text"), name="gin_trgm_ops"), name="item_search_trgm"),
+        ]
         constraints = [
             models.UniqueConstraint(fields=["business", "slug"], name="item_business_slug"),
             # Narx turi va qiymatlari mos: so'rov bo'yicha — qiymatsiz; oraliq — yuqori > quyi.
@@ -192,6 +209,35 @@ class Item(TimestampedModel):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args: object, **kwargs: object) -> None:
+        self.search_text = normalize_for_search(self.name)
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            kwargs["update_fields"] = {*update_fields, "search_text"}  # type: ignore[misc]
+        super().save(*args, **kwargs)  # type: ignore[arg-type]
+
+
+def item_photo_upload_to(instance: "ItemPhoto", filename: str) -> str:
+    return f"businesses/{instance.item.business_id}/items/{instance.item_id}/{instance.id}.webp"
+
+
+class ItemPhoto(UUIDModel):
+    """Mahsulot rasmi — biznes rasmi kabi qayta kodlangan. Birinchisi — asosiy, ko'pi bilan 5 ta."""
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="photos")
+    file = models.FileField(upload_to=item_photo_upload_to, max_length=200)
+    width = models.PositiveIntegerField()
+    height = models.PositiveIntegerField()
+    alt = models.CharField(max_length=200, blank=True)
+    position = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["position", "created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.item.name} — {self.position + 1}-rasm"
 
 
 class BusinessRequest(TimestampedModel):

@@ -15,10 +15,11 @@ from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.businesses import attributes as item_attributes
 from apps.businesses import public
 from apps.businesses.admin_input import apply_item, apply_update, parse_create, text
-from apps.businesses.models import Business, BusinessPhoto, BusinessRequest, Item
-from apps.businesses.photos import process_photo
+from apps.businesses.models import Business, BusinessPhoto, BusinessRequest, Item, ItemPhoto
+from apps.businesses.photos import ProcessedPhoto, process_photo
 from apps.businesses.slugs import unique_business_slug, unique_item_slug
 from apps.catalog.views import category_ref, district_ref
 from apps.core.api import (
@@ -39,6 +40,7 @@ from apps.staff.permissions import Permission
 
 Target = AuditEntry.TargetType
 MAX_PHOTOS = 12
+MAX_ITEM_PHOTOS = 5
 
 
 class BusinessAdminView(AdminView):
@@ -77,8 +79,43 @@ def touch(business: Business) -> None:
     Business.objects.filter(pk=business.pk).update(updated_at=timezone.now())
 
 
-def photo_payload(photo: BusinessPhoto, request: Request) -> dict[str, Any]:
+def photo_payload(photo: BusinessPhoto | ItemPhoto, request: Request) -> dict[str, Any]:
     return {"id": str(photo.id), **public.image(photo, request)}
+
+
+def read_upload(request: Request) -> tuple[ProcessedPhoto, str]:
+    """Rasm fayli (qayta kodlangan) va alt matni."""
+    upload = request.FILES.get("file")
+    if upload is None:
+        raise invalid({"file": ["Rasm tanlang"]})
+    return process_photo(upload), text(request.data.get("alt", ""))[:200]
+
+
+def save_photo(photo: BusinessPhoto | ItemPhoto, processed: ProcessedPhoto) -> str:
+    """Faylni yozib, yozuvni saqlaydi; fayl nomini qaytaradi (xato bo'lsa o'chirish uchun)."""
+    photo.file.save("photo.webp", ContentFile(processed.content), save=False)
+    stored = str(photo.file.name)
+    photo.save()
+    return stored
+
+
+def delete_files_on_commit(names: list[str]) -> None:
+    """Fayllar faqat yozuvlar o'chgani aniq bo'lgach o'chiriladi."""
+
+    def remove_files() -> None:
+        for name in names:
+            default_storage.delete(name)
+
+    transaction.on_commit(remove_files)
+
+
+def admin_item(entry: Item, lang: Lang, request: Request) -> dict[str, Any]:
+    known = item_attributes.definitions(entry.business.category.attributes)
+    return {
+        **public.item(entry, lang, known),
+        "photos": [photo_payload(photo, request) for photo in entry.photos.all()],
+        "attributeValues": item_attributes.input_values(entry.attributes, known),
+    }
 
 
 def consent_payload(business: Business) -> dict[str, Any] | None:
@@ -233,7 +270,10 @@ class AdminBusinessDetailView(BusinessAdminView):
                     "business_was_published",
                     "Eʼlon qilingan biznes oʻchirilmaydi — uni yashiring",
                 )
-            files = list(business.photos.values_list("file", flat=True))
+            files = [
+                *business.photos.values_list("file", flat=True),
+                *ItemPhoto.objects.filter(item__business=business).values_list("file", flat=True),
+            ]
             # So'rovdan yaratilgan bo'lsa — so'rov yana ishga qaytadi ("converted" biznessiz
             # bo'lolmaydi, request_converted_has_business)
             reopened = BusinessRequest.objects.filter(
@@ -244,13 +284,7 @@ class AdminBusinessDetailView(BusinessAdminView):
             if reopened:
                 summary += " (soʻrov qayta ochildi)"
             audit(admin, "business.delete", Target.BUSINESS, business_id, summary)
-
-            # Fayllar faqat yozuvlar o'chgani aniq bo'lgach o'chiriladi
-            def remove_files() -> None:
-                for name in files:
-                    default_storage.delete(name)
-
-            transaction.on_commit(remove_files)
+            delete_files_on_commit(files)
         return Response(status=204)
 
 
@@ -261,11 +295,7 @@ class AdminPhotoUploadView(BusinessAdminView):
         # Biznes avval tekshiriladi — yo'q bo'lsa rasm umuman qayta ishlanmaydi
         if not Business.objects.filter(pk=business_id).exists():
             raise not_found()
-        upload = request.FILES.get("file")
-        if upload is None:
-            raise invalid({"file": ["Rasm tanlang"]})
-        processed = process_photo(upload)
-        alt = request.data.get("alt", "")
+        processed, alt = read_upload(request)
         admin = current_admin(request)
         stored: str | None = None
         try:
@@ -278,12 +308,10 @@ class AdminPhotoUploadView(BusinessAdminView):
                     business=business,
                     width=processed.width,
                     height=processed.height,
-                    alt=text(alt)[:200],
+                    alt=alt,
                     position=0 if last is None else last + 1,
                 )
-                photo.file.save("photo.webp", ContentFile(processed.content), save=False)
-                stored = photo.file.name
-                photo.save()
+                stored = save_photo(photo, processed)
                 touch(business)
                 audit(
                     admin,
@@ -338,8 +366,7 @@ class AdminPhotoDetailView(BusinessAdminView):
                 admin, "photo.delete", Target.PHOTO, photo_id, f"Rasm oʻchirildi: {business.name}"
             )
             refresh_public(business)
-            # Fayl faqat yozuv o'chgani aniq bo'lgach o'chiriladi
-            transaction.on_commit(lambda: default_storage.delete(name))
+            delete_files_on_commit([name])
         return Response(status=204)
 
 
@@ -348,7 +375,10 @@ class AdminItemListView(BusinessAdminView):
 
     def get(self, request: Request, business_id: UUID) -> Response:
         business = get_business(business_id)
-        return Response([public.item(entry) for entry in business.items.all()])
+        lang = lang_of(request)
+        return Response(
+            [admin_item(entry, lang, request) for entry in public.items_queryset(business)]
+        )
 
     def post(self, request: Request, business_id: UUID) -> Response:
         admin = current_admin(request)
@@ -360,20 +390,18 @@ class AdminItemListView(BusinessAdminView):
             last = business.items.aggregate(last=Max("position"))["last"]
             item.position = 0 if last is None else last + 1
             item.save()
+            business.refresh_search_text()
             touch(business)
             audit(admin, "item.create", Target.ITEM, item.id, f"{business.name}: {item.name}")
             refresh_public(business)
-        return Response(public.item(item), status=201)
+        return Response(admin_item(item, lang_of(request), request), status=201)
 
 
 class AdminItemDetailView(BusinessAdminView):
     admin_permission = Permission.BUSINESS_EDIT
 
     def _get(self, business: Business, item_id: UUID) -> Item:
-        item = business.items.filter(pk=item_id).first()
-        if item is None:
-            raise not_found()
-        return item
+        return get_item(business, item_id)
 
     def put(self, request: Request, business_id: UUID, item_id: UUID) -> Response:
         admin = current_admin(request)
@@ -383,17 +411,20 @@ class AdminItemDetailView(BusinessAdminView):
             # Slug o'zgarmaydi — mahsulot sahifasi manzili barqaror
             apply_item(item, body_of(request))
             item.save()
+            business.refresh_search_text()
             touch(business)
             audit(admin, "item.update", Target.ITEM, item.id, f"{business.name}: {item.name}")
             refresh_public(business)
-        return Response(public.item(item))
+        return Response(admin_item(item, lang_of(request), request))
 
     def delete(self, request: Request, business_id: UUID, item_id: UUID) -> Response:
         admin = current_admin(request)
         with transaction.atomic():
             business = get_business(business_id, lock=True)
             item = self._get(business, item_id)
+            files = list(item.photos.values_list("file", flat=True))
             item.delete()
+            business.refresh_search_text()
             touch(business)
             audit(
                 admin,
@@ -403,6 +434,112 @@ class AdminItemDetailView(BusinessAdminView):
                 f"{business.name}: {item.name} oʻchirildi",
             )
             refresh_public(business)
+            delete_files_on_commit(files)
+        return Response(status=204)
+
+
+def get_item(business: Business, item_id: UUID) -> Item:
+    item = public.items_queryset(business).filter(pk=item_id).first()
+    if item is None:
+        raise not_found()
+    item.business = business  # kategoriya ta'riflari uchun (qayta so'rovsiz)
+    return item
+
+
+class AdminItemPhotoUploadView(BusinessAdminView):
+    admin_permission = Permission.BUSINESS_EDIT
+
+    def post(self, request: Request, business_id: UUID, item_id: UUID) -> Response:
+        # Mahsulot avval tekshiriladi — yo'q bo'lsa rasm umuman qayta ishlanmaydi
+        if not Item.objects.filter(pk=item_id, business_id=business_id).exists():
+            raise not_found()
+        processed, alt = read_upload(request)
+        admin = current_admin(request)
+        stored: str | None = None
+        try:
+            with transaction.atomic():
+                business = get_business(business_id, lock=True)
+                item = get_item(business, item_id)
+                if item.photos.count() >= MAX_ITEM_PHOTOS:
+                    raise invalid({"file": [f"Koʻpi bilan {MAX_ITEM_PHOTOS} ta rasm"]})
+                last = item.photos.aggregate(last=Max("position"))["last"]
+                photo = ItemPhoto(
+                    item=item,
+                    width=processed.width,
+                    height=processed.height,
+                    alt=alt,
+                    position=0 if last is None else last + 1,
+                )
+                stored = save_photo(photo, processed)
+                touch(business)
+                audit(
+                    admin,
+                    "item.photo.upload",
+                    Target.PHOTO,
+                    photo.id,
+                    f"Mahsulot rasmi qoʻshildi: {business.name} — {item.name}",
+                )
+                refresh_public(business)
+        except Exception:
+            # Yozuv saqlanmadi — diskda yetim fayl qolmasin
+            if stored:
+                default_storage.delete(stored)
+            raise
+        return Response(photo_payload(photo, request), status=201)
+
+
+class AdminItemPhotoOrderView(BusinessAdminView):
+    admin_permission = Permission.BUSINESS_EDIT
+
+    def put(self, request: Request, business_id: UUID, item_id: UUID) -> Response:
+        ids = body_of(request).get("photoIds")
+        admin = current_admin(request)
+        with transaction.atomic():
+            business = get_business(business_id, lock=True)
+            item = get_item(business, item_id)
+            photos = {str(p.id): p for p in item.photos.all()}
+            if not isinstance(ids, list) or len(ids) != len(photos) or set(ids) != set(photos):
+                raise ApiError(400, "validation_error", "Rasmlar roʻyxati mos emas")
+            for position, photo_id in enumerate(ids):
+                photos[photo_id].position = position
+            ItemPhoto.objects.bulk_update(photos.values(), ["position"])
+            touch(business)
+            audit(
+                admin,
+                "item.photo.reorder",
+                Target.ITEM,
+                item.id,
+                f"Mahsulot rasmlari tartibi oʻzgardi: {item.name}",
+            )
+            refresh_public(business)
+        return Response(status=204)
+
+
+class AdminItemPhotoDetailView(BusinessAdminView):
+    admin_permission = Permission.BUSINESS_EDIT
+
+    def delete(
+        self, request: Request, business_id: UUID, item_id: UUID, photo_id: UUID
+    ) -> Response:
+        admin = current_admin(request)
+        with transaction.atomic():
+            business = get_business(business_id, lock=True)
+            item = get_item(business, item_id)
+            photo = item.photos.filter(pk=photo_id).first()
+            if photo is None:
+                raise not_found()
+            name = photo.file.name
+            photo.delete()
+            touch(business)
+            audit(
+                admin,
+                "item.photo.delete",
+                Target.PHOTO,
+                photo_id,
+                f"Mahsulot rasmi oʻchirildi: {business.name} — {item.name}",
+            )
+            refresh_public(business)
+            delete_files_on_commit([name])
         return Response(status=204)
 
 

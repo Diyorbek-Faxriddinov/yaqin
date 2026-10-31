@@ -40,6 +40,7 @@ function demoBusiness(
     distanceMeters: null,
     isVerified: false,
     createdAt: "2026-10-20T07:00:00.000Z",
+    matchedItems: [],
     ...overrides,
   };
 }

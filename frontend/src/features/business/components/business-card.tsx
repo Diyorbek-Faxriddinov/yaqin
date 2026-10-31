@@ -114,6 +114,12 @@ export function BusinessCard({
         <p className="line-clamp-1 text-sm text-muted-foreground">
           {business.category.name} · {business.district.name}
         </p>
+        {/* Qidiruvda mahsulot nomi bo'yicha topilgan bo'lsa — nima uchun */}
+        {business.matchedItems.length > 0 && (
+          <p className="line-clamp-1 text-sm">
+            {t("matched", { items: business.matchedItems.map((item) => item.name).join(", ") })}
+          </p>
+        )}
         <RatingInline
           rating={
             business.rating.average != null

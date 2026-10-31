@@ -51,6 +51,7 @@
     "noReviews": "Пока нет отзывов",
     "rating": "Рейтинг: {value} из 5",
     "distance": "Расстояние: {distance}",
+    "matched": "Найдено: {items}",
     "statusDetail": {
       "until": "до {time}",
       "allDay": "круглосуточно",
@@ -159,6 +160,8 @@
   "BusinessPage": {
     "call": "Позвонить",
     "telegram": "Telegram",
+    "instagram": "Instagram",
+    "website": "Сайт",
     "directions": "Маршрут",
     "directionsYandex": "В Яндекс Картах",
     "directionsGoogle": "В Google Картах",
@@ -166,13 +169,16 @@
     "linkCopied": "Ссылка скопирована",
     "contacts": "Контакты",
     "sections": {
-      "prices": "Цены",
+      "catalog": "Товары и услуги",
+      "products": "Товары",
+      "services": "Услуги",
       "hours": "Часы работы",
       "location": "Адрес",
+      "contacts": "Контакты",
       "reviews": "Отзывы",
       "about": "О компании"
     },
-    "noItems": "Цены пока не добавлены.",
+    "noItems": "Товары и услуги пока не добавлены.",
     "otherGroup": "Другое",
     "unavailable": "Сейчас нет в наличии",
     "price": {
@@ -202,6 +208,14 @@
       "offeredBy": "Предлагает",
       "metaDescription": "{item} — {business}, {district}. Цена и подробности."
     }
+  },
+  "Gallery": {
+    "region": "{name} — фото",
+    "open": "Увеличить фото, {index}/{total}",
+    "previous": "Предыдущее фото",
+    "next": "Следующее фото",
+    "thumbnail": "Показать фото {index}",
+    "counter": "{index} / {total}"
   },
   "MapPage": {
     "title": "Карта",
@@ -467,7 +481,7 @@
       "photos": "Фото",
       "hours": "Часы работы",
       "contacts": "Контакты и согласие",
-      "catalog": "Цены",
+      "catalog": "Каталог",
       "status": "Статус",
       "stats": "Статистика"
     },
@@ -499,6 +513,7 @@
       "add": "Добавить фото",
       "addHint": "Камера или галерея. Фото уменьшаются перед загрузкой, GPS-данные удаляются.",
       "cover": "Обложка",
+      "main": "Основное",
       "moveUp": "Вперёд",
       "moveDown": "Назад",
       "delete": "Удалить",
@@ -549,7 +564,7 @@
     },
     "catalog": {
       "add": "Добавить",
-      "empty": "Цен пока нет",
+      "empty": "Пока нет товаров и услуг",
       "edit": "Изменить",
       "delete": "Удалить",
       "deleteConfirm": "Удалить «{name}»?",
@@ -559,8 +574,10 @@
       "product": "Товар",
       "service": "Услуга",
       "name": "Название",
+      "description": "Описание (необязательно)",
       "group": "Раздел (необязательно)",
       "groupPlaceholder": "Например: Стрижки",
+      "groupHint": "Группирует позиции на странице бизнеса. Выберите существующий раздел или введите новый.",
       "priceType": "Тип цены",
       "priceTypes": {
         "fixed": "Точная цена",
@@ -572,14 +589,19 @@
       "max": "До, сум",
       "duration": "Длительность, мин",
       "available": "Есть в наличии",
+      "photos": "Фото",
+      "photosHint": "До 5 фото; первое — основное.",
+      "photosLimit": "Не более 5 фото",
+      "photosAfterSave": "Фото загрузятся после сохранения.",
       "unavailable": "Нет в наличии",
       "attributes": "Характеристики (необязательно)",
+      "otherAttributes": "Другие характеристики",
+      "notSelected": "Не выбрано",
       "attrName": "Название",
       "attrValue": "Значение",
       "addAttribute": "Добавить характеристику",
       "removeAttribute": "Удалить",
       "save": "Сохранить",
-      "suggested": "Рекомендуемые характеристики",
       "yes": "Да",
       "no": "Нет"
     },

@@ -227,17 +227,25 @@ test.describe("Kategoriyalar", () => {
     await expect(row).toHaveCount(0);
   });
 
-  test("katalog formasida kategoriya atributlari tavsiya qilinadi", async ({ page }) => {
+  test("katalog formasida kategoriya atributlari turiga mos maydon", async ({ page }) => {
     await adminLogin(page);
     await page.goto("/admin/bizneslar");
     await page.getByRole("searchbox", { name: "Nomi boʻyicha qidirish" }).fill("Oq tosh");
     await page.getByRole("link", { name: /Oq tosh kafe/ }).click();
-    await page.getByRole("tab", { name: "Narxlar" }).click();
+    await page.getByRole("tab", { name: "Katalog" }).click();
     await page.getByRole("button", { name: "Qoʻshish" }).click();
-    const suggestions = page.getByRole("group", { name: "Tavsiya etilgan xususiyatlar" });
-    await suggestions.getByRole("button", { name: "Porsiya" }).click();
-    await expect(page.getByRole("dialog").getByPlaceholder("g", { exact: true })).toBeVisible();
-    await expect(suggestions.getByRole("button", { name: "Porsiya" })).toHaveCount(0);
+    const dialog = page.getByRole("dialog");
+    // Son — birlik bilan; Ha/Yo'q — tugmalar
+    await expect(dialog.getByLabel("Porsiya")).toBeVisible();
+    await expect(dialog.getByText("g", { exact: true })).toBeVisible();
+    const halal = dialog.getByRole("group", { name: "Halol" });
+    await halal.getByRole("button", { name: "Ha" }).click();
+    await expect(halal.getByRole("button", { name: "Ha" })).toHaveAttribute("aria-pressed", "true");
+    await halal.getByRole("button", { name: "Ha" }).click();
+    await expect(halal.getByRole("button", { name: "Ha" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 });
 

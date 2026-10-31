@@ -1,6 +1,6 @@
 # Ish holati
 
-Oxirgi yangilanish: 2026-10-31
+Oxirgi yangilanish: 2026-11-01
 
 ## Bosqichlar
 
@@ -51,7 +51,38 @@ Oxirgi yangilanish: 2026-10-31
 | 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ✅    |
 | 4.4   | Mustahkamlik va tezlik                                 | ✅    |
 | 4.5   | Telefonda sinov                                        | ✅    |
-| 4.6   | CI'da integratsiya, hujjatlar                          | 🔄    |
+| 4.6   | CI'da integratsiya, hujjatlar                          | ✅    |
+| 4.7   | Doʻkon katalogi (hostingdan oldingi koʻrib chiqish)    | 🔄    |
+
+## 4.7 natijalari — doʻkon katalogi ([ADR-0014](adr/0014-dokon-katalogi.md))
+
+Hostingdan oldingi koʻrib chiqishda (telefonda, oʻzimiz qoʻshgan doʻkon) topilgan kamchiliklar:
+
+- **Biznes rasmi kesilardi.** Muqova qatʼiy balandlikda edi, kvadrat rasmning desktopda ~22 foizi koʻrinardi. Qolgan rasmlar saytda umuman koʻrinmasdi. Endi galereya: rasm toʻliq (`object-contain`), boʻsh joyni uning xiralashtirilgan nusxasi toʻldiradi. Barcha rasmlar koʻrinadi, telefonda suriladi, kattalashtiriladi, `next/image` (avval 2000 px gacha asl fayl).
+- **Doʻkon xizmatdan farq qilmasdi.** Mahsulot rasmlari (5 tagacha, `ItemPhoto`, biznes rasmlari kabi qayta kodlanadi) qoʻshildi. Mahsulotlar rasmli kartochkalarda, xizmatlar narx roʻyxatida koʻrsatiladi. Sarlavha turga qarab: "Mahsulotlar", "Xizmatlar" yoki "Mahsulot va xizmatlar". Mahsulot sahifasida galereya, tavsif, schema.org Product/Service, ulashish rasmi bor.
+- **Admin formasi.**
+  - Tavsif maydoni qoʻshildi (avval kiritib boʻlmasdi).
+  - Rasmlar: yangi mahsulotda saqlangach yuklanadi.
+  - Kategoriya xususiyatlari turiga mos: oʻlcham variantlari tugmachalar, son birligi bilan, Ha/Yoʻq.
+  - Boʻlim takliflari (shu biznesdagi mavjud boʻlimlar).
+  - Yangi mahsulot turi: biznesdagi koʻpchilik turi, katalog boʻsh boʻlsa — kategoriyaga qarab.
+  - Admin bo'limi "Narxlar" → "Katalog".
+- **Xususiyatlar tartibsiz edi.**
+  - Kategoriya xususiyati endi tekshiriladi va xom qiymat bilan saqlanadi.
+  - Rus tilidagi sahifada nom va qiymat ruscha chiqadi (avval oʻzbekcha edi).
+  - Taʼrif oʻzgarsa, saqlangan matn koʻrsatiladi.
+- **Qidiruv mahsulotni topmasdi.** "Nike" yoki "krossovka" deb qidirilsa, doʻkon topilmasdi. Endi biznes qidiruv matnida katalogdagi nomlar va boʻlimlar bor. Natijada "Topildi: …" (`matchedItems`) koʻrinadi, takliflar API'sida mahsulotlar ham bor. Mavjud yozuvlar migratsiyada qayta hisoblandi (lokal bazadagi Theonly_uz endi "nike" bilan topiladi).
+- **Aloqa maʼlumotlari koʻrinmasdi.** Instagram va veb-sayt admin panelda kiritilardi, lekin saytda hech qayerda chiqmasdi. Ikkinchi va keyingi telefonlar ham koʻrinmasdi. Endi biznes sahifasida "Aloqa" boʻlimi bor.
+- **Kontrakt.**
+  - Mahsulot rasmlari: 3 ta yangi endpoint.
+  - `AdminItem` (`photos`, `attributeValues`).
+  - `ItemAttributeInput.key`.
+  - `BusinessSummary.matchedItems`.
+  - `SearchSuggestions.items`.
+- **Testlar.** Backend 509 (+16 yangi va kontrakt matritsasi), frontend unit 237 (+12), E2E backend (CI taqlidi) 270 passed, 0 beqaror. Demo: 254 passed, 1 yiqildi — `cache-revalidation` (kategoriya qoʻshish, planshet), toʻliq toʻplam yuklamasi ostida. Qayta yurgizishda 9/9 va planshetda 3 marta takrorlab — oʻtdi.
+- **Vizual tekshiruv** (skrinshot, desktop va telefon): kvadrat, keng va tik rasmlar kesilmasdan koʻrinadi. Kartochkalar, mahsulot sahifasi, admin dialogi va qidiruvdagi "Topildi" tekshirildi.
+
+**Ataylab qilinmadi** (ADR-0014): oʻlcham yoki rang boʻyicha alohida narx va qoldiq, umumiy mahsulot kategoriyalari daraxti, majburiy umumiy boʻlimlar. Xususiyatlar boʻyicha ommaviy filtrlar keyinroq, maʼlumot toʻplangach qoʻshiladi. Qidiruv takliflari endpointi bor, lekin frontendda avtomatik toʻldirish (autocomplete) UI hali yoʻq (2-bosqichdan beri).
 
 ## 4.6 natijalari — CI'da integratsiya
 
@@ -281,7 +312,7 @@ Frontend va backend birga ishga tushirildi va sinaldi: `scripts/local/start.ps1`
 - Rasmlar lokal diskda; production xotirasi (Oʻzbekistondagi disk yoki S3-mos), `immutable` kesh va `nosniff` sarlavhalari — 5-bosqich. Ishlab chiqishda rasmlarni Django beradi (faqat `DEBUG`).
 - Frontend `next/image` uchun backend rasm domeni sozlamasi — 4-bosqich.
 - Soʻrovdan biznes yaratish (`/admin/business-requests/{id}/convert`) — 3.7 (umumiy tekshiruv tayyor: `parse_create`).
-- Mahsulot rasmlari MVP'da yoʻq (`Item.images` — boʻsh roʻyxat).
+- Mahsulot rasmlari MVP'da yoʻq (`Item.images` — boʻsh roʻyxat). — 4.7 da qoʻshildi (ADR-0014)
 
 ## 3.5 natijalari
 

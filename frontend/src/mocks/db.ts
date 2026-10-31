@@ -8,6 +8,7 @@ import type {
   CategoryRef,
   District,
   Item,
+  ItemPrice,
   MapMarker,
   Review,
   ReviewPage,
@@ -15,7 +16,7 @@ import type {
 } from "@/lib/api/types";
 import { distanceMeters, type GeoPoint } from "@/lib/geo";
 import { computeOpenStatus } from "@/lib/open-status";
-import { matchesQuery, normalizeForSearch } from "@/lib/text/normalize";
+import { matchesQuery, normalizeForSearch, searchStems } from "@/lib/text/normalize";
 import {
   demoState,
   findCategory,
@@ -26,6 +27,8 @@ import {
   type DemoCategoryRecord,
 } from "./demo-state";
 import { BASE_DATE } from "./fixtures/businesses";
+import type { DemoItem } from "./fixtures/items";
+import { definitionsOf, publicAttributes } from "./item-attributes";
 import { reviewsFor } from "./fixtures/reviews";
 import { DISTRICTS } from "./fixtures/districts";
 
@@ -104,7 +107,7 @@ const toMoney = (som: number) => ({ amount: som * 100, currency: "UZS" as const 
 type PublicRecord = DemoBusinessRecord & { location: GeoPoint };
 
 /** Admin qo'shgan bizneslarda narx oralig'i katalogdan hisoblanadi */
-function priceRangeFromItems(items: Item[]): BusinessSummary["priceRange"] {
+function priceRangeFromItems(items: Array<{ price: ItemPrice }>): BusinessSummary["priceRange"] {
   const amounts = items.flatMap((item) =>
     [item.price.min?.amount, item.price.max?.amount].filter((a): a is number => a != null),
   );
@@ -136,7 +139,36 @@ function toSummary(business: PublicRecord, lang: Lang, origin: GeoPoint | null):
     distanceMeters: origin ? Math.round(distanceMeters(origin, business.location)) : null,
     isVerified: business.isVerified,
     createdAt: business.createdAt,
+    matchedItems: [],
   };
+}
+
+/** Mahsulot ommaviy ko'rinishda: kategoriya xususiyatlari so'ralgan tilda */
+export function publicItem(item: DemoItem, business: DemoBusinessRecord, lang: Lang): Item {
+  const { photos, attributes, ...rest } = item;
+  const known = definitionsOf(findCategory(business.categorySlug)?.attributes ?? []);
+  return {
+    ...rest,
+    attributes: publicAttributes(attributes, known, lang),
+    images: photos.map(({ url, width, height, alt }) => ({ url, width, height, alt })),
+  };
+}
+
+// Qisqa so'zlar ("a", "va") deyarli har bir mahsulot nomida bor — "nima uchun topildi" uchun emas
+const MIN_MATCH_TOKEN = 3;
+const MAX_MATCHED_ITEMS = 3;
+
+/** `matchedItems`: nomida qidiruv so'zlaridan biri bor mahsulotlar (backend bilan bir xil) */
+function matchedItems(business: DemoBusinessRecord, q: string): BusinessSummary["matchedItems"] {
+  const stems = searchStems(q).filter((stem) => stem.length >= MIN_MATCH_TOKEN);
+  if (stems.length === 0) return [];
+  return itemsOf(business)
+    .filter((item) => {
+      const name = normalizeForSearch(item.name);
+      return stems.some((stem) => name.includes(stem));
+    })
+    .slice(0, MAX_MATCHED_ITEMS)
+    .map(({ slug, name }) => ({ slug, name }));
 }
 
 /** Ommaviy ism: "Malika Rahimova" → "Malika R." (to'liq ism ko'rsatilmaydi) */
@@ -176,7 +208,7 @@ function ratingOf(business: DemoBusinessRecord): BusinessSummary["rating"] {
   return { average: Math.round((sum / count) * 10) / 10, count };
 }
 
-/** Qidiruv matni: nom, kategoriya (ikkala tilda, ota-kategoriya bilan), tuman */
+/** Qidiruv matni: nom, kategoriya (ikkala tilda, ota-kategoriya bilan), tuman, katalog */
 function searchText(business: DemoBusinessRecord): string {
   const category = findCategory(business.categorySlug);
   const parent = category?.parentSlug ? findCategory(category.parentSlug) : undefined;
@@ -189,6 +221,7 @@ function searchText(business: DemoBusinessRecord): string {
     parent?.name.ru,
     district?.name.uz,
     district?.name.ru,
+    ...itemsOf(business).flatMap((item) => [item.name, item.group]),
   ]
     .filter(Boolean)
     .join(" ");
@@ -244,18 +277,18 @@ export function listBusinesses(params: ListBusinessesParams): BusinessPage {
 
   const categorySlugs = category ? descendantSlugs(category) : null;
 
-  let items = publicBusinesses()
-    .filter((b) => {
-      if (categorySlugs && !categorySlugs.has(b.categorySlug)) return false;
-      if (district && b.districtSlug !== district) return false;
-      if (q && !matchesQuery(searchText(b), q)) return false;
-      if (openNow) {
-        const state = computeOpenStatus(b.schedule, now).state;
-        if (state !== "open" && state !== "closingSoon") return false;
-      }
-      return true;
-    })
-    .map((b) => toSummary(b, lang, origin));
+  const matching = publicBusinesses().filter((b) => {
+    if (categorySlugs && !categorySlugs.has(b.categorySlug)) return false;
+    if (district && b.districtSlug !== district) return false;
+    if (q && !matchesQuery(searchText(b), q)) return false;
+    if (openNow) {
+      const state = computeOpenStatus(b.schedule, now).state;
+      if (state !== "open" && state !== "closingSoon") return false;
+    }
+    return true;
+  });
+  const records = new Map(matching.map((b) => [b.id, b]));
+  let items = matching.map((b) => toSummary(b, lang, origin));
 
   const compare: Record<BusinessSort, (a: BusinessSummary, b: BusinessSummary) => number> = {
     recommended: (a, b) => recommendedScore(b) - recommendedScore(a),
@@ -267,7 +300,11 @@ export function listBusinesses(params: ListBusinessesParams): BusinessPage {
   items = items.sort(compare[sort]);
 
   const start = (page - 1) * pageSize;
-  return { items: items.slice(start, start + pageSize), total: items.length, page, pageSize };
+  const pageItems = items.slice(start, start + pageSize).map((summary) => {
+    const record = records.get(summary.id);
+    return q && record ? { ...summary, matchedItems: matchedItems(record, q) } : summary;
+  });
+  return { items: pageItems, total: items.length, page, pageSize };
 }
 
 export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {
@@ -287,6 +324,7 @@ export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {
 
 export function suggest(q: string, lang: Lang): SearchSuggestions {
   const normalized = normalizeForSearch(q);
+  const stems = searchStems(q);
   return {
     categories: demoState.categories
       .filter(
@@ -304,6 +342,23 @@ export function suggest(q: string, lang: Lang): SearchSuggestions {
         name: b.name,
         categoryName: findCategory(b.categorySlug)?.name[lang] ?? "",
       })),
+    // Nomida barcha so'zlar bor mahsulotlar (backend: nom bo'yicha tartiblangan, 5 tagacha)
+    items: publicBusinesses()
+      .flatMap((b) =>
+        itemsOf(b)
+          .filter((item) => {
+            const name = normalizeForSearch(item.name);
+            return stems.length > 0 && stems.every((stem) => name.includes(stem));
+          })
+          .map((item) => ({
+            slug: item.slug,
+            name: item.name,
+            businessSlug: b.slug,
+            businessName: b.name,
+          })),
+      )
+      .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+      .slice(0, 5),
   };
 }
 
@@ -312,14 +367,14 @@ function findBusiness(slug: string): PublicRecord | undefined {
   return publicBusinesses().find((b) => b.slug === slug);
 }
 
-export function listItems(slug: string): Item[] | null {
+export function listItems(slug: string, lang: Lang): Item[] | null {
   const business = findBusiness(slug);
   // Ommaviy saytda faqat mavjud mahsulotlar emas, hammasi (holati bilan) ko'rsatiladi
-  return business ? itemsOf(business) : null;
+  return business ? itemsOf(business).map((item) => publicItem(item, business, lang)) : null;
 }
 
-export function getItem(slug: string, itemSlug: string): Item | null {
-  return listItems(slug)?.find((item) => item.slug === itemSlug) ?? null;
+export function getItem(slug: string, itemSlug: string, lang: Lang): Item | null {
+  return listItems(slug, lang)?.find((item) => item.slug === itemSlug) ?? null;
 }
 
 export function listReviews(slug: string, page = 1, pageSize = 20): ReviewPage | null {

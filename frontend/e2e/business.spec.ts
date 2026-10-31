@@ -11,14 +11,15 @@ async function expectNoA11yViolations(page: Page, exclude: string[] = []) {
 const PROFILE = "/biznes/ustoz-sartaroshxonasi";
 
 test.describe("Biznes profili", () => {
-  test("asosiy ma'lumotlar, narxlar, ish vaqti, sharhlar", async ({ page }) => {
+  test("asosiy ma'lumotlar, xizmatlar, ish vaqti, sharhlar", async ({ page }) => {
     await page.goto(PROFILE);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ustoz sartaroshxonasi");
 
     const breadcrumb = page.getByRole("navigation", { name: "Sahifa yoʻli" });
     await expect(breadcrumb.getByRole("link", { name: "Sartaroshxonalar" })).toBeVisible();
 
-    const prices = page.getByRole("region", { name: "Narxlar" });
+    // Faqat xizmatlar — sarlavha "Xizmatlar", narx ro'yxati ko'rinishida
+    const prices = page.getByRole("region", { name: "Xizmatlar" });
     await expect(prices.getByRole("link", { name: "Erkaklar soch turmagi" })).toBeVisible();
     await expect(prices).toContainText(/\d[\d ]* soʻm/);
     // "-dan" qo'shimchasi so'zga qo'shib yoziladi: "89 000 soʻmdan"
@@ -27,6 +28,10 @@ test.describe("Biznes profili", () => {
 
     const hours = page.getByRole("region", { name: "Ish vaqti" });
     await expect(hours.getByRole("row")).toHaveCount(7);
+
+    // Barcha aloqa kanallari (asosiy tugmada faqat birinchi raqam)
+    const contacts = page.getByRole("region", { name: "Aloqa" });
+    await expect(contacts.getByRole("link").first()).toHaveAttribute("href", /^tel:\+998\d{9}$/);
 
     const reviews = page.getByRole("region", { name: "Sharhlar" });
     await expect(reviews.locator("article")).toHaveCount(5);
@@ -133,5 +138,39 @@ test.describe("Xarita", () => {
     await page.getByRole("link", { name: "Katta xaritada ochish" }).click();
     await expect(page).toHaveURL(/\/xarita\?b=ustoz-sartaroshxonasi$/);
     await expect(page.getByRole("link", { name: "Batafsil" })).toBeVisible();
+  });
+});
+
+test.describe("Do'kon katalogi", () => {
+  test("mahsulotlar kartochkalarda; mahsulot sahifasida xususiyatlar tanlangan tilda", async ({
+    page,
+  }) => {
+    await page.goto("/biznes/moda-kiyim-dokoni");
+    const catalog = page.getByRole("region", { name: "Mahsulotlar" });
+    // Bo'limlar va kartochkalar (rasm bo'lmasa — kategoriya ikonkasi)
+    await expect(catalog.getByRole("heading", { name: "Erkaklar" })).toBeVisible();
+    await expect(catalog.getByRole("listitem")).toHaveCount(3);
+    await expect(catalog).toContainText("Oʻlcham: S, M, L, XL, XXL");
+    await expectNoA11yViolations(page, [".maplibregl-canvas-container"]);
+
+    await catalog.getByRole("link", { name: "Erkaklar koʻylagi" }).click();
+    await expect(page).toHaveURL(/\/biznes\/moda-kiyim-dokoni\/erkaklar-koylagi$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Erkaklar koʻylagi");
+    const details = page.getByRole("region", { name: "Tafsilotlar" });
+    await expect(details).toContainText("Mato");
+    await expect(details).toContainText("Paxta");
+
+    await page.goto("/ru/biznes/moda-kiyim-dokoni/erkaklar-koylagi");
+    const detailsRu = page.getByRole("region", { name: "Подробности" });
+    await expect(detailsRu).toContainText("Размер");
+    await expect(detailsRu).toContainText("Материал");
+    // Erkin xususiyat — admin kiritgan matn
+    await expect(detailsRu).toContainText("Rang");
+  });
+
+  test("mahsulot nomi bilan qidiruv: natijada nima uchun topilgani", async ({ page }) => {
+    await page.goto("/qidiruv?q=krossovka");
+    const card = page.locator("main article").filter({ hasText: "Qadam poyabzal" });
+    await expect(card).toContainText("Topildi: Krossovka");
   });
 });

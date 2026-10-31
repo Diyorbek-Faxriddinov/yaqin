@@ -130,13 +130,13 @@ export const handlers = [
 
   http.get(`${API}/businesses/:slug/items`, ({ request, params }) => {
     const lang = langOf(new URL(request.url));
-    const items = listItems(String(params.slug));
+    const items = listItems(String(params.slug), lang);
     return items ? HttpResponse.json(items) : notFound(lang);
   }),
 
   http.get(`${API}/businesses/:slug/items/:itemSlug`, ({ request, params }) => {
     const lang = langOf(new URL(request.url));
-    const item = getItem(String(params.slug), String(params.itemSlug));
+    const item = getItem(String(params.slug), String(params.itemSlug), lang);
     return item ? HttpResponse.json(item) : notFound(lang);
   }),
 

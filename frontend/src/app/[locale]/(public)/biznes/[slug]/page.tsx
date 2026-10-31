@@ -5,8 +5,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Breadcrumbs, type Crumb } from "@/components/common/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { BusinessJsonLd } from "@/features/business/components/business-json-ld";
+import { MediaGallery } from "@/components/common/media-gallery";
 import { BusinessOpenStatus } from "@/features/business/components/business-open-status";
 import { ContactActions, TrackProfileView } from "@/features/business/components/contact-actions";
+import { ContactList } from "@/features/business/components/contact-list";
+import { catalogTitleKey } from "@/features/business/catalog";
 import { ItemList } from "@/features/business/components/item-list";
 import { PriceTag } from "@/features/business/components/price-tag";
 import { RatingStars } from "@/features/business/components/rating";
@@ -105,7 +108,6 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const pageUrl = `${siteUrl}${getPathname({ href: `/biznes/${slug}`, locale })}`;
-  const cover = business.gallery[0] ?? business.coverImage;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
@@ -114,21 +116,20 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
 
       <Breadcrumbs items={crumbs} />
 
-      {/* Muqova: rasm yoki kategoriya ikonkasi */}
-      <div className="mt-4 overflow-hidden rounded-2xl bg-primary-soft">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element -- rasm CDN'i 3-bosqichda next/image bilan ulanadi
-          <img src={cover.url} alt={cover.alt ?? ""} className="h-48 w-full object-cover sm:h-64" />
-        ) : (
-          <div className="flex h-32 items-center justify-center text-primary-soft-foreground/60 sm:h-44">
-            <CategoryIcon iconKey={business.category.iconKey} className="size-14" />
-          </div>
-        )}
+      {/* Galereya (rasm kesilmaydi) yoki kategoriya ikonkasi */}
+      <div className="mt-4">
+        <MediaGallery
+          images={business.gallery}
+          name={business.name}
+          priority
+          className={business.gallery.length > 0 ? "h-64 sm:h-80 lg:h-96" : "h-32 sm:h-44"}
+          placeholder={<CategoryIcon iconKey={business.category.iconKey} className="size-14" />}
+        />
       </div>
 
       {/*
-        Telefonda tartib: sarlavha va aloqa → narxlar → ish vaqti va manzil → sharhlar.
-        Desktopda ish vaqti va manzil o'ng ustunda (yopishqoq).
+        Telefonda tartib: sarlavha va aloqa → katalog → ish vaqti, manzil va aloqa → sharhlar.
+        Desktopda ish vaqti, manzil va aloqa o'ng ustunda (yopishqoq).
       */}
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-10 lg:col-start-1">
@@ -176,8 +177,8 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
             location={business.location}
           />
 
-          <Section id="prices" title={t("sections.prices")}>
-            <ItemList items={items} businessSlug={slug} />
+          <Section id="catalog" title={t(`sections.${catalogTitleKey(items)}`)}>
+            <ItemList items={items} businessSlug={slug} iconKey={business.category.iconKey} />
           </Section>
         </div>
 
@@ -221,6 +222,21 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
               <Link href={`/xarita?b=${business.slug}`}>{t("openOnMap")}</Link>
             </Button>
           </Section>
+
+          {(business.phones.length > 0 ||
+            business.telegram ||
+            business.instagram ||
+            business.website) && (
+            <Section id="contacts" title={t("sections.contacts")}>
+              <ContactList
+                id={business.id}
+                phones={business.phones}
+                telegram={business.telegram}
+                instagram={business.instagram}
+                website={business.website}
+              />
+            </Section>
+          )}
         </aside>
 
         <div className="min-w-0 space-y-10 lg:col-start-1">

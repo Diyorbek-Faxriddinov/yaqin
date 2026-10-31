@@ -29,6 +29,7 @@ from apps.accounts.models import User
 from apps.businesses.models import Business, BusinessRequest, Item
 from apps.catalog.models import Category, District
 from apps.community.models import Complaint, Review
+from apps.core.text import normalize_for_search
 from apps.staff import totp
 from apps.staff.models import AdminUser, Role
 from apps.staff.passwords import hash_password
@@ -148,7 +149,6 @@ class Command(BaseCommand):
                 rating_count=rating["count"],
                 rating_sum=round((rating["average"] or 0) * rating["count"]),
             )
-            business.search_text = business.build_search_text()
             created[row["id"]] = (business, row["createdAt"])
 
             for position, entry in enumerate(row["items"]):
@@ -169,6 +169,8 @@ class Command(BaseCommand):
                         attributes=entry["attributes"],
                         is_available=entry["isAvailable"],
                         position=position,
+                        # bulk_create save() ni chaqirmaydi
+                        search_text=normalize_for_search(entry["name"]),
                     )
                 )
 
@@ -208,11 +210,15 @@ class Command(BaseCommand):
         Item.objects.bulk_create(items)
         Review.objects.bulk_create(reviews, batch_size=500)
         DailyStats.objects.bulk_create(stats, batch_size=1000)
-        # auto_now_add yaratishda qiymatni almashtiradi — sanalar alohida yoziladi
+        # auto_now_add yaratishda qiymatni almashtiradi — sanalar alohida yoziladi;
+        # qidiruv matni — katalog yozilgandan keyin (mahsulot nomlari bilan)
         for business, created_at in created.values():
             business.created_at = business.updated_at = when(created_at)
+            business.search_text = business.build_search_text()
         Business.objects.bulk_update(
-            [b for b, _ in created.values()], ["created_at", "updated_at"], batch_size=200
+            [b for b, _ in created.values()],
+            ["created_at", "updated_at", "search_text"],
+            batch_size=200,
         )
         Review.objects.bulk_update(reviews, ["created_at"], batch_size=500)
 

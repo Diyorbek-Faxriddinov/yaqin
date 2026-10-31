@@ -72,6 +72,8 @@ Namuna — [`.env.example`](.env.example).
 - **Siqish Next'da oʻchirilgan** (`compress: false`) — reverse proxy siqadi (Caddy `encode zstd gzip`; productionda ham shart). Next'ning gzip'i xato bilan tugagan oqimli javobni baʼzan yopmasdi.
 - **Tarjimalar:** ommaviy layout `Admin` namespace'ini brauzerga yubormaydi (tarjimalarning ~58 %); admin matnlari faqat `app/[locale]/admin/layout.tsx` dagi provider orqali. Ommaviy client komponentda `useTranslations("Admin…")` ishlatmang.
 - **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).
+- **Rasmlar galereyasi** — `src/components/common/media-gallery.tsx` (biznes va mahsulot sahifalari): rasm hech qachon kesilmaydi (`object-contain` + xiralashtirilgan fon). Admin rasm yuklash — `features/admin/components/photo-manager.tsx` (biznes va mahsulot uchun umumiy, brauzerda siqadi).
+- **Mahsulot xususiyatlari** (ADR-0014): kategoriya xususiyati — `key` va xom qiymat bilan yuboriladi, nom va qiymatni backend soʻralgan tilda qaytaradi; mock'dagi qoidalar `src/mocks/item-attributes.ts` — backend `apps/businesses/attributes.py` bilan bir xil saqlang.
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
 
 ## E2E: ikki rejim

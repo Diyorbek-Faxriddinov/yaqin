@@ -67,8 +67,16 @@ export function normalizeForSearch(input: string): string {
  * ("аптека" ↔ "Аптеки"). Backend buni pg_trgm o'xshashlik qidiruvi bilan aniqroq qiladi.
  */
 export function matchesQuery(haystack: string, query: string): boolean {
-  const tokens = normalizeForSearch(query).split(" ").filter(Boolean);
-  if (tokens.length === 0) return true;
+  const stems = searchStems(query);
+  if (stems.length === 0) return true;
   const text = normalizeForSearch(haystack);
-  return tokens.every((token) => text.includes(token.length >= 5 ? token.slice(0, -1) : token));
+  return stems.every((stem) => text.includes(stem));
+}
+
+/** Qidiruv so'zlari (normallashtirilgan): 5+ harflilarning oxirgi harfisiz */
+export function searchStems(query: string): string[] {
+  return normalizeForSearch(query)
+    .split(" ")
+    .filter(Boolean)
+    .map((token) => (token.length >= 5 ? token.slice(0, -1) : token));
 }

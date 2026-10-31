@@ -84,7 +84,9 @@ export interface paths {
         };
         /**
          * Bizneslarni qidirish va filtrlash
-         * @description `q` — lotin yoki kirill yozuvida; apostrof turlari (ʻ ‘ ' `) farqlanmaydi.
+         * @description `q` — lotin yoki kirill yozuvida; apostrof turlari (ʻ ‘ ' `) farqlanmaydi. Biznes nomi,
+         *     kategoriyasi, tumani, shuningdek mahsulot/xizmat nomlari va bo'limlari bo'yicha qidiradi;
+         *     mahsulot orqali topilganlarda `matchedItems` to'ldiriladi.
          *     `lat`/`lng` berilsa, har bir natijada `distanceMeters` qaytadi va `sort=distance` ishlaydi.
          *     Server joylashuvni saqlamaydi va loglarga yozmaydi.
          */
@@ -670,6 +672,71 @@ export interface paths {
         post?: never;
         /** Mahsulot yoki xizmatni o'chirish */
         delete: operations["adminDeleteItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/items/{itemId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mahsulot rasmini yuklash — ruxsat business.edit
+         * @description Biznes rasmlari kabi tekshiriladi va qayta kodlanadi (JPEG, PNG yoki WebP, ko'pi bilan
+         *     5 MB, EXIF olib tashlanadi). Bitta mahsulotga ko'pi bilan 5 ta rasm; birinchisi — asosiy.
+         */
+        post: operations["adminUploadItemPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/items/{itemId}/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Mahsulot rasmlari tartibi (birinchisi — asosiy) */
+        put: operations["adminReorderItemPhotos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/items/{itemId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Mahsulot rasmini o'chirish */
+        delete: operations["adminDeleteItemPhoto"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1363,6 +1430,14 @@ export interface components {
             isVerified: boolean;
             /** Format: date-time */
             createdAt: string;
+            /**
+             * @description Qidiruvda (`q`) nomi so'zlardan biriga mos kelgan mahsulot/xizmatlar — natijada
+             *     "nima uchun topildi"ni ko'rsatish uchun. `q` bo'lmasa — bo'sh.
+             */
+            matchedItems: {
+                slug: string;
+                name: string;
+            }[];
         };
         BusinessPage: {
             items: components["schemas"]["BusinessSummary"][];
@@ -1405,7 +1480,10 @@ export interface components {
         ItemAttribute: {
             key: string;
             name: string;
-            /** @description Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha") */
+            /**
+             * @description Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha"). Kategoriya xususiyati
+             *     (`AttributeDefinition`) boʻyicha kiritilganda nom va qiymat `lang` tilida qaytadi.
+             */
             value: string;
         };
         Item: {
@@ -1422,9 +1500,20 @@ export interface components {
             /** @description Faqat xizmatlar uchun */
             durationMinutes: number | null;
             attributes: components["schemas"]["ItemAttribute"][];
+            /** @description Birinchisi — asosiy rasm */
             images: components["schemas"]["Image"][];
             /** @description Hozir mavjud / koʻrsatiladi */
             isAvailable: boolean;
+        };
+        AdminItem: components["schemas"]["Item"] & {
+            /** @description `images` bilan bir xil, tartib va o'chirish uchun ID bilan */
+            photos: components["schemas"]["AdminPhoto"][];
+            /**
+             * @description Tahrirlash formasi uchun — `ItemInput.attributes` shaklida: kategoriya xususiyatida
+             *     `key` va xom qiymat (variant qiymatlari), erkin xususiyatda `key: null`, nom va matn.
+             *     Kategoriyadan olib tashlangan xususiyat erkin xususiyat sifatida qaytadi.
+             */
+            attributeValues: components["schemas"]["ItemAttributeInput"][];
         };
         Review: {
             /** Format: uuid */
@@ -1634,11 +1723,20 @@ export interface components {
             description: string | null;
             price: components["schemas"]["ItemPrice"];
             durationMinutes: number | null;
-            attributes: {
-                name: string;
-                value: string;
-            }[];
+            attributes: components["schemas"]["ItemAttributeInput"][];
             isAvailable: boolean;
+        };
+        /**
+         * @description - `key` — biznes kategoriyasining xususiyati (`AttributeDefinition.key`): nom kategoriyadan
+         *       olinadi (`name` e'tiborsiz), qiymat turi bo'yicha tekshiriladi — select: bitta variant
+         *       qiymati; multiselect: vergul bilan ajratilgan variant qiymatlari ("s,m,l"); number: son
+         *       ("12", "0.5"); boolean: "true" yoki "false"; text: 120 belgigacha.
+         *     - `key` yo'q yoki null — erkin xususiyat: `name` va `value` matn sifatida saqlanadi.
+         */
+        ItemAttributeInput: {
+            key?: string | null;
+            name: string;
+            value: string;
         };
         SearchSuggestions: {
             categories: components["schemas"]["CategoryRef"][];
@@ -1646,6 +1744,13 @@ export interface components {
                 slug: string;
                 name: string;
                 categoryName: string;
+            }[];
+            /** @description Nomi mos mahsulot/xizmatlar (e'lon qilingan bizneslardan, 5 tagacha) */
+            items: {
+                slug: string;
+                name: string;
+                businessSlug: string;
+                businessName: string;
             }[];
         };
         StatsEvent: {
@@ -2076,6 +2181,7 @@ export interface components {
         BusinessId: string;
         CategoryId: string;
         RequestId: string;
+        ItemId: string;
         AdminId: string;
         /** @description Davr (kun) — oxirgi N kun, bugun bilan */
         StatsDays: 7 | 30 | 90;
@@ -3119,7 +3225,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Item"][];
+                    "application/json": components["schemas"]["AdminItem"][];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -3148,7 +3254,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Item"];
+                    "application/json": components["schemas"]["AdminItem"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -3179,7 +3285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Item"];
+                    "application/json": components["schemas"]["AdminItem"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -3195,6 +3301,106 @@ export interface operations {
             path: {
                 businessId: components["parameters"]["BusinessId"];
                 itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUploadItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    alt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Yuklandi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPhoto"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Fayl juda katta */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminReorderItemPhotos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    photoIds: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Saqlandi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeleteItemPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                itemId: components["parameters"]["ItemId"];
+                photoId: string;
             };
             cookie?: never;
         };

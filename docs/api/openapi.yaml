@@ -109,7 +109,9 @@ paths:
       operationId: listBusinesses
       summary: Bizneslarni qidirish va filtrlash
       description: |
-        `q` — lotin yoki kirill yozuvida; apostrof turlari (ʻ ‘ ' `) farqlanmaydi.
+        `q` — lotin yoki kirill yozuvida; apostrof turlari (ʻ ‘ ' `) farqlanmaydi. Biznes nomi,
+        kategoriyasi, tumani, shuningdek mahsulot/xizmat nomlari va bo'limlari bo'yicha qidiradi;
+        mahsulot orqali topilganlarda `matchedItems` to'ldiriladi.
         `lat`/`lng` berilsa, har bir natijada `distanceMeters` qaytadi va `sort=distance` ishlaydi.
         Server joylashuvni saqlamaydi va loglarga yozmaydi.
       parameters:
@@ -951,7 +953,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/Item" }
+                items: { $ref: "#/components/schemas/AdminItem" }
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -973,7 +975,7 @@ paths:
           description: Qo'shildi
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Item" }
+              schema: { $ref: "#/components/schemas/AdminItem" }
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -1005,7 +1007,7 @@ paths:
           description: Yangilandi
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Item" }
+              schema: { $ref: "#/components/schemas/AdminItem" }
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -1018,6 +1020,103 @@ paths:
       tags: [admin]
       operationId: adminDeleteItem
       summary: Mahsulot yoki xizmatni o'chirish
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/items/{itemId}/photos:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/ItemId"
+    post:
+      tags: [admin]
+      operationId: adminUploadItemPhoto
+      summary: Mahsulot rasmini yuklash — ruxsat business.edit
+      description: |
+        Biznes rasmlari kabi tekshiriladi va qayta kodlanadi (JPEG, PNG yoki WebP, ko'pi bilan
+        5 MB, EXIF olib tashlanadi). Bitta mahsulotga ko'pi bilan 5 ta rasm; birinchisi — asosiy.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string, maxLength: 200 }
+      responses:
+        "201":
+          description: Yuklandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminPhoto" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          description: Fayl juda katta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/businesses/{businessId}/items/{itemId}/photos/order:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/ItemId"
+    put:
+      tags: [admin]
+      operationId: adminReorderItemPhotos
+      summary: Mahsulot rasmlari tartibi (birinchisi — asosiy)
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photoIds]
+              properties:
+                photoIds:
+                  type: array
+                  items: { type: string, format: uuid }
+      responses:
+        "204":
+          description: Saqlandi
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/items/{itemId}/photos/{photoId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/ItemId"
+      - name: photoId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [admin]
+      operationId: adminDeleteItemPhoto
+      summary: Mahsulot rasmini o'chirish
       security: [{ adminSessionCookie: [] }]
       responses:
         "204":
@@ -1980,6 +2079,12 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
     AdminId:
       name: adminId
       in: path
@@ -2245,6 +2350,7 @@ components:
         - distanceMeters
         - isVerified
         - createdAt
+        - matchedItems
       properties:
         id: { type: string, format: uuid }
         slug: { type: string }
@@ -2273,6 +2379,18 @@ components:
           type: boolean
           description: Platforma tomonidan joyida tekshirilgan
         createdAt: { type: string, format: date-time }
+        matchedItems:
+          type: array
+          maxItems: 3
+          description: |
+            Qidiruvda (`q`) nomi so'zlardan biriga mos kelgan mahsulot/xizmatlar — natijada
+            "nima uchun topildi"ni ko'rsatish uchun. `q` bo'lmasa — bo'sh.
+          items:
+            type: object
+            required: [slug, name]
+            properties:
+              slug: { type: string }
+              name: { type: string }
 
     BusinessPage:
       type: object
@@ -2360,7 +2478,9 @@ components:
         name: { type: string }
         value:
           type: string
-          description: Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha")
+          description: |
+            Koʻrsatish uchun tayyor qiymat ("42", "Qora, oq", "Ha"). Kategoriya xususiyati
+            (`AttributeDefinition`) boʻyicha kiritilganda nom va qiymat `lang` tilida qaytadi.
 
     Item:
       type: object
@@ -2396,10 +2516,31 @@ components:
           items: { $ref: "#/components/schemas/ItemAttribute" }
         images:
           type: array
+          maxItems: 5
+          description: Birinchisi — asosiy rasm
           items: { $ref: "#/components/schemas/Image" }
         isAvailable:
           type: boolean
           description: Hozir mavjud / koʻrsatiladi
+
+    AdminItem:
+      allOf:
+        - $ref: "#/components/schemas/Item"
+        - type: object
+          required: [photos, attributeValues]
+          properties:
+            photos:
+              type: array
+              maxItems: 5
+              description: "`images` bilan bir xil, tartib va o'chirish uchun ID bilan"
+              items: { $ref: "#/components/schemas/AdminPhoto" }
+            attributeValues:
+              type: array
+              description: |
+                Tahrirlash formasi uchun — `ItemInput.attributes` shaklida: kategoriya xususiyatida
+                `key` va xom qiymat (variant qiymatlari), erkin xususiyatda `key: null`, nom va matn.
+                Kategoriyadan olib tashlangan xususiyat erkin xususiyat sifatida qaytadi.
+              items: { $ref: "#/components/schemas/ItemAttributeInput" }
 
     Review:
       type: object
@@ -2767,17 +2908,26 @@ components:
         attributes:
           type: array
           maxItems: 20
-          items:
-            type: object
-            required: [name, value]
-            properties:
-              name: { type: string, maxLength: 40 }
-              value: { type: string, maxLength: 120 }
+          items: { $ref: "#/components/schemas/ItemAttributeInput" }
         isAvailable: { type: boolean }
+
+    ItemAttributeInput:
+      type: object
+      required: [name, value]
+      description: |
+        - `key` — biznes kategoriyasining xususiyati (`AttributeDefinition.key`): nom kategoriyadan
+          olinadi (`name` e'tiborsiz), qiymat turi bo'yicha tekshiriladi — select: bitta variant
+          qiymati; multiselect: vergul bilan ajratilgan variant qiymatlari ("s,m,l"); number: son
+          ("12", "0.5"); boolean: "true" yoki "false"; text: 120 belgigacha.
+        - `key` yo'q yoki null — erkin xususiyat: `name` va `value` matn sifatida saqlanadi.
+      properties:
+        key: { type: [string, "null"], maxLength: 40 }
+        name: { type: string, maxLength: 40 }
+        value: { type: string, maxLength: 120 }
 
     SearchSuggestions:
       type: object
-      required: [categories, businesses]
+      required: [categories, businesses, items]
       properties:
         categories:
           type: array
@@ -2791,6 +2941,17 @@ components:
               slug: { type: string }
               name: { type: string }
               categoryName: { type: string }
+        items:
+          type: array
+          description: Nomi mos mahsulot/xizmatlar (e'lon qilingan bizneslardan, 5 tagacha)
+          items:
+            type: object
+            required: [slug, name, businessSlug, businessName]
+            properties:
+              slug: { type: string }
+              name: { type: string }
+              businessSlug: { type: string }
+              businessName: { type: string }
 
     StatsEvent:
       type: object

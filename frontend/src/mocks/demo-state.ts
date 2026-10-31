@@ -6,7 +6,6 @@ import type {
   BusinessRequestStatus,
   BusinessStatus,
   Consent,
-  Item,
   Me,
   PlatformSettings,
   StatsTotals,
@@ -14,7 +13,7 @@ import type {
 import type { GeoPoint } from "@/lib/geo";
 import { BUSINESSES, type DemoBusiness } from "./fixtures/businesses";
 import { CATEGORIES, CATEGORY_ATTRIBUTES, type DemoCategory } from "./fixtures/categories";
-import { itemsFor } from "./fixtures/items";
+import { itemsFor, type DemoItem } from "./fixtures/items";
 import {
   SEED_COMPLAINTS,
   SEED_REQUESTS,
@@ -138,7 +137,7 @@ type DemoState = {
   requests: StoredBusinessRequest[];
   categories: DemoCategoryRecord[];
   businesses: DemoBusinessRecord[];
-  items: Map<string, Item[]>;
+  items: Map<string, DemoItem[]>;
   photos: Map<string, AdminPhoto[]>;
   media: Map<string, { contentType: string; bytes: Uint8Array }>;
   admins: DemoAdmin[];
@@ -315,7 +314,7 @@ export const CSRF_COOKIE = "csrftoken";
 export const CSRF_HEADER = "x-csrftoken";
 
 /** Katalog: fixture bizneslar uchun shablondan bir marta yaratiladi, keyin admin tahrirlaydi */
-export function itemsOf(business: DemoBusinessRecord): Item[] {
+export function itemsOf(business: DemoBusinessRecord): DemoItem[] {
   let items = demoState.items.get(business.id);
   if (!items) {
     items = itemsFor({ ...business, location: business.location ?? { lat: 0, lng: 0 } });

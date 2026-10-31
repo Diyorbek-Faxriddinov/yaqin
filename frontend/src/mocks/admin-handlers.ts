@@ -1,5 +1,13 @@
 import { http, HttpResponse } from "msw";
-import type { AdminBusiness, AdminBusinessListItem, Item, WeeklySchedule } from "@/lib/api/types";
+import type {
+  AdminBusiness,
+  AdminBusinessListItem,
+  AdminItem,
+  AdminPhoto,
+  Item,
+  ItemAttributeInput,
+  WeeklySchedule,
+} from "@/lib/api/types";
 import { isValidPoint } from "@/lib/geo";
 import {
   API,
@@ -17,7 +25,9 @@ import {
   type Fields,
   type Lang,
 } from "./admin-common";
-import { categoryRef as publicCategoryRef } from "./db";
+import { publicItem, categoryRef as publicCategoryRef } from "./db";
+import type { DemoItem } from "./fixtures/items";
+import { definitionsOf, inputValues, parseAttributeInput } from "./item-attributes";
 import {
   ADMIN_SESSION_COOKIE,
   CSRF_COOKIE,
@@ -49,6 +59,7 @@ const DEMO_QR =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#fff"/><rect x="6" y="6" width="108" height="108" fill="none" stroke="#000" stroke-width="4" stroke-dasharray="8 6"/><text x="60" y="56" font-family="sans-serif" font-size="16" text-anchor="middle">DEMO</text><text x="60" y="76" font-family="sans-serif" font-size="11" text-anchor="middle">kod: 123456</text></svg>',
   );
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_ITEM_PHOTOS = 5;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function cookie(
@@ -159,6 +170,12 @@ function publishProblems(record: DemoBusinessRecord): Fields {
 
 const findRecord = findBusinessRecord;
 
+function findItem(businessId: string, itemId: string) {
+  const record = findRecord(businessId);
+  const item = record ? itemsOf(record).find((i) => i.id === itemId) : undefined;
+  return record && item ? { record, item } : null;
+}
+
 type BusinessCreate = { name: string; categorySlug: string; districtSlug: string };
 
 /** POST /admin/businesses va so'rovdan yaratish (convert) uchun umumiy tekshiruv */
@@ -213,9 +230,63 @@ export function createDraftBusiness(
 
 const ITEM_PRICE_TYPES = new Set(["fixed", "from", "range", "on_request"]);
 
+function knownAttributes(record: DemoBusinessRecord) {
+  return definitionsOf(findCategory(record.categorySlug)?.attributes ?? []);
+}
+
+function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: Lang): AdminItem {
+  return {
+    ...publicItem(item, record, lang),
+    photos: item.photos,
+    attributeValues: inputValues(item.attributes, knownAttributes(record)),
+  };
+}
+
+/** Yuklangan rasm (biznes va mahsulot uchun umumiy tekshiruv); xato bo'lsa — javob */
+async function readPhoto(request: Request): Promise<AdminPhoto | { response: Response }> {
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return {
+      response: error(400, "validation_error", "Fayl topilmadi", { file: ["Rasm tanlang"] }),
+    };
+  }
+  const file = form.get("file");
+  if (!(file instanceof Blob))
+    return {
+      response: error(400, "validation_error", "Fayl topilmadi", { file: ["Rasm tanlang"] }),
+    };
+  if (!PHOTO_TYPES.has(file.type)) {
+    return {
+      response: error(400, "validation_error", "Faqat JPEG, PNG yoki WebP", {
+        file: ["Fayl turi noto'g'ri"],
+      }),
+    };
+  }
+  if (file.size > MAX_PHOTO_BYTES)
+    return { response: error(413, "file_too_large", "Fayl 5 MB dan katta") };
+  const id = crypto.randomUUID();
+  demoState.media.set(id, {
+    contentType: file.type,
+    bytes: new Uint8Array(await file.arrayBuffer()),
+  });
+  const size = (key: string) => Math.max(1, Math.min(10000, Number(form.get(key)) || 1200));
+  const alt =
+    typeof form.get("alt") === "string" ? (form.get("alt") as string).slice(0, 200) : null;
+  return {
+    id,
+    url: `/api/v1/media/${id}`,
+    width: size("width"),
+    height: size("height"),
+    alt: alt || null,
+  };
+}
+
 function parseItem(
   body: Record<string, unknown> | null,
-): { item: Omit<Item, "id" | "slug" | "images"> } | { fields: Fields } {
+  record: DemoBusinessRecord,
+): { item: Omit<DemoItem, "id" | "slug" | "photos"> } | { fields: Fields } {
   const fields: Fields = {};
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const kind = body?.kind === "product" || body?.kind === "service" ? body.kind : null;
@@ -239,9 +310,13 @@ function parseItem(
     fields.durationMinutes = ["5–1440 daqiqa"];
   }
   const attributes = Array.isArray(body?.attributes)
-    ? (body.attributes as Array<{ name: string; value: string }>)
+    ? (body.attributes as ItemAttributeInput[])
     : [];
+  const parsed = parseAttributeInput(attributes, knownAttributes(record), slugify);
   if (attributes.length > 20) fields.attributes = ["Ko'pi bilan 20 ta"];
+  else if (parsed.problems.length > 0) fields.attributes = parsed.problems;
+  const description = typeof body?.description === "string" ? body.description.trim() : "";
+  if (description.length > 1000) fields.description = ["1000 belgigacha"];
   if (Object.keys(fields).length > 0 || !price || !kind) return { fields };
 
   return {
@@ -252,23 +327,14 @@ function parseItem(
         typeof body?.group === "string" && body.group.trim()
           ? body.group.trim().slice(0, 60)
           : null,
-      description:
-        typeof body?.description === "string" && body.description.trim()
-          ? body.description.trim().slice(0, 1000)
-          : null,
+      description: description || null,
       price: {
         type: price.type,
         min: price.type === "on_request" ? null : price.min,
         max: price.type === "range" ? price.max : null,
       },
       durationMinutes: kind === "service" && typeof duration === "number" ? duration : null,
-      attributes: attributes
-        .filter((a) => a.name?.trim() && a.value?.trim())
-        .map((a) => ({
-          key: slugify(a.name),
-          name: a.name.trim().slice(0, 40),
-          value: a.value.trim().slice(0, 120),
-        })),
+      attributes: parsed.stored,
       isAvailable: body?.isAvailable !== false,
     },
   };
@@ -609,6 +675,9 @@ export const adminHandlers = [
     }
     demoState.businesses = demoState.businesses.filter((b) => b.id !== record.id);
     for (const photo of photosOf(record.id)) demoState.media.delete(photo.id);
+    for (const item of itemsOf(record)) {
+      for (const photo of item.photos) demoState.media.delete(photo.id);
+    }
     demoState.photos.delete(record.id);
     demoState.items.delete(record.id);
     // So'rovdan yaratilgan bo'lsa — so'rov yana ishga qaytadi
@@ -638,43 +707,14 @@ export const adminHandlers = [
     if ("response" in auth) return auth.response;
     const record = findRecord(String(params.businessId));
     if (!record) return error(404, "not_found", "Topilmadi");
-    let form: FormData;
-    try {
-      form = await request.formData();
-    } catch {
-      return error(400, "validation_error", "Fayl topilmadi", { file: ["Rasm tanlang"] });
-    }
-    const file = form.get("file");
-    if (!(file instanceof Blob))
-      return error(400, "validation_error", "Fayl topilmadi", { file: ["Rasm tanlang"] });
-    if (!PHOTO_TYPES.has(file.type)) {
-      return error(400, "validation_error", "Faqat JPEG, PNG yoki WebP", {
-        file: ["Fayl turi noto'g'ri"],
-      });
-    }
-    if (file.size > MAX_PHOTO_BYTES) return error(413, "file_too_large", "Fayl 5 MB dan katta");
     const photos = photosOf(record.id);
     if (photos.length >= 12)
       return error(400, "validation_error", "Ko'pi bilan 12 ta rasm", { file: ["Limit"] });
-
-    const id = crypto.randomUUID();
-    demoState.media.set(id, {
-      contentType: file.type,
-      bytes: new Uint8Array(await file.arrayBuffer()),
-    });
-    const size = (key: string) => Math.max(1, Math.min(10000, Number(form.get(key)) || 1200));
-    const alt =
-      typeof form.get("alt") === "string" ? (form.get("alt") as string).slice(0, 200) : null;
-    const photo = {
-      id,
-      url: `/api/v1/media/${id}`,
-      width: size("width"),
-      height: size("height"),
-      alt: alt || null,
-    };
+    const photo = await readPhoto(request);
+    if ("response" in photo) return photo.response;
     demoState.photos.set(record.id, [...photos, photo]);
     record.updatedAt = new Date().toISOString();
-    audit(auth.admin, "photo.upload", "photo", id, `Rasm qo'shildi: ${record.name}`);
+    audit(auth.admin, "photo.upload", "photo", photo.id, `Rasm qo'shildi: ${record.name}`);
     const headers = revalidate(new Headers(), "businesses", `business:${record.slug}`);
     return HttpResponse.json(photo, { status: 201, headers });
   }),
@@ -736,7 +776,9 @@ export const adminHandlers = [
     const auth = authorize(request, cookies, "business.view");
     if ("response" in auth) return auth.response;
     const record = findRecord(String(params.businessId));
-    return record ? HttpResponse.json(itemsOf(record)) : error(404, "not_found", "Topilmadi");
+    if (!record) return error(404, "not_found", "Topilmadi");
+    const lang = langOf(request);
+    return HttpResponse.json(itemsOf(record).map((item) => toAdminItem(item, record, lang)));
   }),
 
   http.post(`${API}/admin/businesses/:businessId/items`, async ({ request, cookies, params }) => {
@@ -744,17 +786,17 @@ export const adminHandlers = [
     if ("response" in auth) return auth.response;
     const record = findRecord(String(params.businessId));
     if (!record) return error(404, "not_found", "Topilmadi");
-    const parsed = parseItem(await readJson(request));
+    const parsed = parseItem(await readJson(request), record);
     if ("fields" in parsed)
       return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", parsed.fields);
     const items = itemsOf(record);
     let slug = slugify(parsed.item.name);
     for (let n = 2; items.some((i) => i.slug === slug); n++)
       slug = `${slugify(parsed.item.name)}-${n}`;
-    const item: Item = { ...parsed.item, id: crypto.randomUUID(), slug, images: [] };
+    const item: DemoItem = { ...parsed.item, id: crypto.randomUUID(), slug, photos: [] };
     demoState.items.set(record.id, [...items, item]);
     audit(auth.admin, "item.create", "item", item.id, `${record.name}: ${item.name}`);
-    return HttpResponse.json(item, {
+    return HttpResponse.json(toAdminItem(item, record, langOf(request)), {
       status: 201,
       headers: revalidate(new Headers(), "businesses", `business:${record.slug}`),
     });
@@ -769,16 +811,16 @@ export const adminHandlers = [
       const items = record ? itemsOf(record) : [];
       const existing = items.find((i) => i.id === params.itemId);
       if (!record || !existing) return error(404, "not_found", "Topilmadi");
-      const parsed = parseItem(await readJson(request));
+      const parsed = parseItem(await readJson(request), record);
       if ("fields" in parsed)
         return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", parsed.fields);
-      const item: Item = { ...existing, ...parsed.item };
+      const item: DemoItem = { ...existing, ...parsed.item };
       demoState.items.set(
         record.id,
         items.map((i) => (i.id === item.id ? item : i)),
       );
       audit(auth.admin, "item.update", "item", item.id, `${record.name}: ${item.name}`);
-      return HttpResponse.json(item, {
+      return HttpResponse.json(toAdminItem(item, record, langOf(request)), {
         headers: revalidate(new Headers(), "businesses", `business:${record.slug}`),
       });
     },
@@ -791,8 +833,9 @@ export const adminHandlers = [
       if ("response" in auth) return auth.response;
       const record = findRecord(String(params.businessId));
       const items = record ? itemsOf(record) : [];
-      if (!record || !items.some((i) => i.id === params.itemId))
-        return error(404, "not_found", "Topilmadi");
+      const removed = items.find((i) => i.id === params.itemId);
+      if (!record || !removed) return error(404, "not_found", "Topilmadi");
+      for (const photo of removed.photos) demoState.media.delete(photo.id);
       demoState.items.set(
         record.id,
         items.filter((i) => i.id !== params.itemId),
@@ -803,6 +846,93 @@ export const adminHandlers = [
         "item",
         String(params.itemId),
         `${record.name}: mahsulot o'chirildi`,
+      );
+      return new HttpResponse(null, {
+        status: 204,
+        headers: revalidate(new Headers(), "businesses", `business:${record.slug}`),
+      });
+    },
+  ),
+
+  http.post(
+    `${API}/admin/businesses/:businessId/items/:itemId/photos`,
+    async ({ request, cookies, params }) => {
+      const auth = authorize(request, cookies, "business.edit");
+      if ("response" in auth) return auth.response;
+      const found = findItem(String(params.businessId), String(params.itemId));
+      if (!found) return error(404, "not_found", "Topilmadi");
+      const { record, item } = found;
+      if (item.photos.length >= MAX_ITEM_PHOTOS) {
+        return error(400, "validation_error", "Maʼlumotlar notoʻgʻri", {
+          file: [`Koʻpi bilan ${MAX_ITEM_PHOTOS} ta rasm`],
+        });
+      }
+      const photo = await readPhoto(request);
+      if ("response" in photo) return photo.response;
+      item.photos = [...item.photos, photo];
+      record.updatedAt = new Date().toISOString();
+      audit(
+        auth.admin,
+        "item.photo.upload",
+        "photo",
+        photo.id,
+        `Mahsulot rasmi qoʻshildi: ${record.name} — ${item.name}`,
+      );
+      const headers = revalidate(new Headers(), "businesses", `business:${record.slug}`);
+      return HttpResponse.json(photo, { status: 201, headers });
+    },
+  ),
+
+  http.put(
+    `${API}/admin/businesses/:businessId/items/:itemId/photos/order`,
+    async ({ request, cookies, params }) => {
+      const auth = authorize(request, cookies, "business.edit");
+      if ("response" in auth) return auth.response;
+      const found = findItem(String(params.businessId), String(params.itemId));
+      if (!found) return error(404, "not_found", "Topilmadi");
+      const { record, item } = found;
+      const body = await readJson(request);
+      const ids = Array.isArray(body?.photoIds) ? (body.photoIds as string[]) : [];
+      if (
+        ids.length !== item.photos.length ||
+        new Set(ids).size !== ids.length ||
+        !item.photos.every((p) => ids.includes(p.id))
+      ) {
+        return error(400, "validation_error", "Rasmlar roʻyxati mos emas");
+      }
+      item.photos = ids.map((id) => item.photos.find((p) => p.id === id)!);
+      audit(
+        auth.admin,
+        "item.photo.reorder",
+        "item",
+        item.id,
+        `Mahsulot rasmlari tartibi oʻzgardi: ${item.name}`,
+      );
+      return new HttpResponse(null, {
+        status: 204,
+        headers: revalidate(new Headers(), "businesses", `business:${record.slug}`),
+      });
+    },
+  ),
+
+  http.delete(
+    `${API}/admin/businesses/:businessId/items/:itemId/photos/:photoId`,
+    ({ request, cookies, params }) => {
+      const auth = authorize(request, cookies, "business.edit");
+      if ("response" in auth) return auth.response;
+      const found = findItem(String(params.businessId), String(params.itemId));
+      const photoId = String(params.photoId);
+      if (!found || !found.item.photos.some((p) => p.id === photoId))
+        return error(404, "not_found", "Topilmadi");
+      const { record, item } = found;
+      item.photos = item.photos.filter((p) => p.id !== photoId);
+      demoState.media.delete(photoId);
+      audit(
+        auth.admin,
+        "item.photo.delete",
+        "photo",
+        photoId,
+        `Mahsulot rasmi oʻchirildi: ${record.name} — ${item.name}`,
       );
       return new HttpResponse(null, {
         status: 204,

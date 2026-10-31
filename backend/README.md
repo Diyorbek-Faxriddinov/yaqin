@@ -85,7 +85,7 @@ apps/
   core/        umumiy: health, xato formati, sahifalash (api.py), platforma sozlamalari, matn normalizatsiyasi, ish vaqti
   catalog/     tumanlar, kategoriyalar va atributlar (seed.py — boshlangʻich maʼlumot)
   accounts/    mijozlar: Telegram/Google kirishi, sessiyalar, CSRF, /me; bloklash (admin)
-  businesses/  bizneslar, rasmlar, katalog, soʻrovlar; tekshiruv — admin_input.py, rasmlarni qayta kodlash — photos.py
+  businesses/  bizneslar, rasmlar, katalog, soʻrovlar; tekshiruv — admin_input.py, rasmlarni qayta kodlash — photos.py, xususiyatlar — attributes.py
   community/   sharhlar, shikoyatlar, sevimlilar, moderatsiya (reyting — services.py)
   stats/       kunlik statistika hodisalari
   staff/       administratorlar: parol + TOTP kirishi, rollar va ruxsatlar (RBAC), admin sessiyalari, audit jurnali
@@ -118,7 +118,8 @@ scripts/
 - Kirish talab qiladigan view: `authentication_classes = [CustomerSessionAuthentication]`, `permission_classes = [IsCustomer]`, joriy foydalanuvchi — `customer(request)`. O'zgartiruvchi so'rovlarda CSRF (`X-CSRFToken` = cookie = sessiya) avtomatik tekshiriladi.
 - Admin view: `AdminView` dan meros (`apps/staff/authentication.py`) va `admin_permission = Permission.BUSINESS_EDIT` (yoki `ROOT`; usul boʻyicha — `admin_permissions = {"POST": ...}`); joriy admin — `current_admin(request)`. Roʻyxatlar — `page_payload(queryset, request, presenter)`, forma xatolari — `invalid({"maydon": ["xabar"]})` (`apps/core/api.py`).
 - Har bir admin amali audit jurnaliga yoziladi: `apps.staff.audit.audit(admin, action, target_type, target_id, summary)`. Jurnal faqat qoʻshiladi (DB trigger); `summary` ga parol, token va shaxsiy maʼlumot yozilmaydi.
-- Yuklangan rasm faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da, manzili saytga nisbatan — `/api/v1/media/...` (frontend `next/image` shu yoʻlni kutadi); ishlab chiqishda Django beradi (faqat `DEBUG`), productionda — veb-server (5-bosqich).
+- Yuklangan rasm (biznes va mahsulot) faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da, manzili saytga nisbatan — `/api/v1/media/...` (frontend `next/image` shu yoʻlni kutadi); ishlab chiqishda Django beradi (faqat `DEBUG`), productionda — veb-server (5-bosqich).
+- Mahsulot xususiyatlari — `apps/businesses/attributes.py` (ADR-0014): kategoriya xususiyati xom qiymat (`raw`) va saqlangan paytdagi koʻrinish bilan saqlanadi; frontend mock'idagi `item-attributes.ts` bilan bir xil. Katalog oʻzgarsa — `business.refresh_search_text()` (mahsulot nomlari qidiruvda).
 - Yangi ruxsat qoʻshilsa — avval kontraktdagi `AdminPermission` ga, keyin `apps/staff/permissions.py` ga (test ikkalasini solishtiradi).
 - Sessiya va boshqa maxfiy tokenlar bazada faqat SHA-256 xeshi ko'rinishida; admin 2FA kalitlari — shifrlangan.
 - Ommaviy maʼlumotni o'zgartiradigan amal frontend keshini yangilaydi: `apps.core.revalidate.revalidate(*teglar)` (tranzaksiyadan keyin).

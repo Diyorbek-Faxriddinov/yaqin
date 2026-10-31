@@ -12,6 +12,7 @@ from typing import Any
 from django.contrib.gis.geos import Point
 from django.utils.dateparse import parse_datetime
 
+from apps.businesses import attributes as item_attributes
 from apps.businesses.models import Business, Item
 from apps.businesses.slugs import slugify
 from apps.catalog.models import Category, District
@@ -198,7 +199,10 @@ def _amount(value: Any) -> int | None:
 
 
 def apply_item(item: Item, body: dict[str, Any]) -> None:
-    """ItemInput (POST va PUT — to'liq almashtirish) → mahsulot maydonlari."""
+    """ItemInput (POST va PUT — to'liq almashtirish) → mahsulot maydonlari.
+
+    Xususiyatlar biznes kategoriyasining ta'riflari bo'yicha tekshiriladi (attributes.py).
+    """
     fields: Fields = {}
     name = text(body.get("name"))
     raw_price = body.get("price")
@@ -209,6 +213,7 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
     low, high = _amount(price.get("min")), _amount(price.get("max"))
     duration = body.get("durationMinutes")
     attributes = body.get("attributes", [])
+    stored: list[dict[str, Any]] = []
 
     if not 2 <= len(name) <= 120:
         fields["name"] = ["2–120 belgi"]
@@ -232,24 +237,23 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
         for a in attributes
     ):
         fields["attributes"] = ["Nom — 40, qiymat — 120 belgigacha"]
+    else:
+        known = item_attributes.definitions(item.business.category.attributes)
+        stored, problems = item_attributes.parse_input(attributes, known, slugify)
+        if problems:
+            fields["attributes"] = problems
+    if len(text(body.get("description"))) > 1000:
+        fields["description"] = ["1000 belgigacha"]
     if fields:
         raise invalid(fields)
 
     item.kind, item.name = kind, name
     item.group = text(body.get("group"))[:60]
-    item.description = text(body.get("description"))[:1000]
+    item.description = text(body.get("description"))
     item.price_type = price_type
     item.price_min = None if price_type == Item.PriceType.ON_REQUEST else low
     item.price_max = high if price_type == Item.PriceType.RANGE else None
     # Davomiylik faqat xizmatlarda (DB cheklovi)
     item.duration_minutes = duration if kind == Item.Kind.SERVICE else None
-    item.attributes = [
-        {
-            "key": slugify(text(a["name"]), fallback="xususiyat"),
-            "name": text(a["name"]),
-            "value": text(a["value"]),
-        }
-        for a in attributes
-        if text(a.get("name")) and text(a.get("value"))
-    ]
+    item.attributes = stored
     item.is_available = body.get("isAvailable") is not False

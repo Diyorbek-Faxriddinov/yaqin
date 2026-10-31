@@ -3,14 +3,16 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Clock } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import { MediaGallery } from "@/components/common/media-gallery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BusinessOpenStatus } from "@/features/business/components/business-open-status";
 import { ContactActions } from "@/features/business/components/contact-actions";
+import { ItemJsonLd } from "@/features/business/components/item-json-ld";
 import { ItemPriceText } from "@/features/business/components/item-list";
 import { getBusiness, getBusinessItem, getBusinessItems } from "@/features/business/queries";
 import { CategoryIcon } from "@/features/category/category-icon";
-import { Link } from "@/i18n/navigation";
+import { getPathname, Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { formatDuration } from "@/lib/format/duration";
 import { pageMetadata } from "@/lib/seo";
@@ -44,6 +46,7 @@ export async function generateMetadata({
       business: business.name,
       district: business.district.name,
     }),
+    image: item.images[0] ?? business.coverImage ?? undefined,
   });
 }
 
@@ -58,9 +61,12 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
 
   const t = await getTranslations("BusinessPage");
   const tNav = await getTranslations("Nav");
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const pageUrl = `${siteUrl}${getPathname({ href: `/biznes/${slug}/${itemSlug}`, locale })}`;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <ItemJsonLd item={item} business={business} url={pageUrl} siteUrl={siteUrl} />
       <Breadcrumbs
         items={[
           { label: tNav("home"), href: "/" },
@@ -70,9 +76,13 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
       />
 
       <article className="space-y-6">
-        <div className="flex h-40 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground/60">
-          <CategoryIcon iconKey={business.category.iconKey} className="size-12" />
-        </div>
+        <MediaGallery
+          images={item.images}
+          name={item.name}
+          priority
+          className={item.images.length > 0 ? "h-72 sm:h-96" : "h-40"}
+          placeholder={<CategoryIcon iconKey={business.category.iconKey} className="size-12" />}
+        />
 
         <header className="space-y-3">
           <Badge variant="secondary">{t(`item.${item.kind}`)}</Badge>
@@ -80,6 +90,8 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
           <ItemPriceText price={item.price} className="text-xl" />
           {!item.isAvailable && <p className="text-sm text-warning">{t("unavailable")}</p>}
         </header>
+
+        {item.description && <p className="whitespace-pre-line">{item.description}</p>}
 
         {(item.durationMinutes != null || item.attributes.length > 0) && (
           <section aria-labelledby="item-details" className="space-y-3">
@@ -105,8 +117,6 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
             </dl>
           </section>
         )}
-
-        {item.description && <p className="whitespace-pre-line">{item.description}</p>}
 
         <section aria-labelledby="item-business" className="space-y-4 rounded-2xl border p-4">
           <div>

@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import type {
   AdminBusiness,
+  AdminItem,
   AdminLoginChallenge,
   AdminMe,
   AdminPhoto,
@@ -389,5 +390,115 @@ describe("rasmlar va katalog", () => {
 
     expect((await call(`${path}/${created.id}`, session, { method: "DELETE" })).status).toBe(204);
     expect(await (await call(path, session)).json()).toEqual([]);
+  });
+});
+
+describe("do'kon katalogi (ADR-0014)", () => {
+  async function createShop(session: Session) {
+    const response = await call("/admin/businesses", session, {
+      method: "POST",
+      body: JSON.stringify({
+        name: `Doʻkon ${crypto.randomUUID().slice(0, 6)}`,
+        categorySlug: "kiyim-kechak",
+        districtSlug: "chilonzor",
+      }),
+    });
+    return (await response.json()) as AdminBusiness;
+  }
+  const product = {
+    kind: "product",
+    name: "Futbolka",
+    group: "Erkaklar",
+    description: "100% paxta",
+    price: { type: "fixed", min: { amount: 12_000_000, currency: "UZS" }, max: null },
+    durationMinutes: null,
+    attributes: [] as unknown[],
+    isAvailable: true,
+  };
+
+  it("kategoriya xususiyatlari: tekshiruv, tilga moslash, tahrirlash qiymatlari", async () => {
+    const session = await adminLogin();
+    const shop = await createShop(session);
+    const path = `/admin/businesses/${shop.id}/items`;
+    const save = (attributes: unknown[], extra: object = {}) =>
+      call(path, session, {
+        method: "POST",
+        body: JSON.stringify({ ...product, attributes, ...extra }),
+      });
+
+    const bad = await save([{ key: "size", name: "", value: "m,huge" }]);
+    expect(((await bad.json()) as ApiError).fields?.attributes).toEqual([
+      "Oʻlcham: qiymat notoʻgʻri",
+    ]);
+    const unknown = await save([{ key: "rangi", name: "", value: "qora" }]);
+    expect(((await unknown.json()) as ApiError).fields?.attributes).toEqual([
+      "Kategoriyada bunday xususiyat yoʻq",
+    ]);
+    const long = await save([], { description: "a".repeat(1001) });
+    expect(((await long.json()) as ApiError).fields?.description).toEqual(["1000 belgigacha"]);
+
+    const created = (await (
+      await save([
+        { key: "size", name: "", value: "l,s" },
+        { key: "material", name: "", value: "Paxta" },
+        { key: null, name: "Rang", value: "Qora" },
+      ])
+    ).json()) as AdminItem;
+    expect(created.description).toBe("100% paxta");
+    expect(created.attributes).toEqual([
+      { key: "size", name: "Oʻlcham", value: "S, L" },
+      { key: "material", name: "Mato", value: "Paxta" },
+      { key: "rang", name: "Rang", value: "Qora" },
+    ]);
+    expect(created.attributeValues).toEqual([
+      { key: "size", name: "Oʻlcham", value: "s,l" },
+      { key: "material", name: "Mato", value: "Paxta" },
+      { key: null, name: "Rang", value: "Qora" },
+    ]);
+    const ru = (await (await call(`${path}?lang=ru`, session)).json()) as AdminItem[];
+    expect(ru[0]?.attributes.slice(0, 2)).toEqual([
+      { key: "size", name: "Размер", value: "S, L" },
+      { key: "material", name: "Материал", value: "Paxta" },
+    ]);
+  });
+
+  it("mahsulot rasmlari: yuklash, 5 ta chegara, tartib, o'chirish", async () => {
+    const session = await adminLogin();
+    const shop = await createShop(session);
+    const created = (await (
+      await call(`/admin/businesses/${shop.id}/items`, session, {
+        method: "POST",
+        body: JSON.stringify(product),
+      })
+    ).json()) as AdminItem;
+    const path = `/admin/businesses/${shop.id}/items/${created.id}/photos`;
+    const upload = () => {
+      const form = new FormData();
+      form.set("file", new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: "image/jpeg" }), "p");
+      return call(path, session, { method: "POST", body: form });
+    };
+    const ids: string[] = [];
+    for (let i = 0; i < 5; i++) ids.push(((await (await upload()).json()) as AdminPhoto).id);
+    const limit = await upload();
+    expect(limit.status).toBe(400);
+    expect(((await limit.json()) as ApiError).fields?.file).toEqual(["Koʻpi bilan 5 ta rasm"]);
+
+    const order = [ids[4]!, ...ids.slice(0, 4)];
+    const reordered = await call(`${path}/order`, session, {
+      method: "PUT",
+      body: JSON.stringify({ photoIds: order }),
+    });
+    expect(reordered.status).toBe(204);
+    const listed = (await (
+      await call(`/admin/businesses/${shop.id}/items`, session)
+    ).json()) as AdminItem[];
+    expect(listed[0]?.photos.map((p) => p.id)).toEqual(order);
+    expect(listed[0]?.images[0]?.url).toBe(`/api/v1/media/${ids[4]}`);
+
+    expect((await call(`${path}/${ids[0]}`, session, { method: "DELETE" })).status).toBe(204);
+    expect(demoState.media.has(ids[0]!)).toBe(false);
+    // Mahsulot o'chirilsa — rasmlari ham
+    await call(`/admin/businesses/${shop.id}/items/${created.id}`, session, { method: "DELETE" });
+    expect(ids.some((id) => demoState.media.has(id))).toBe(false);
   });
 });

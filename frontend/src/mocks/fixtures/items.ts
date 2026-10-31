@@ -1,12 +1,23 @@
-import type { Item } from "@/lib/api/types";
+import type { AdminPhoto, Item } from "@/lib/api/types";
+import { definitionsOf, storedTyped, type StoredAttribute } from "../item-attributes";
 import type { DemoBusiness } from "./businesses";
+import { CATEGORY_ATTRIBUTES } from "./categories";
 import { demoId, seededRandom } from "./ids";
 
 // ⚠ Demo mahsulot va xizmatlar. Narxlar taxminiy, haqiqiy emas.
 
+/** Mock'dagi mahsulot yozuvi: xususiyatlar saqlash ko'rinishida (item-attributes.ts), rasmlar ID bilan */
+export type DemoItem = Omit<Item, "attributes" | "images"> & {
+  attributes: StoredAttribute[];
+  photos: AdminPhoto[];
+};
+
 type PriceType = Item["price"]["type"];
 
-/** [nomi, bo'lim, turi, narx turi, min (so'm), max (so'm), davomiylik (daq), atributlar] */
+/**
+ * [nomi, bo'lim, turi, narx turi, min (so'm), max (so'm), davomiylik (daq), atributlar].
+ * Atribut: [kategoriya xususiyati kaliti, xom qiymat] yoki [null, nom, qiymat] — erkin.
+ */
 type Template = [
   name: string,
   group: string | null,
@@ -15,7 +26,7 @@ type Template = [
   min: number | null,
   max: number | null,
   duration: number | null,
-  attributes?: Array<[key: string, name: string, value: string]>,
+  attributes?: Array<[key: string, raw: string] | [key: null, name: string, value: string]>,
 ];
 
 const s = (
@@ -227,21 +238,26 @@ const TEMPLATES: Record<string, Template[]> = {
   ],
   "kiyim-kechak": [
     p("Erkaklar koʻylagi", "Erkaklar", "fixed", 180000, null, [
-      ["size", "Oʻlcham", "S, M, L, XL, XXL"],
-      ["color", "Rang", "Oq, koʻk"],
+      ["size", "s,m,l,xl,xxl"],
+      [null, "Rang", "Oq, koʻk"],
+      ["material", "Paxta"],
     ]),
     p("Ayollar koʻylagi", "Ayollar", "fixed", 250000, null, [
-      ["size", "Oʻlcham", "S, M, L"],
-      ["color", "Rang", "Qora, bordo"],
+      ["size", "s,m,l"],
+      [null, "Rang", "Qora, bordo"],
     ]),
-    p("Jinsi shim", "Erkaklar", "fixed", 300000, null, [["size", "Oʻlcham", "30–38"]]),
+    // Shim o'lchami kategoriya variantlarida yo'q (XS–XXL) — erkin xususiyat
+    p("Jinsi shim", "Erkaklar", "fixed", 300000, null, [[null, "Bel oʻlchami", "30–38"]]),
   ],
   poyabzal: [
-    p("Erkaklar tuflisi", "Erkaklar", "fixed", 450000, null, [["size", "Oʻlcham", "39–45"]]),
-    p("Krossovka", "Sport", "fixed", 380000, null, [["size", "Oʻlcham", "36–45"]]),
+    p("Erkaklar tuflisi", "Erkaklar", "fixed", 450000, null, [[null, "Oʻlcham", "39–45"]]),
+    p("Krossovka", "Sport", "fixed", 380000, null, [[null, "Oʻlcham", "36–45"]]),
   ],
   elektronika: [
-    p("Smartfon 128 GB", "Telefonlar", "from", 2500000),
+    p("Smartfon 128 GB", "Telefonlar", "from", 2500000, null, [
+      ["condition", "new"],
+      ["warranty", "12"],
+    ]),
     p("Simsiz quloqchin", "Aksessuarlar", "fixed", 250000),
     p("Tez quvvatlovchi qurilma", "Aksessuarlar", "fixed", 80000),
   ],
@@ -284,10 +300,11 @@ const toMoney = (som: number | null) =>
   som === null ? null : { amount: som * 100, currency: "UZS" as const };
 
 /** Biznes uchun mahsulot/xizmatlar: kategoriya shabloni + biznesga xos narx farqi (±20%) */
-export function itemsFor(business: DemoBusiness): Item[] {
+export function itemsFor(business: DemoBusiness): DemoItem[] {
   const random = seededRandom(`items:${business.slug}`);
   const factor = 0.85 + random() * 0.4;
   const templates = TEMPLATES[business.categorySlug] ?? FALLBACK;
+  const known = definitionsOf(CATEGORY_ATTRIBUTES[business.categorySlug] ?? []);
 
   return templates.map(([name, group, kind, priceType, min, max, duration, attributes]) => {
     const slug = slugify(name);
@@ -304,12 +321,15 @@ export function itemsFor(business: DemoBusiness): Item[] {
         max: toMoney(max === null ? null : roundSom(max * factor)),
       },
       durationMinutes: duration,
-      attributes: (attributes ?? []).map(([key, attrName, value]) => ({
-        key,
-        name: attrName,
-        value,
-      })),
-      images: [],
+      attributes: (attributes ?? []).map((attribute): StoredAttribute => {
+        if (attribute[0] === null) {
+          return { key: slugify(attribute[1]), name: attribute[1], value: attribute[2] };
+        }
+        const definition = known.get(attribute[0]);
+        if (!definition) throw new Error(`Kategoriyada xususiyat yo'q: ${attribute[0]}`);
+        return storedTyped(definition, attribute[1]);
+      }),
+      photos: [],
       isAvailable: random() > 0.1,
     };
   });

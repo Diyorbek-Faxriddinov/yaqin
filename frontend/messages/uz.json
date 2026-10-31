@@ -51,6 +51,7 @@
     "noReviews": "Hali sharh yoʻq",
     "rating": "Reyting: 5 dan {value}",
     "distance": "Masofa: {distance}",
+    "matched": "Topildi: {items}",
     "statusDetail": {
       "until": "{time} gacha",
       "allDay": "kecha-kunduz",
@@ -159,6 +160,8 @@
   "BusinessPage": {
     "call": "Qoʻngʻiroq qilish",
     "telegram": "Telegram",
+    "instagram": "Instagram",
+    "website": "Veb-sayt",
     "directions": "Yoʻl koʻrsatish",
     "directionsYandex": "Yandex Xaritada",
     "directionsGoogle": "Google Xaritada",
@@ -166,13 +169,16 @@
     "linkCopied": "Havola nusxalandi",
     "contacts": "Aloqa",
     "sections": {
-      "prices": "Narxlar",
+      "catalog": "Mahsulot va xizmatlar",
+      "products": "Mahsulotlar",
+      "services": "Xizmatlar",
       "hours": "Ish vaqti",
       "location": "Manzil",
+      "contacts": "Aloqa",
       "reviews": "Sharhlar",
       "about": "Biznes haqida"
     },
-    "noItems": "Narxlar hali qoʻshilmagan.",
+    "noItems": "Mahsulot va xizmatlar hali qoʻshilmagan.",
     "otherGroup": "Boshqa",
     "unavailable": "Hozir mavjud emas",
     "price": {
@@ -202,6 +208,14 @@
       "offeredBy": "Taklif qiluvchi",
       "metaDescription": "{item} — {business}, {district}. Narxi va tafsilotlari."
     }
+  },
+  "Gallery": {
+    "region": "{name} — rasmlar",
+    "open": "Rasmni kattalashtirish, {index}/{total}",
+    "previous": "Oldingi rasm",
+    "next": "Keyingi rasm",
+    "thumbnail": "{index}-rasmni koʻrsatish",
+    "counter": "{index} / {total}"
   },
   "MapPage": {
     "title": "Xarita",
@@ -467,7 +481,7 @@
       "photos": "Rasmlar",
       "hours": "Ish vaqti",
       "contacts": "Aloqa va rozilik",
-      "catalog": "Narxlar",
+      "catalog": "Katalog",
       "status": "Holat",
       "stats": "Statistika"
     },
@@ -499,6 +513,7 @@
       "add": "Rasm qoʻshish",
       "addHint": "Kamera yoki galereya. Rasmlar yuklashdan oldin kichraytiriladi, GPS maʼlumotlari olib tashlanadi.",
       "cover": "Muqova",
+      "main": "Asosiy",
       "moveUp": "Oldinga",
       "moveDown": "Orqaga",
       "delete": "Oʻchirish",
@@ -549,7 +564,7 @@
     },
     "catalog": {
       "add": "Qoʻshish",
-      "empty": "Hali narxlar yoʻq",
+      "empty": "Hali mahsulot yoki xizmat yoʻq",
       "edit": "Tahrirlash",
       "delete": "Oʻchirish",
       "deleteConfirm": "{name} — oʻchirilsinmi?",
@@ -559,8 +574,10 @@
       "product": "Mahsulot",
       "service": "Xizmat",
       "name": "Nomi",
+      "description": "Tavsif (ixtiyoriy)",
       "group": "Boʻlim (ixtiyoriy)",
       "groupPlaceholder": "Masalan: Soch turmagi",
+      "groupHint": "Biznes sahifasida mahsulotlarni guruhlaydi. Mavjud boʻlimni tanlang yoki yangisini yozing.",
       "priceType": "Narx turi",
       "priceTypes": {
         "fixed": "Aniq narx",
@@ -572,14 +589,19 @@
       "max": "Gacha, soʻm",
       "duration": "Davomiyligi, daqiqa",
       "available": "Hozir mavjud",
+      "photos": "Rasmlar",
+      "photosHint": "Koʻpi bilan 5 ta; birinchisi — asosiy.",
+      "photosLimit": "Koʻpi bilan 5 ta rasm",
+      "photosAfterSave": "Rasmlar mahsulot saqlangach yuklanadi.",
       "unavailable": "Mavjud emas",
       "attributes": "Xususiyatlar (ixtiyoriy)",
+      "otherAttributes": "Boshqa xususiyatlar",
+      "notSelected": "Tanlanmagan",
       "attrName": "Nomi",
       "attrValue": "Qiymati",
       "addAttribute": "Xususiyat qoʻshish",
       "removeAttribute": "Olib tashlash",
       "save": "Saqlash",
-      "suggested": "Tavsiya etilgan xususiyatlar",
       "yes": "Ha",
       "no": "Yoʻq"
     },

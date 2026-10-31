@@ -105,7 +105,7 @@ test.describe("Biznes qo'shish ustasi", () => {
     await page.getByRole("button", { name: "Keyingi" }).click();
     await expect(page.getByText("6/7-qadam")).toBeVisible();
 
-    // 6. Narxlar
+    // 6. Katalog (notarius — xizmat turi o'zi tanlangan)
     await page.getByRole("button", { name: "Qoʻshish" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Nomi", { exact: true }).fill("Ishonchnoma rasmiylashtirish");
@@ -126,12 +126,101 @@ test.describe("Biznes qo'shish ustasi", () => {
     const slug = `e2e-notarial-idora-${suffix}`;
     await page.goto(`/biznes/${slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
-    await expect(page.getByRole("region", { name: "Narxlar" })).toContainText(
+    await expect(page.getByRole("region", { name: "Xizmatlar" })).toContainText(
       "Ishonchnoma rasmiylashtirish",
     );
     await expect(page.getByRole("link", { name: /Qoʻngʻiroq qilish/ })).toHaveAttribute(
       "href",
       "tel:+998901234567",
+    );
+  });
+
+  test("do'kon: mahsulot rasmi, tavsifi va xususiyatlari → ommaviy sahifada", async ({
+    page,
+  }, testInfo) => {
+    const suffix = `${testInfo.project.name}${Date.now() % 100000}`;
+    const name = `E2E kiyim doʻkoni ${suffix}`;
+    await adminLogin(page, "root", "/admin/bizneslar/yangi");
+    await page.getByLabel("Biznes nomi").fill(name);
+    await selectOption(page, "Kategoriya", "Kiyim-kechak");
+    await selectOption(page, "Tuman", "Bektemir");
+    await page.getByRole("button", { name: "Yaratish va davom etish" }).click();
+    await page.getByRole("button", { name: "Hozirgi joylashuvim" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "41.28010" })).toBeVisible();
+    await page.getByLabel("Manzil").fill("Bektemir, Husayniy koʻchasi, 14-uy");
+    await page.getByRole("button", { name: "Keyingi" }).click();
+    await expect(page.getByText("3/7-qadam")).toBeVisible();
+    await page.getByRole("button", { name: "Keyingi" }).click();
+    await expect(page.getByText("4/7-qadam")).toBeVisible();
+    await page.getByRole("button", { name: "Keyingi" }).click();
+    await expect(page.getByText("5/7-qadam")).toBeVisible();
+    await page.getByPlaceholder("90 123 45 67").fill("90 765 43 21");
+    await page.getByLabel("Kim rozilik berdi").fill("Egasi Dilnoza opa");
+    await page.getByRole("button", { name: "Keyingi" }).click();
+    await expect(page.getByText("6/7-qadam")).toBeVisible();
+
+    // Do'kon kategoriyasi — "Mahsulot" turi o'zi tanlangan; kategoriya xususiyatlari turiga mos
+    await page.getByRole("button", { name: "Qoʻshish" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("radio", { name: "Mahsulot" })).toBeChecked();
+    await expect(dialog.getByLabel("Davomiyligi, daqiqa")).toHaveCount(0);
+    await dialog.getByLabel("Nomi", { exact: true }).fill("Yozgi futbolka");
+    await dialog.getByLabel("Tavsif (ixtiyoriy)").fill("100% paxta, Oʻzbekistonda tikilgan.");
+    await dialog.getByLabel("Boʻlim (ixtiyoriy)").fill("Erkaklar");
+    await dialog.getByLabel("Narx, soʻm").fill("120000");
+    const sizes = dialog.getByRole("group", { name: "Oʻlcham" });
+    await sizes.getByRole("button", { name: "M", exact: true }).click();
+    await sizes.getByRole("button", { name: "S", exact: true }).click();
+    await expect(sizes.getByRole("button", { name: "S", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await dialog.getByLabel("Mato").fill("Paxta");
+    await dialog.getByRole("button", { name: "Xususiyat qoʻshish" }).click();
+    await dialog.getByRole("textbox", { name: "Nomi" }).last().fill("Rang");
+    await dialog.getByRole("textbox", { name: "Qiymati" }).last().fill("Oq");
+    // Rasm mahsulot saqlangach yuklanadi
+    await dialog
+      .locator("#item-photo-input")
+      .setInputFiles({ name: "futbolka.png", mimeType: "image/png", buffer: PNG });
+    await expect(dialog.getByText("Rasmlar mahsulot saqlangach yuklanadi.")).toBeVisible();
+    await dialog.getByRole("button", { name: "Saqlash" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    const row = page.getByRole("listitem").filter({ hasText: "Yozgi futbolka" });
+    await expect(row.locator("img")).toBeVisible();
+
+    // Qayta ochilganda — saqlangan qiymatlar, rasm va asosiy belgisi
+    await row.getByRole("button", { name: "Tahrirlash: Yozgi futbolka" }).click();
+    await expect(dialog.getByText("Asosiy", { exact: true })).toBeVisible();
+    await expect(
+      dialog
+        .getByRole("group", { name: "Oʻlcham" })
+        .getByRole("button", { name: "M", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(dialog.getByLabel("Mato")).toHaveValue("Paxta");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    await page.getByRole("button", { name: "Keyingi" }).click();
+    await page.getByRole("button", { name: "Eʼlon qilish" }).click();
+    await expect(page.getByText("Eʼlon qilingan").first()).toBeVisible();
+
+    const slug = `e2e-kiyim-dokoni-${suffix}`;
+    await page.goto(`/biznes/${slug}`);
+    const catalog = page.getByRole("region", { name: "Mahsulotlar" });
+    await expect(catalog).toContainText("Oʻlcham: S, M");
+    await catalog.getByRole("link", { name: "Yozgi futbolka" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Yozgi futbolka");
+    await expect(page.getByText("100% paxta, Oʻzbekistonda tikilgan.")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Yozgi futbolka — rasmlar" })).toBeVisible();
+    const details = page.getByRole("region", { name: "Tafsilotlar" });
+    await expect(details).toContainText("Mato");
+    await expect(details).toContainText("Rang");
+
+    // Mahsulot nomi bo'yicha qidiruvda topiladi
+    await page.goto(`/qidiruv?q=${encodeURIComponent(`futbolka ${suffix}`)}`);
+    await expect(page.locator("main article").filter({ hasText: name })).toContainText(
+      "Topildi: Yozgi futbolka",
     );
   });
 
