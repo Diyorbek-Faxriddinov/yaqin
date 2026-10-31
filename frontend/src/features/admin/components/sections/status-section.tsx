@@ -1,14 +1,16 @@
 "use client";
 
-import { CheckCircle2, Circle, ExternalLink, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { BrowserApiError } from "@/lib/api/browser";
 import type { BusinessStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { useCan } from "../../use-admin";
-import { useAdminItems, useUpdateBusiness } from "../../use-admin-business";
+import { useAdminItems, useDeleteBusiness, useUpdateBusiness } from "../../use-admin-business";
 import { BusinessStatusBadge } from "../status-badge";
 import type { SectionProps } from "./section-props";
 
@@ -142,6 +144,50 @@ export function StatusSection({ business, onDone }: Omit<SectionProps, "submitLa
           </Link>
         </Button>
       )}
+
+      <DeleteBusiness business={business} />
+    </div>
+  );
+}
+
+/**
+ * Xato kiritilgan qoralamani o'chirish. Bir marta e'lon qilingan biznes o'chirilmaydi — unga
+ * sharhlar, statistika va tashqi havolalar bog'langan; uni yashirish kerak
+ */
+function DeleteBusiness({ business }: Pick<SectionProps, "business">) {
+  const t = useTranslations("Admin.publish");
+  const canEdit = useCan("business.edit");
+  const remove = useDeleteBusiness(business.id);
+  const router = useRouter();
+  if (!canEdit) return null;
+
+  if (business.publishedAt !== null) {
+    return <p className="border-t pt-4 text-sm text-muted-foreground">{t("cannotDelete")}</p>;
+  }
+  return (
+    <div className="border-t pt-4">
+      <ConfirmDialog
+        trigger={
+          <Button variant="outline" className="text-destructive">
+            <Trash2 aria-hidden="true" />
+            {t("delete")}
+          </Button>
+        }
+        title={t("deleteTitle", { name: business.name })}
+        description={t("deleteDescription")}
+        confirmLabel={t("deleteConfirm")}
+        cancelLabel={t("cancel")}
+        pending={remove.isPending}
+        onConfirm={async () => {
+          try {
+            await remove.mutateAsync();
+            toast.success(t("deleted"));
+            router.push("/admin/bizneslar");
+          } catch (error) {
+            toast.error(error instanceof BrowserApiError ? error.message : t("deleteError"));
+          }
+        }}
+      />
     </div>
   );
 }

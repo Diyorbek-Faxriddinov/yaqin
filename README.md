@@ -20,6 +20,7 @@
 - Parol + 2FA (TOTP) kirishi; yangi administrator birinchi kirishda vaqtinchalik parolni almashtiradi va autentifikator ilovasini QR orqali ulaydi
 
 - Doʻkonda turib 7 qadamda biznes qoʻshish: GPS, kamera rasmlari (EXIF, jumladan GPS, telefonda ham, serverda ham olib tashlanadi), ish vaqti, narxlar, egasining roziligi
+- Eʼlon qilish va saytdan yashirish; xato kiritilgan (hech qachon eʼlon qilinmagan) qoralamani oʻchirish — eʼlon qilingan biznes oʻchirilmaydi, yashiriladi
 - Soʻrovlar, sharhlar moderatsiyasi, shikoyatlar, kategoriyalar va atributlar, foydalanuvchilarni bloklash
 - Administratorlar, rollar va granular ruxsatlar (manbasi bilan), audit jurnali, sozlamalar
 - Statistika (koʻrishlar va bosishlar) va biznes egasi uchun maxfiy hisobot havolasi

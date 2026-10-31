@@ -57,6 +57,23 @@ export function useUpdateBusiness(id: string) {
   });
 }
 
+/** Faqat hech qachon e'lon qilinmagan biznes (backend boshqasiga 409 qaytaradi) */
+export function useDeleteBusiness(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      call(
+        browserApi.DELETE("/admin/businesses/{businessId}", {
+          params: { path: { businessId: id } },
+        }),
+      ),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: adminBusinessKey(id) });
+      void queryClient.invalidateQueries({ queryKey: adminBusinessesKey });
+    },
+  });
+}
+
 /** Rasm ro'yxati o'zgarganda biznes qayta olinadi */
 export function useRefreshBusiness(id: string) {
   const queryClient = useQueryClient();

@@ -553,7 +553,14 @@ export interface paths {
         get: operations["adminGetBusiness"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Hech qachon e'lon qilinmagan biznesni o'chirish — ruxsat business.edit
+         * @description Xato kiritilgan qoralamalar uchun. E'lon qilingan (keyin yashirilgan bo'lsa ham) biznes
+         *     o'chirilmaydi — 409, uni yashirish kerak (sharhlar, statistika va havolalar saqlanadi).
+         *     Rasmlar va mahsulotlar ham o'chadi; shu biznesga aylantirilgan so'rov `contacted` holatiga
+         *     qaytadi. Audit jurnaliga yoziladi.
+         */
+        delete: operations["adminDeleteBusiness"];
         options?: never;
         head?: never;
         /**
@@ -1583,6 +1590,11 @@ export interface components {
             instagram: string | null;
             schedule: components["schemas"]["WeeklySchedule"] | null;
             status: components["schemas"]["BusinessStatus"];
+            /**
+             * Format: date-time
+             * @description Birinchi e'lon qilingan vaqt; null — hech qachon e'lon qilinmagan (o'chirish mumkin)
+             */
+            publishedAt: string | null;
             consent: components["schemas"]["Consent"] | null;
             photos: components["schemas"]["AdminPhoto"][];
             /** Format: date-time */
@@ -2935,6 +2947,30 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    adminDeleteBusiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O'chirildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     adminUpdateBusiness: {

@@ -14,6 +14,7 @@ Doʻkonlarga login/parol berib, keyin ularning akkauntiga kirish xavfli: parol m
 - Biznes **"platforma boshqaruvida"** holatida yaratiladi va egasiz boʻladi.
 - Root (yoki ruxsati bor administrator) biznes profili va katalogini **admin panelning oʻzida** toʻgʻridan-toʻgʻri tahrirlaydi. Hech kimning akkauntiga kirilmaydi.
 - Har bir oʻzgarish audit jurnaliga "kim → qaysi biznes uchun → nima" koʻrinishida yoziladi.
+- Bir marta eʼlon qilingan biznes **oʻchirilmaydi, yashiriladi** — unga sharhlar, statistika, hisobot havolasi va tashqi havolalar bogʻlangan. Faqat hech qachon eʼlon qilinmagan (xato kiritilgan) qoralama oʻchiriladi (`business.edit`, audit bilan; soʻrovdan yaratilgan boʻlsa — soʻrov qayta ochiladi). 4.5 da qoʻshildi (telefon sinovidagi fikr).
 - Biznes qoʻshilganda **rozilik** qayd etiladi: kim, qachon, nimani eʼlon qilishga rozi boʻldi (ixtiyoriy — hujjat rasmi).
 - Egaga **faqat oʻqish uchun hisobot havolasi** berilishi mumkin: maxfiy, bekor qilinadigan, shaxsiy maʼlumotsiz (koʻrishlar va bosishlar soni).
   - Token ~250 bit tasodifiy; backend faqat uning SHA-256 xeshini saqlaydi — havola faqat yaratilganda bir marta koʻrsatiladi, yoʻqolsa yangisi yaratiladi (eskisi bekor boʻladi).

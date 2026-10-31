@@ -109,6 +109,7 @@ def admin_business(business: Business, lang: Lang, request: Request) -> dict[str
         "instagram": business.instagram or None,
         "schedule": business.schedule,
         "status": business.status,
+        "publishedAt": business.published_at.isoformat() if business.published_at else None,
         "consent": consent_payload(business),
         "photos": [photo_payload(photo, request) for photo in business.photos.all()],
         "createdAt": business.created_at.isoformat(),
@@ -179,6 +180,8 @@ class AdminBusinessListView(BusinessAdminView):
 
 
 class AdminBusinessDetailView(BusinessAdminView):
+    admin_permissions = {"DELETE": Permission.BUSINESS_EDIT}
+
     def get(self, request: Request, business_id: UUID) -> Response:
         return Response(admin_business(get_business(business_id), lang_of(request), request))
 
@@ -214,6 +217,41 @@ class AdminBusinessDetailView(BusinessAdminView):
             )
             refresh_public(business, old_slug, categories=True)
         return Response(admin_business(business, lang_of(request), request))
+
+    def delete(self, request: Request, business_id: UUID) -> Response:
+        """Faqat hech qachon e'lon qilinmagan biznes — xato kiritilgan qoralamalar uchun.
+
+        E'lon qilingani o'chirilmaydi (yashiriladi): sharhlar, statistika, hisobot havolasi va
+        tashqi havolalar unga bog'langan.
+        """
+        admin = current_admin(request)
+        with transaction.atomic():
+            business = get_business(business_id, lock=True)
+            if business.published_at is not None:
+                raise ApiError(
+                    409,
+                    "business_was_published",
+                    "Eʼlon qilingan biznes oʻchirilmaydi — uni yashiring",
+                )
+            files = list(business.photos.values_list("file", flat=True))
+            # So'rovdan yaratilgan bo'lsa — so'rov yana ishga qaytadi ("converted" biznessiz
+            # bo'lolmaydi, request_converted_has_business)
+            reopened = BusinessRequest.objects.filter(
+                business=business, status=BusinessRequest.Status.CONVERTED
+            ).update(status=BusinessRequest.Status.CONTACTED, business=None, closed_at=None)
+            business.delete()
+            summary = f"Qoralama oʻchirildi: {business.name}"
+            if reopened:
+                summary += " (soʻrov qayta ochildi)"
+            audit(admin, "business.delete", Target.BUSINESS, business_id, summary)
+
+            # Fayllar faqat yozuvlar o'chgani aniq bo'lgach o'chiriladi
+            def remove_files() -> None:
+                for name in files:
+                    default_storage.delete(name)
+
+            transaction.on_commit(remove_files)
+        return Response(status=204)
 
 
 class AdminPhotoUploadView(BusinessAdminView):

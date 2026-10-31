@@ -97,6 +97,7 @@ export function toAdminBusiness(record: DemoBusinessRecord, lang: Lang): AdminBu
     instagram: record.instagram,
     schedule: record.schedule,
     status: record.status,
+    publishedAt: record.publishedAt,
     consent: record.consent,
     photos: photosOf(record.id),
     createdAt: record.createdAt,
@@ -591,6 +592,45 @@ export const adminHandlers = [
       `business:${record.slug}`,
     );
     return HttpResponse.json(toAdminBusiness(record, langOf(request)), { headers });
+  }),
+
+  // Faqat hech qachon e'lon qilinmagan (xato kiritilgan qoralama) — backend bilan bir xil
+  http.delete(`${API}/admin/businesses/:businessId`, ({ request, cookies, params }) => {
+    const auth = authorize(request, cookies, "business.edit");
+    if ("response" in auth) return auth.response;
+    const record = findRecord(String(params.businessId));
+    if (!record) return error(404, "not_found", "Topilmadi");
+    if (record.publishedAt) {
+      return error(
+        409,
+        "business_was_published",
+        "Eʼlon qilingan biznes oʻchirilmaydi — uni yashiring",
+      );
+    }
+    demoState.businesses = demoState.businesses.filter((b) => b.id !== record.id);
+    for (const photo of photosOf(record.id)) demoState.media.delete(photo.id);
+    demoState.photos.delete(record.id);
+    demoState.items.delete(record.id);
+    // So'rovdan yaratilgan bo'lsa — so'rov yana ishga qaytadi
+    let reopened = false;
+    for (const entry of demoState.requests) {
+      if (entry.businessId === record.id && entry.status === "converted") {
+        Object.assign(entry, {
+          status: "contacted",
+          businessId: null,
+          updatedAt: new Date().toISOString(),
+        });
+        reopened = true;
+      }
+    }
+    audit(
+      auth.admin,
+      "business.delete",
+      "business",
+      record.id,
+      `Qoralama oʻchirildi: ${record.name}${reopened ? " (soʻrov qayta ochildi)" : ""}`,
+    );
+    return new HttpResponse(null, { status: 204 });
   }),
 
   http.post(`${API}/admin/businesses/:businessId/photos`, async ({ request, cookies, params }) => {

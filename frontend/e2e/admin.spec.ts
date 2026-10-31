@@ -162,4 +162,33 @@ test.describe("Bizneslarni tahrirlash", () => {
     await page.getByRole("tab", { name: "Ish vaqti" }).click();
     await expect(page).toHaveURL(/bolim=hours/);
   });
+
+  test("xato kiritilgan qoralamani o'chirish; e'lon qilingani o'chirilmaydi", async ({ page }) => {
+    await adminLogin(page, "root", "/admin/bizneslar/yangi");
+    const name = `Oʻchiriladigan qoralama ${Date.now() % 100000}`;
+    await page.getByLabel("Biznes nomi").fill(name);
+    await selectOption(page, "Kategoriya", "Kafelar");
+    await selectOption(page, "Tuman", "Yunusobod");
+    await page.getByRole("button", { name: "Yaratish va davom etish" }).click();
+    await expect(page.getByText("2/7-qadam")).toBeVisible();
+    const id = new URL(page.url()).searchParams.get("id");
+
+    await page.goto(`/admin/bizneslar/${id}?bolim=status`);
+    await page.getByRole("button", { name: "Qoralamani oʻchirish" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText(name);
+    await dialog.getByRole("button", { name: "Ha, oʻchirish" }).click();
+    await expect(page).toHaveURL(/\/admin\/bizneslar$/);
+    await expect(page.getByText("Qoralama oʻchirildi")).toBeVisible();
+    await page.getByLabel("Nomi boʻyicha qidirish").fill(name);
+    await expect(page.getByRole("link", { name })).toHaveCount(0);
+
+    // Bir marta e'lon qilingan — tugma yo'q, sababi yozilgan
+    await page.goto(`/admin/bizneslar`);
+    await page.getByLabel("Nomi boʻyicha qidirish").fill("Ustoz");
+    await page.getByRole("link", { name: /Ustoz sartaroshxonasi/ }).click();
+    await page.getByRole("tab", { name: "Holat" }).click();
+    await expect(page.getByText("Eʼlon qilingan biznes oʻchirilmaydi")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Qoralamani oʻchirish" })).toHaveCount(0);
+  });
 });

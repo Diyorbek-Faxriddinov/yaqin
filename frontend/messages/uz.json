@@ -605,7 +605,15 @@
       "hidden": "Yashirildi",
       "drafted": "Qoralamaga qaytarildi",
       "viewOnSite": "Saytda koʻrish",
-      "cannotPublish": "Avval majburiy maydonlarni toʻldiring"
+      "cannotPublish": "Avval majburiy maydonlarni toʻldiring",
+      "delete": "Qoralamani oʻchirish",
+      "deleteTitle": "«{name}» oʻchirilsinmi?",
+      "deleteDescription": "Biznes, uning rasmlari va narxlari butunlay oʻchiriladi. Bu amalni bekor qilib boʻlmaydi.",
+      "deleteConfirm": "Ha, oʻchirish",
+      "cancel": "Bekor qilish",
+      "deleted": "Qoralama oʻchirildi",
+      "deleteError": "Oʻchirib boʻlmadi. Qayta urinib koʻring.",
+      "cannotDelete": "Eʼlon qilingan biznes oʻchirilmaydi (sharhlar va statistika saqlanadi). Kerak boʻlmasa — saytdan yashiring."
     },
     "edit": {
       "saved": "Saqlandi",

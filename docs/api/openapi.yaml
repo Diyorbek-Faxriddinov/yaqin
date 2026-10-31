@@ -820,6 +820,27 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [admin]
+      operationId: adminDeleteBusiness
+      summary: Hech qachon e'lon qilinmagan biznesni o'chirish — ruxsat business.edit
+      description: |
+        Xato kiritilgan qoralamalar uchun. E'lon qilingan (keyin yashirilgan bo'lsa ham) biznes
+        o'chirilmaydi — 409, uni yashirish kerak (sharhlar, statistika va havolalar saqlanadi).
+        Rasmlar va mahsulotlar ham o'chadi; shu biznesga aylantirilgan so'rov `contacted` holatiga
+        qaytadi. Audit jurnaliga yoziladi.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: O'chirildi
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   /admin/businesses/{businessId}/photos:
     parameters:
@@ -2628,6 +2649,7 @@ components:
         - instagram
         - schedule
         - status
+        - publishedAt
         - consent
         - photos
         - createdAt
@@ -2659,6 +2681,10 @@ components:
             - $ref: "#/components/schemas/WeeklySchedule"
             - type: "null"
         status: { $ref: "#/components/schemas/BusinessStatus" }
+        publishedAt:
+          type: [string, "null"]
+          format: date-time
+          description: Birinchi e'lon qilingan vaqt; null — hech qachon e'lon qilinmagan (o'chirish mumkin)
         consent:
           oneOf:
             - $ref: "#/components/schemas/Consent"

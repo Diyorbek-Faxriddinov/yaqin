@@ -2,6 +2,7 @@
 
 import io
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -11,7 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from PIL import Image
 
-from apps.businesses.models import Business, BusinessPhoto, Item
+from apps.businesses.models import Business, BusinessPhoto, BusinessRequest, Item
 from apps.businesses.slugs import slugify
 from apps.staff.models import AuditEntry
 from tests.admin_api import AdminClient, admin_with
@@ -281,6 +282,58 @@ def test_unknown_business(root: AdminClient) -> None:
     assert root.call("GET", f"/admin/businesses/{missing}").status_code == 404
     assert root.call("PATCH", f"/admin/businesses/{missing}", {"name": "Yangi"}).status_code == 404
     assert root.call("GET", f"/admin/businesses/{missing}/items").status_code == 404
+
+
+# --- O'chirish (faqat hech qachon e'lon qilinmagan) ---
+
+
+def test_delete_never_published_draft(
+    root: AdminClient, media_root: Path, django_capture_on_commit_callbacks: Any
+) -> None:
+    # So'rovdan yaratilgan qoralama, rasmi va mahsuloti bilan
+    entry = BusinessRequest.objects.create(
+        business_name="Xato biznes", contact_name="Aziz", phone="+998901112233"
+    )
+    body = {"name": "Xato biznes", "categorySlug": "sartaroshxonalar", "districtSlug": "chilonzor"}
+    created = root.call("POST", f"/admin/business-requests/{entry.id}/convert", body).json()
+    assert created["publishedAt"] is None
+    url = f"/admin/businesses/{created['id']}"
+    photo = root.upload(f"{url}/photos", {"file": upload_file(jpeg())}).json()
+    make_item(business=Business.objects.get(pk=created["id"]))
+    photo_file = media_root / "businesses" / created["id"] / f"{photo['id']}.webp"
+    assert photo_file.exists()
+
+    with django_capture_on_commit_callbacks(execute=True):
+        assert root.call("DELETE", url).status_code == 204
+    assert not Business.objects.filter(pk=created["id"]).exists()
+    assert not Item.objects.filter(business_id=created["id"]).exists()
+    assert not photo_file.exists()
+    # So'rov yana ishga qaytadi — qayta biznesga aylantirish mumkin
+    entry.refresh_from_db()
+    assert (entry.status, entry.business_id, entry.closed_at) == ("contacted", None, None)
+    audit_entry = AuditEntry.objects.get(action="business.delete")
+    assert audit_entry.target_id == created["id"]
+    assert "soʻrov qayta ochildi" in audit_entry.summary
+    assert root.call("DELETE", url).status_code == 404
+
+
+@pytest.mark.parametrize("status", [Business.Status.PUBLISHED, Business.Status.HIDDEN])
+def test_delete_refuses_ever_published(root: AdminClient, status: str) -> None:
+    # Yashirilgan bo'lsa ham — bir marta e'lon qilingan (sharhlar, statistika, havolalar)
+    business = make_business(**publishable(status=status, published_at=datetime.now(UTC)))
+    response = root.call("DELETE", f"/admin/businesses/{business.id}")
+    assert response.status_code == 409
+    assert response.json()["code"] == "business_was_published"
+    assert Business.objects.filter(pk=business.id).exists()
+
+
+def test_delete_permissions(client: Client) -> None:
+    business = make_business()
+    url = f"/admin/businesses/{business.id}"
+    publish_only = admin_with(client, extra=("business.view", "business.publish"))
+    assert publish_only.call("DELETE", url).status_code == 403
+    editor = admin_with(client, roles=("Kontent menejeri",))
+    assert editor.call("DELETE", url).status_code == 204
 
 
 # --- Rasmlar ---

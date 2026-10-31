@@ -290,6 +290,30 @@ describe("bizneslar", () => {
     expect(demoState.audit.length).toBe(before + 2);
     expect(demoState.audit.at(-1)?.action).toBe("business.update");
   });
+
+  it("hech qachon e'lon qilinmagan qoralama o'chiriladi; e'lon qilingani — 409", async () => {
+    const session = await adminLogin();
+    const draft = await createDraft(session, "Xato kiritilgan biznes");
+    expect(draft.publishedAt).toBeNull();
+    const removed = await call(`/admin/businesses/${draft.id}`, session, { method: "DELETE" });
+    expect(removed.status).toBe(204);
+    expect(demoState.audit.at(-1)?.action).toBe("business.delete");
+    const gone = await call(`/admin/businesses/${draft.id}`, session);
+    expect(gone.status).toBe(404);
+
+    // Yashirilgan bo'lsa ham — bir marta e'lon qilingan
+    const published = demoState.businesses.find((b) => b.publishedAt && b.status === "published");
+    const refused = await call(`/admin/businesses/${String(published?.id)}`, session, {
+      method: "DELETE",
+    });
+    expect(refused.status).toBe(409);
+    expect(((await refused.json()) as ApiError).code).toBe("business_was_published");
+
+    const moderator = await adminLogin("moderator");
+    const other = await createDraft(session);
+    const forbidden = await call(`/admin/businesses/${other.id}`, moderator, { method: "DELETE" });
+    expect(forbidden.status).toBe(403);
+  });
 });
 
 describe("rasmlar va katalog", () => {

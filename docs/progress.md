@@ -62,7 +62,13 @@ Oxirgi yangilanish: 2026-10-31
 - **Testlar barqarorligi:** sharh va xabar dialoglari yuklama ostida React jonlanishidan oldin bosilib ochilmay qolardi — test dialog ochilguncha qayta bosadi.
 - Testlar: backend 473, frontend unit 220, E2E backend 257 (+3), demo 243 (+3).
 
-**Sizdan soʻralmoqda:** [phone-testing.md](phone-testing.md) boʻyicha telefonda sinash va natijani yuborish. Topilgan muammolar shu qadamda tuzatiladi.
+## 4.5 natijalari — telefondagi sinov
+
+- **Haqiqiy telefonda sinaldi (2026-10-31, siz, Samsung Galaxy A52):** admin oqimi (2FA kirish, GPS bilan joylashuv, kamera va galereyadan rasm, eʼlon qilish, yashirish) va ommaviy sayt (xarita, "Yaqin atrofimda", qoʻngʻiroq, yoʻl koʻrsatish, ulashish, sevimlilar, sharh, xabar, til) — 18 band, hammasi ishladi. Natijalar — [phone-testing.md](phone-testing.md). iPhone (Safari) bilan hali sinalmagan.
+- **Sinovda topilgan 1 — bizneslarni oʻchirish yoʻq edi.** Qaror (siz tanladingiz): faqat hech qachon eʼlon qilinmagan qoralama oʻchiriladi; eʼlon qilingani yashiriladi (sharhlar, statistika, havolalar saqlanadi) — [ADR-0007](adr/0007-boshqariladigan-biznes.md). Kontrakt: `DELETE /admin/businesses/{id}` (`business.edit`; eʼlon qilingan — 409 `business_was_published`) va `AdminBusiness.publishedAt`. Backend: rasmlar fayllari tranzaksiyadan keyin oʻchadi, soʻrovdan yaratilgan qoralama oʻchsa soʻrov `contacted` holatiga qaytadi (aks holda baza cheklovi buziladi), audit `business.delete`. Admin panel: "Holat" boʻlimida "Qoralamani oʻchirish" (tasdiqlash oynasi bilan); eʼlon qilinganida — sababi yozilgan. Mock ham bir xil. Testlar: backend (oʻchirish, rad etish, ruxsatlar, kontrakt matritsasi — 78/78), mock unit, E2E ikkala rejimda.
+- **Sinovda topilgan 2 — qorongʻi tema yoʻq.** Qaror (siz tanladingiz): hozircha qoʻshilmaydi (MVP — faqat yorugʻ tema, [design-system.md](design-system.md)). Roʻyxatdagi bu savol xato edi — tuzatildi.
+- **Yuklama ostidagi E2E:** toʻliq backend aylanalarida ikki marta boshqa-boshqa test yiqildi (bir marta CSP testi, bir marta "backend javob bermasa" testlari — sahifa 30 s ichida yuklanmadi). Har biri alohida 3–5 marta takrorlanganda oʻtdi, oxirgi toʻliq aylana — 260/260. Kompyuterda 12 GB RAM va standart 8 parallel worker — sinov paytida boshqa dasturlar ochiq boʻlsa, sekinlashish mumkin. Kuzatib boriladi; takrorlansa — lokal worker soni kamaytiriladi (CI'da 1 marta qayta urinish bor).
+- Testlar: backend 481 (+8), frontend unit 221 (+1), E2E backend 260 (+3), demo 246 (+3).
 
 ## 4.4 natijalari
 
