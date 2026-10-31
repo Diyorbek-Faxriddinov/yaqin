@@ -32,7 +32,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     ".next-backend/types/**/*.ts",
-    ".next-backend/dev/types/**/*.ts"
+    ".next-backend/dev/types/**/*.ts",
+    ".next-local/types/**/*.ts",
+    ".next-local/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

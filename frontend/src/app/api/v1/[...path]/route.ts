@@ -1,4 +1,4 @@
-import { revalidateTagsTwice } from "@/lib/revalidate-tags";
+import { revalidateTagsRepeated } from "@/lib/revalidate-tags";
 import { isDemoMode } from "@/lib/env";
 
 const REVALIDATE_HEADER = "x-demo-revalidate";
@@ -29,7 +29,7 @@ async function handle(request: Request): Promise<Response> {
   if (!tags) return response;
 
   // Admin o'zgarishni darhol ko'rishi kerak — eskirgan kontent berilmaydi
-  revalidateTagsTwice(tags.split(",").filter(Boolean));
+  revalidateTagsRepeated(tags.split(",").filter(Boolean));
   const headers = new Headers(response.headers);
   headers.delete(REVALIDATE_HEADER);
   return new Response(response.body, { status: response.status, headers });

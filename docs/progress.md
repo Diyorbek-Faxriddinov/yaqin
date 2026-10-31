@@ -49,9 +49,20 @@ Oxirgi yangilanish: 2026-10-31
 | 4.1   | Haqiqiy backend uchun maʼlumotlar (`seed_demo`) va E2E | ✅    |
 | 4.2   | Mijoz kirishi: Telegram va Google                      | ✅    |
 | 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ✅    |
-| 4.4   | Mustahkamlik va tezlik                                 | 🔄    |
-| 4.5   | Telefonda sinov                                        | ⏳    |
+| 4.4   | Mustahkamlik va tezlik                                 | ✅    |
+| 4.5   | Telefonda sinov                                        | 🔄    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
+
+## 4.5 — tayyorgarlik (telefondagi sinovdan oldin)
+
+- **`start.ps1 -Prod`** — Next.js dev rejimi oʻrniga production build (`.next-local`): telefonda sahifalar tez, kesh haqiqiy saytdagidek, dev belgisi yoʻq. Sinab koʻrildi: build ~50 s, sahifalar `x-nextjs-cache: HIT`, HMR yoʻq.
+- **Telefon sinovi roʻyxati** — [phone-testing.md](phone-testing.md): admin oqimi (GPS, kamera, rasm siqish, eʼlon qilish, yashirish) va ommaviy sayt (xarita, qoʻngʻiroq, yoʻl koʻrsatish, ulashish, sharh, til).
+- **Prefetch'da 404 (yangi topilgan):** til almashtirgich Next `Link` boʻlgani uchun Next `/ru` dan `/[locale]` qolipini oʻrganib ("optimistic routing"), prefikssiz oʻzbekcha manzillarni (`/haqida`, `/xarita`) bosh sahifa deb taxmin qilardi va mavjud boʻlmagan segmentni soʻrardi. Til almashtirgich endi oddiy havola (sahifa toʻliq yuklanadi). `optimisticRouting: false` ham sinaldi va rad etildi: har bir havola (bosh sahifadagi oʻnlab biznes kartochkalari) uchun alohida server soʻrovi — kichik serverga ortiqcha yuk. E2E (`shell.spec.ts`) eski build'da 3/3 yiqiladi, yangisida oʻtadi.
+- **Kesh poygasi — haqiqiy sababi topildi va tuzatildi:** 4.4 dagi "3 s dan keyin takror" yuklama ostida yetmas edi (toʻliq E2E ~2 aylanadan birida yiqildi; 4.4 dagi toza natijalar omad edi). Sababi Next 16.4 da: `use cache` toʻldirishi soʻrovlararo boʻlishiladi va yangilanishdan keyin boshlangan render undan oldin boshlangan, hali tugamagan toʻldirishga qoʻshilib eski maʼlumot oladi; sahifa keshi uni yangi vaqt bilan yozadi. Diagnostika bilan tasdiqlandi (oʻchirishdan keyingi birinchi render `MISS`, 7 s, lekin eski maʼlumot bilan). Endi yangilash 3, 10 va 30 s dan keyin takrorlanadi (oxirgisi — eng sekin toʻldirish: backend `API_TIMEOUT_MS` 10 s). Natija: demo 6 aylana, backend 1 aylana — hammasi oʻtdi; diagnostikada poyga 3 marta yuz berib, 10 s takrori bilan tuzalgani koʻrindi. E2E kutish oynasi 45 s.
+- **Testlar barqarorligi:** sharh va xabar dialoglari yuklama ostida React jonlanishidan oldin bosilib ochilmay qolardi — test dialog ochilguncha qayta bosadi.
+- Testlar: backend 473, frontend unit 220, E2E backend 257 (+3), demo 243 (+3).
+
+**Sizdan soʻralmoqda:** [phone-testing.md](phone-testing.md) boʻyicha telefonda sinash va natijani yuborish. Topilgan muammolar shu qadamda tuzatiladi.
 
 ## 4.4 natijalari
 

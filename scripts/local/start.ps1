@@ -12,8 +12,13 @@
 # -Tunnel: Cloudflare Tunnel (D:\tools\cloudflared) — https://<tasodifiy>.trycloudflare.com manzil.
 # Telegram kirishi (bot domenga bog'lanadi) va telefonda sinash (joylashuv va kamera faqat HTTPS'da)
 # uchun. Tunnel ochiq paytda sayt internetdan ko'rinadi — sinovdan keyin oynasini yoping.
+#
+# -Prod: Next.js dev rejimi o'rniga production build (`.next-local`, birinchi marta 1-3 daqiqa).
+# Telefonda sinash uchun tavsiya etiladi: sahifalar tez, kesh productiondagidek ishlaydi, dev
+# belgisi yo'q. Kod o'zgarsa — qayta ishga tushiring (build yangilanadi).
+#   powershell -ExecutionPolicy Bypass -File scripts\local\start.ps1 -Tunnel -Prod
 
-param([switch]$Tunnel)
+param([switch]$Tunnel, [switch]$Prod)
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -74,9 +79,15 @@ Start-Process powershell -ArgumentList @(
     "-NoExit", "-Command",
     "`$Host.UI.RawUI.WindowTitle = 'Yaqin backend :8000'; Set-Location '$Root\backend'; `$env:DJANGO_ALLOWED_ORIGINS = '$Origins'; .\.venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8000 --threads=16 config.wsgi:application"
 )
+# Production build demo build'dan (.next) alohida papkada — ularni bir-biri ustiga yozmaslik uchun
+$FrontendRun = if ($Prod) {
+    "`$env:NEXT_DIST_DIR = '.next-local'; npm run build; if (`$?) { npx next start --port 3000 }"
+} else {
+    "npm run dev"
+}
 Start-Process powershell -ArgumentList @(
     "-NoExit", "-Command",
-    "`$Host.UI.RawUI.WindowTitle = 'Yaqin frontend :3000'; Set-Location '$Root\frontend'; `$env:NEXT_PUBLIC_DEMO_MODE = 'false'; `$env:NEXT_PUBLIC_DEMO_LOGIN = 'true'; `$env:API_URL = 'http://127.0.0.1:8000/api/v1'; `$env:NEXT_PUBLIC_SITE_URL = 'http://localhost:8090'; npm run dev"
+    "`$Host.UI.RawUI.WindowTitle = 'Yaqin frontend :3000'; Set-Location '$Root\frontend'; `$env:NEXT_PUBLIC_DEMO_MODE = 'false'; `$env:NEXT_PUBLIC_DEMO_LOGIN = 'true'; `$env:API_URL = 'http://127.0.0.1:8000/api/v1'; `$env:NEXT_PUBLIC_SITE_URL = 'http://localhost:8090'; $FrontendRun"
 )
 Start-Process powershell -ArgumentList @(
     "-NoExit", "-Command",
@@ -84,7 +95,8 @@ Start-Process powershell -ArgumentList @(
 )
 
 Write-Host ""
-Write-Host "Ishga tushirildi. Brauzerda (birinchi ochilish 10-30 soniya):" -ForegroundColor Green
+$FirstOpen = if ($Prod) { "frontend oynasida build tugagach — 1-3 daqiqa" } else { "birinchi ochilish 10-30 soniya" }
+Write-Host "Ishga tushirildi. Brauzerda ($FirstOpen):" -ForegroundColor Green
 Write-Host "  Sayt:        http://localhost:8090"
 Write-Host "  Admin panel: http://localhost:8090/admin"
 if ($TunnelUrl) {

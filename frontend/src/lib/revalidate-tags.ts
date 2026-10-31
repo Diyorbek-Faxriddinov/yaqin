@@ -30,22 +30,32 @@ export function revalidateTags(tags: readonly string[]): void {
   for (const route of routes) revalidatePath(route, "layout");
 }
 
-/** Qayta yangilash kechikishi — undan oldin boshlangan renderlar odatda shu vaqtda tugaydi */
-export const REPEAT_AFTER_MS = 3000;
+/**
+ * Takroriy yangilash vaqtlari (javobdan keyin, ms). Oxirgisi yangilanishdan oldin boshlangan eng
+ * sekin to'ldirish va uning ustidagi render tugashidan keyin bo'lishi kerak: backend so'rovi
+ * `API_TIMEOUT_MS` (10 s) bilan cheklangan, yuklama ostida render 7 s gacha kuzatildi
+ */
+export const REPEAT_AFTER_MS = [3000, 10_000, 30_000] as const;
 
 /**
- * Route handler'lar uchun: hozir yangilaydi va javobdan keyin yana bir marta takrorlaydi.
+ * Route handler'lar uchun: hozir yangilaydi va javobdan keyin bir necha marta takrorlaydi.
  *
- * Poyga holati: yangilanishdan oldin boshlangan render (masalan, brauzer sahifadagi havolalarni
- * oldindan yuklayotgan bo'lsa) yangilanishdan keyin tugab, eski maʼlumotni keshga qayta yozadi —
- * yashirilgan biznes soatlab ko'rinib qolishi mumkin edi (E2E'da 3 dan 2 marta). Takroriy
- * yangilash shu kechikkan yozuvni ham eskirtiradi.
+ * Poyga holati (Next 16.4): `use cache` to'ldirishi so'rovlararo bo'lishiladi — yangilanishdan
+ * keyin boshlangan render undan oldin boshlangan, hali tugamagan to'ldirishga qo'shilib, eski
+ * maʼlumot oladi. Sahifa keshi natijani yangi vaqt bilan yozadi, shuning uchun teg yangilanishi
+ * uni eskirgan deb bilmaydi — yashirilgan biznes soatlab (cacheLife "hours") ko'rinib qolardi.
+ * Eski yozuvlar faqat oldingi to'ldirishlar tugaguncha paydo bo'ladi; takroriy yangilash ularni
+ * eskirtiradi. E2E (cache-revalidation.spec.ts) yuklama ostida ~2 aylanadan birida ushlagan.
  */
-export function revalidateTagsTwice(tags: readonly string[]): void {
+export function revalidateTagsRepeated(tags: readonly string[]): void {
   revalidateTags(tags);
   const copy = [...tags];
   after(async () => {
-    await new Promise((resolve) => setTimeout(resolve, REPEAT_AFTER_MS));
-    revalidateTags(copy);
+    let elapsed = 0;
+    for (const at of REPEAT_AFTER_MS) {
+      await new Promise((resolve) => setTimeout(resolve, at - elapsed));
+      elapsed = at;
+      revalidateTags(copy);
+    }
   });
 }

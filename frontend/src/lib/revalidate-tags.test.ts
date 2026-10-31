@@ -5,7 +5,7 @@ vi.mock("next/cache", () => cache);
 const server = vi.hoisted(() => ({ after: vi.fn() }));
 vi.mock("next/server", () => server);
 
-import { REPEAT_AFTER_MS, revalidateTags, revalidateTagsTwice } from "./revalidate-tags";
+import { REPEAT_AFTER_MS, revalidateTags, revalidateTagsRepeated } from "./revalidate-tags";
 
 beforeEach(() => {
   cache.revalidateTag.mockClear();
@@ -31,17 +31,23 @@ describe("revalidateTags", () => {
   });
 });
 
-describe("revalidateTagsTwice", () => {
-  it("hozir va javobdan keyin yana bir marta (kechikkan renderlarga qarshi)", async () => {
+describe("revalidateTagsRepeated", () => {
+  it("hozir va javobdan keyin belgilangan vaqtlarda takror (kechikkan renderlarga qarshi)", async () => {
     vi.useFakeTimers();
-    revalidateTagsTwice(["business:ustoz"]);
+    revalidateTagsRepeated(["business:ustoz"]);
     expect(cache.revalidateTag).toHaveBeenCalledTimes(1);
     const callback = server.after.mock.calls[0]?.[0] as () => Promise<void>;
     const done = callback();
-    await vi.advanceTimersByTimeAsync(REPEAT_AFTER_MS);
+    let elapsed = 0;
+    for (const [index, at] of REPEAT_AFTER_MS.entries()) {
+      await vi.advanceTimersByTimeAsync(at - elapsed - 1);
+      expect(cache.revalidateTag).toHaveBeenCalledTimes(index + 1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(cache.revalidateTag).toHaveBeenCalledTimes(index + 2);
+      elapsed = at;
+    }
     await done;
-    expect(cache.revalidateTag).toHaveBeenCalledTimes(2);
-    expect(cache.revalidatePath).toHaveBeenCalledTimes(2);
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(REPEAT_AFTER_MS.length + 1);
     vi.useRealTimers();
   });
 });

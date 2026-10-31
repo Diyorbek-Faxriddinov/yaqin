@@ -84,6 +84,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 │   ├── backend-handoff.md 3-bosqich uchun topshiriqlar
 │   ├── integration-plan.md 4-bosqich (integratsiya) rejasi
 │   ├── auth-setup.md       Telegram, Google va admin 2FA'ni sozlash
+│   ├── phone-testing.md    telefonda sinash roʻyxati
 │   ├── design-system.md   dizayn tizimi
 │   └── progress.md        bajarilgan va qolgan ishlar
 └── .github/workflows/     CI
@@ -113,7 +114,7 @@ powershell -ExecutionPolicy Bypass -File scripts\local\start.ps1
 
 Keyin `http://localhost:8090/admin` → login va parol → telefondagi autentifikator ilovasi (Google Authenticator, Aegis…) bilan QR'ni skanerlang → kod. Bizneslarni admin panelda qoʻshasiz — eʼlon qilingach saytda paydo boʻladi. Demo bizneslar bilan sinamoqchi boʻlsangiz (⚠ toʻqib chiqarilgan maʼlumot): `cd backend; .venv\Scripts\python manage.py seed_demo`; olib tashlash — `seed_demo --remove`.
 
-Mijoz sifatida — "Demo foydalanuvchi sifatida kirish" (faqat lokal, backend `DEBUG` rejimida) yoki Telegram va Google: bot va Client ID'ni sozlash — [docs/auth-setup.md](docs/auth-setup.md). Telegram va telefonda sinash uchun vaqtinchalik HTTPS manzil: `start.ps1 -Tunnel` (Cloudflare Tunnel, `D:\tools\cloudflared`; ochiq paytda sayt internetdan koʻrinadi). Demo rejim (`npm run dev`, `http://localhost:3000`) avvalgidek ishlaydi.
+Mijoz sifatida — "Demo foydalanuvchi sifatida kirish" (faqat lokal, backend `DEBUG` rejimida) yoki Telegram va Google: bot va Client ID'ni sozlash — [docs/auth-setup.md](docs/auth-setup.md). Telegram va telefonda sinash uchun vaqtinchalik HTTPS manzil: `start.ps1 -Tunnel` (Cloudflare Tunnel, `D:\tools\cloudflared`; ochiq paytda sayt internetdan koʻrinadi). `-Prod` — dev rejimi oʻrniga production build (telefonda tezroq, kesh haqiqiy saytdagidek); telefonda sinash roʻyxati — [docs/phone-testing.md](docs/phone-testing.md). Demo rejim (`npm run dev`, `http://localhost:3000`) avvalgidek ishlaydi.
 
 ## Tekshiruvlar
 

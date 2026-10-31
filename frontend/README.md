@@ -51,7 +51,7 @@ Namuna — [`.env.example`](.env.example).
 | `NEXT_PUBLIC_TELEGRAM_BOT`     | Telegram bot nomi (`@` siz) — kirish vidjeti; tokeni faqat backendda. Sozlash: [docs/auth-setup.md](../docs/auth-setup.md)                |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID — kirish tugmasi (backend `GOOGLE_CLIENT_ID` bilan bir xil)                                                        |
 | `NEXT_PUBLIC_DEMO_LOGIN`       | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG) |
-| `NEXT_DIST_DIR`                | Build papkasi (standart `.next`; backend E2E — `.next-backend`)                                                                           |
+| `NEXT_DIST_DIR`                | Build papkasi (standart `.next`; backend E2E — `.next-backend`; `start.ps1 -Prod` — `.next-local`)                                        |
 
 ## Muhim kelishuvlar
 
@@ -62,9 +62,10 @@ Namuna — [`.env.example`](.env.example).
 - Narxlar tiyinda, butun son. Formatlash — `src/lib/format/price.ts`.
 - MapLibre worker `predev`/`prebuild` da `public/vendor/` ga koʻchiriladi (`scripts/copy-vendor.mjs`) — bu papka Git'ga kirmaydi.
 - API tiplari `docs/api/openapi.yaml` dan: `npm run api:types` (`src/lib/api/schema.d.ts` ni qoʻlda tahrirlamang).
-- Har bir oʻzgaruvchi admin harakati kesh teglarini yangilaydi (`businesses`, `business:{slug}`, `categories`, `settings` ...). Yangilash faqat `src/lib/revalidate-tags.ts` orqali: `business:*`/`category:*` da marshrut ham yangilanadi (notFound() natijasi tegga bogʻlanmaydi), route handler'larda `revalidateTagsTwice` — kechikkan renderlarga qarshi 3 s dan keyin takror.
+- Har bir oʻzgaruvchi admin harakati kesh teglarini yangilaydi (`businesses`, `business:{slug}`, `categories`, `settings` ...). Yangilash faqat `src/lib/revalidate-tags.ts` orqali: `business:*`/`category:*` da marshrut ham yangilanadi (notFound() natijasi tegga bogʻlanmaydi), route handler'larda `revalidateTagsRepeated` — eski maʼlumot qayta yozilishiga qarshi 3, 10 va 30 s dan keyin takror (Next `use cache` toʻldirishlarini soʻrovlararo boʻlishadi).
 - **Zod** `jitless` rejimida (`src/lib/zod-config.ts`, `query-provider.tsx` da import qilinadi) — aks holda Zod `eval` ishlatadi va CSP uni bloklaydi. Importni olib tashlamang.
 - Kirish talab qiladigan sahifalarga (`/profil...`) ommaviy sahifalardagi havolalar `prefetch={false}` bilan: kirilmagan foydalanuvchi uchun oldindan yuklash yoʻnaltirilib 404 oladi (proxy prefetch'ni ajrata olmaydi — Next sarlavhalarini olib tashlaydi).
+- **Til almashtirgich — oddiy `<a>`, Next `Link` emas.** Next `/ru` havolasidan `/[locale]` qolipini oʻrganib, prefikssiz oʻzbekcha manzillarni (`/haqida`) bosh sahifa deb taxmin qiladi va prefetch'da 404 oladi. Boshqa til manzillariga ham `Link` ishlatmang (`e2e/shell.spec.ts` ushlaydi).
 - Server sahifalaridagi API xatolari `error.tsx` → `RouteError` (`src/components/common/route-error.tsx`) ga tushadi; backend vaqtida javob bermasa — `BackendUnavailableError` (`src/lib/api/backend-fetch.ts`).
 - **Tarjimalar:** ommaviy layout `Admin` namespace'ini brauzerga yubormaydi (tarjimalarning ~58 %); admin matnlari faqat `app/[locale]/admin/layout.tsx` dagi provider orqali. Ommaviy client komponentda `useTranslations("Admin…")` ishlatmang.
 - **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).

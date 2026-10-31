@@ -108,11 +108,22 @@ test.describe("Sevimlilar", () => {
   });
 });
 
+/**
+ * Dialogni ochadi. Yuklama ostida tugma React jonlantirishidan (hydration) oldin bosilishi mumkin —
+ * bosish yo'qoladi; shuning uchun dialog ko'ringuncha qayta bosiladi
+ */
+async function openDialog(page: Page, button: string) {
+  await expect(async () => {
+    await page.getByRole("button", { name: button }).click();
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+  return page.getByRole("dialog");
+}
+
 test.describe("Sharh va xabar", () => {
   test("sharh: validatsiya, yuborish, moderatsiya holati, takroriy sharh", async ({ page }) => {
     await loginDemo(page, PROFILE);
-    await page.getByRole("button", { name: "Sharh yozish" }).click();
-    const dialog = page.getByRole("dialog");
+    const dialog = await openDialog(page, "Sharh yozish");
     await dialog.getByRole("button", { name: "Yuborish" }).click();
     await expect(dialog.getByText("Bahoni tanlang")).toBeVisible();
 
@@ -137,8 +148,7 @@ test.describe("Sharh va xabar", () => {
 
   test("xabar: 'Boshqa' uchun izoh majburiy, yuborish va holat", async ({ page }) => {
     await loginDemo(page, PROFILE);
-    await page.getByRole("button", { name: "Maʼlumot notoʻgʻrimi? Xabar bering" }).click();
-    const dialog = page.getByRole("dialog");
+    const dialog = await openDialog(page, "Maʼlumot notoʻgʻrimi? Xabar bering");
     await dialog.getByLabel("Boshqa").check();
     await dialog.getByRole("textbox").fill("qisqa");
     await dialog.getByRole("button", { name: "Yuborish" }).click();

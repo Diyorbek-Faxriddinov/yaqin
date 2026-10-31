@@ -8,6 +8,24 @@ test.describe("Sayt karkasi", () => {
     await expect(page.getByText(/Demo rejim/)).toHaveCount(isBackend ? 0 : 1);
   });
 
+  test("havolalarni oldindan yuklash xatosiz (marshrut taxmini o'chiq)", async ({ page }) => {
+    // Next'ning "optimistic routing"i til almashtirgichdagi `/ru` dan `/[locale]` qolipini
+    // o'rganib, `/haqida`, `/xarita` kabi manzillarni bosh sahifa deb taxmin qilardi va mavjud
+    // bo'lmagan segmentni so'rab 404 olardi (next.config.ts). Qolip o'rganilguncha kutib, keyin
+    // footer havolalari ko'rinadigan qilinadi — ular shundagina oldindan yuklanadi
+    const failed: string[] = [];
+    page.on("response", (response) => {
+      if (response.url().includes("_rsc=") && response.status() >= 400) {
+        failed.push(`${response.status()} ${response.url()}`);
+      }
+    });
+    await page.goto("/", { waitUntil: "load" });
+    await page.waitForTimeout(3000);
+    await page.mouse.wheel(0, 20_000);
+    await page.waitForTimeout(2500);
+    expect(failed).toEqual([]);
+  });
+
   test("pastki navigatsiya faqat telefonda, qidiruv qatori esa planshet va desktopda", async ({
     page,
   }, testInfo) => {

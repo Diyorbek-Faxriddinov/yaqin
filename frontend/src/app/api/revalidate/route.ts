@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { revalidateTagsTwice } from "@/lib/revalidate-tags";
+import { revalidateTagsRepeated } from "@/lib/revalidate-tags";
 
 /**
  * Backend webhook'i: maʼlumot o'zgarganda (admin biznesni tahrirladi, sharh tasdiqlandi...)
@@ -43,6 +43,6 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ code: "validation_error" }, { status: 400 });
   }
 
-  revalidateTagsTwice(tags as string[]);
+  revalidateTagsRepeated(tags as string[]);
   return Response.json({ revalidated: tags.length });
 }

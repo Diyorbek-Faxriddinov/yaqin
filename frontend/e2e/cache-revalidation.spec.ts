@@ -10,15 +10,15 @@ import { adminLogin } from "./support/admin";
 const NOT_FOUND = "Sahifa topilmadi";
 
 /**
- * Sahifani qayta yuklab, holat paydo bo'lguncha kutadi (15 soniyagacha). Odatda darhol; lekin
- * yangilanishdan oldin boshlangan render kechikib eski maʼlumotni yozsa, frontend yangilashni
- * 3 soniyadan keyin takrorlaydi (lib/revalidate-tags.ts) — yuklama ostida shu kerak bo'ladi.
+ * Sahifani qayta yuklab, holat paydo bo'lguncha kutadi. Odatda darhol; yuklama ostida eski
+ * maʼlumot keshga qayta yozilishi mumkin — frontend yangilashni 3, 10 va 30 s dan keyin
+ * takrorlaydi (lib/revalidate-tags.ts), shuning uchun 45 soniyagacha.
  */
 async function eventually(page: Page, path: string, check: () => Promise<void>) {
   await expect(async () => {
     await page.goto(path);
     await check();
-  }).toPass({ timeout: 15_000 });
+  }).toPass({ timeout: 45_000 });
 }
 
 const tagOf = (testInfo: TestInfo) =>
@@ -40,6 +40,9 @@ async function adminApi(page: Page) {
 }
 
 test.describe("Admin o'zgarishidan keyin ommaviy sahifa yangilanadi", () => {
+  // Har testda ikkitagacha `eventually` (45 s gacha) — standart 30 s yetmaydi
+  test.describe.configure({ timeout: 120_000 });
+
   test("biznes e'lon qilinadi → ko'rinadi; yashiriladi → yo'qoladi", async ({ page }, testInfo) => {
     const api = await adminApi(page);
     const name = `Kesh sinovi ${tagOf(testInfo)}`;

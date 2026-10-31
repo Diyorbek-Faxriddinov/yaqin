@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { localizedPath } from "@/i18n/localized-path";
 import { usePathname } from "@/i18n/navigation";
@@ -20,7 +19,10 @@ function Switcher({ pathname }: { pathname: string }) {
       {routing.locales.map((locale) => {
         const active = locale === current;
         return (
-          <NextLink
+          // Oddiy havola (Next Link emas): til almashganda sahifa to'liq yuklanadi. Next Link `/ru`
+          // ni oldindan yuklab `/[locale]` qolipini o'rganardi va prefikssiz o'zbekcha manzillarni
+          // (`/haqida`, `/xarita`) ham bosh sahifa deb taxmin qilib, prefetch'da 404 olardi
+          <a
             key={locale}
             href={localizedPath(pathname, locale)}
             hrefLang={locale}
@@ -35,7 +37,7 @@ function Switcher({ pathname }: { pathname: string }) {
           >
             <span aria-hidden="true">{SHORT_LABEL[locale]}</span>
             <span className="sr-only">{t(locale)}</span>
-          </NextLink>
+          </a>
         );
       })}
     </nav>
