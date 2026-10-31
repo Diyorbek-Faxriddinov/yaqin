@@ -22,7 +22,7 @@ from tests.factories import make_admin, make_business, make_item, publishable
 
 pytestmark = pytest.mark.django_db
 
-SIZE = {
+SIZE: dict[str, Any] = {
     "key": "size",
     "name": {"uz": "Oʻlcham", "ru": "Размер"},
     "type": "multiselect",
@@ -32,7 +32,7 @@ SIZE = {
     ],
     "filterable": True,
 }
-CONDITION = {
+CONDITION: dict[str, Any] = {
     "key": "condition",
     "name": {"uz": "Holati", "ru": "Состояние"},
     "type": "select",
@@ -43,7 +43,7 @@ CONDITION = {
     ],
     "filterable": True,
 }
-WARRANTY = {
+WARRANTY: dict[str, Any] = {
     "key": "warranty",
     "name": {"uz": "Kafolat", "ru": "Гарантия"},
     "type": "number",
@@ -51,7 +51,7 @@ WARRANTY = {
     "options": [],
     "filterable": False,
 }
-HALAL = {
+HALAL: dict[str, Any] = {
     "key": "halal",
     "name": {"uz": "Halol", "ru": "Халяль"},
     "type": "boolean",
@@ -59,7 +59,7 @@ HALAL = {
     "options": [],
     "filterable": True,
 }
-MATERIAL = {
+MATERIAL: dict[str, Any] = {
     "key": "material",
     "name": {"uz": "Mato", "ru": "Материал"},
     "type": "text",
@@ -68,7 +68,7 @@ MATERIAL = {
     "filterable": False,
 }
 
-ITEM = {
+ITEM: dict[str, Any] = {
     "kind": "product",
     "name": "Erkaklar futbolkasi",
     "group": "Erkaklar",

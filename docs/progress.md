@@ -52,7 +52,7 @@ Oxirgi yangilanish: 2026-11-01
 | 4.4   | Mustahkamlik va tezlik                                 | ✅    |
 | 4.5   | Telefonda sinov                                        | ✅    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ✅    |
-| 4.7   | Doʻkon katalogi (hostingdan oldingi koʻrib chiqish)    | 🔄    |
+| 4.7   | Doʻkon katalogi (hostingdan oldingi koʻrib chiqish)    | ✅    |
 
 ## 4.7 natijalari — doʻkon katalogi ([ADR-0014](adr/0014-dokon-katalogi.md))
 
@@ -80,6 +80,7 @@ Hostingdan oldingi koʻrib chiqishda (telefonda, oʻzimiz qoʻshgan doʻkon) top
   - `BusinessSummary.matchedItems`.
   - `SearchSuggestions.items`.
 - **Testlar.** Backend 509 (+16 yangi va kontrakt matritsasi), frontend unit 237 (+12), E2E backend (CI taqlidi) 270 passed, 0 beqaror. Demo: 254 passed, 1 yiqildi — `cache-revalidation` (kategoriya qoʻshish, planshet), toʻliq toʻplam yuklamasi ostida. Qayta yurgizishda 9/9 va planshetda 3 marta takrorlab — oʻtdi.
+- **Telefonda (A52) va GitHub CI'da tasdiqlandi** (2026-11-01): integratsiya (haqiqiy backend bilan E2E) GitHub'da birinchi marta ishga tushdi — 270 passed; Frontend — yashil. Backend CI yangi test faylidagi tip izohlari tufayli yiqildi (lokalda `mypy apps` yurgizilgan, CI esa `mypy .` — testlar bilan) — tuzatildi.
 - **Vizual tekshiruv** (skrinshot, desktop va telefon): kvadrat, keng va tik rasmlar kesilmasdan koʻrinadi. Kartochkalar, mahsulot sahifasi, admin dialogi va qidiruvdagi "Topildi" tekshirildi.
 
 **Ataylab qilinmadi** (ADR-0014): oʻlcham yoki rang boʻyicha alohida narx va qoldiq, umumiy mahsulot kategoriyalari daraxti, majburiy umumiy boʻlimlar. Xususiyatlar boʻyicha ommaviy filtrlar keyinroq, maʼlumot toʻplangach qoʻshiladi. Qidiruv takliflari endpointi bor, lekin frontendda avtomatik toʻldirish (autocomplete) UI hali yoʻq (2-bosqichdan beri).
