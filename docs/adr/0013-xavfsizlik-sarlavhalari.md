@@ -42,3 +42,4 @@ Qoʻshimcha: `Permissions-Policy: geolocation=(self), camera=(), microphone=(), 
 
 - Yangi tashqi manba (analitika, CDN, boshqa xarita) qoʻshilsa — `security-headers.ts` ga aniq qoʻshish kerak, aks holda brauzer bloklaydi. Bu ataylab: har bir tashqi bogʻliqlik koʻrinib turadi.
 - E2E `e2e/security.spec.ts` asosiy sahifalarda (xarita, kirish vidjetlari, admin panel bilan) CSP buzilishi yoʻqligini tekshiradi; detektor ataylab qilingan buzilishni ushlashi sinalgan.
+- Productionda `'unsafe-eval'` yoʻq: `eval`/`new Function` ishlatadigan kutubxona jim buziladi. Zod 4 shunday qiladi (sxemalarni tezlashtirish uchun) — `jitless` rejimi yoqilgan (`frontend/src/lib/zod-config.ts`, 4.4). Buzilish sahifa yuklangandan keyin kechiktirilgan modulda ham sodir boʻlishi mumkin — E2E har sahifadan keyin kutadi va buzilishlarni sahifalar boʻylab yigʻadi.

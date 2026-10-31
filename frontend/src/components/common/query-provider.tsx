@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserApiError } from "@/lib/api/browser";
+// Har sahifada brauzerda birinchi yuklanadigan modul — Zod sozlamasi formalardan oldin qo'llanadi
+import "@/lib/zod-config";
 
 /** Brauzer tomonidagi so'rovlar keshi (foydalanuvchi holati, sevimlilar, sharhlar) */
 export function QueryProvider({ children }: { children: React.ReactNode }) {

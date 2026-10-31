@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidateTagsTwice } from "@/lib/revalidate-tags";
 import { isDemoMode } from "@/lib/env";
 
 const REVALIDATE_HEADER = "x-demo-revalidate";
@@ -28,10 +28,8 @@ async function handle(request: Request): Promise<Response> {
   const tags = response.headers.get(REVALIDATE_HEADER);
   if (!tags) return response;
 
-  for (const tag of tags.split(",").filter(Boolean)) {
-    // Admin o'zgarishni darhol ko'rishi kerak — eskirgan kontent berilmaydi
-    revalidateTag(tag, { expire: 0 });
-  }
+  // Admin o'zgarishni darhol ko'rishi kerak — eskirgan kontent berilmaydi
+  revalidateTagsTwice(tags.split(",").filter(Boolean));
   const headers = new Headers(response.headers);
   headers.delete(REVALIDATE_HEADER);
   return new Response(response.body, { status: response.status, headers });

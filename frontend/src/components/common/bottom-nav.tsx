@@ -36,6 +36,9 @@ function BottomNavView({ activeHref }: { activeHref: string | null }) {
             <li key={href}>
               <Link
                 href={href}
+                // Profil kirishni talab qiladi: kirilmagan bo'lsa proxy /kirish ga yo'naltiradi va
+                // oldindan yuklash kirish sahifasidan profil segmentini so'rab 404 oladi
+                prefetch={href.startsWith("/profil") ? false : undefined}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-full flex-col items-center justify-center gap-1 text-[0.6875rem] font-medium transition-colors focus-visible:bg-accent focus-visible:outline-none",

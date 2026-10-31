@@ -23,6 +23,14 @@ import type { AppLocale } from "@/i18n/routing";
 import { formatDecimal } from "@/lib/format/number";
 import { pageMetadata } from "@/lib/seo";
 
+/**
+ * Navigatsiya ataylab serverda kutadi (instant emas): biznes topilmasa notFound() sahifa
+ * render qilinishidan oldin hal bo'lishi kerak. Suspense ichiga olinganda qoralama paytida
+ * keshlangan "topilmadi" holati biznes e'lon qilingandan keyin ham qolib ketardi (E2E:
+ * cache-revalidation.spec.ts). Build paytida tayyorlangan bizneslar baribir oldindan render qilingan.
+ */
+export const instant = false;
+
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/biznes/[slug]">): Promise<Metadata> {

@@ -25,6 +25,10 @@ const caddy =
   (existsSync("D:/tools/caddy/caddy.exe") ? "D:/tools/caddy/caddy.exe" : "caddy");
 const revalidateSecret = process.env.E2E_REVALIDATE_SECRET ?? "e2e-only-revalidate-secret";
 
+// "Backend javob bermasa" sinovi: ulanishni qabul qilib, hech qachon javob qaytarmaydigan port
+const HANGING_PORT = 8009;
+const RESILIENCE_PORT = 3102;
+
 const backendServers: PlaywrightTestConfig["webServer"] = [
   {
     command: `"${python}" -m waitress --listen=127.0.0.1:${BACKEND_PORT} --threads=16 config.wsgi:application`,
@@ -57,6 +61,23 @@ const backendServers: PlaywrightTestConfig["webServer"] = [
       NEXT_DIST_DIR: ".next-backend",
       API_URL: `http://127.0.0.1:${BACKEND_PORT}/api/v1`,
       REVALIDATE_SECRET: revalidateSecret,
+    },
+  },
+  {
+    command: `node -e "require('net').createServer(() => {}).listen(${HANGING_PORT}, '127.0.0.1')"`,
+    port: HANGING_PORT,
+    reuseExistingServer: false,
+  },
+  {
+    command: `npx next start --port ${RESILIENCE_PORT}`,
+    // Sahifa emas (u backendga murojaat qiladi) — statik javob
+    url: `http://127.0.0.1:${RESILIENCE_PORT}/robots.txt`,
+    reuseExistingServer: false,
+    timeout: 120_000,
+    env: {
+      NEXT_DIST_DIR: ".next-backend",
+      API_URL: `http://127.0.0.1:${HANGING_PORT}/api/v1`,
+      API_TIMEOUT_MS: "1500",
     },
   },
   {
@@ -111,9 +132,22 @@ export default defineConfig({
     ? [
         // Admin sessiyalari haqiqiy TOTP bilan bir marta ochiladi (e2e/backend.setup.ts)
         { name: "setup", testMatch: /backend\.setup\.ts/ },
-        ...viewports.map((project) => ({ ...project, dependencies: ["setup"] })),
+        // Javob bermaydigan backend bilan alohida Next.js server (e2e/resilience.spec.ts)
+        {
+          name: "resilience",
+          testMatch: /resilience\.spec\.ts/,
+          use: { ...devices["Desktop Chrome"], baseURL: `http://localhost:${RESILIENCE_PORT}` },
+        },
+        ...viewports.map((project) => ({
+          ...project,
+          dependencies: ["setup"],
+          testIgnore: /resilience\.spec\.ts/,
+        })),
       ]
-    : viewports.map((project) => ({ ...project, testIgnore: /backend\.setup\.ts/ })),
+    : viewports.map((project) => ({
+        ...project,
+        testIgnore: [/backend\.setup\.ts/, /resilience\.spec\.ts/],
+      })),
   // Testlar production build ustida ishlaydi — dev rejimdagi farqlar natijaga ta'sir qilmaydi
   webServer: isBackend
     ? backendServers

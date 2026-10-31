@@ -8,27 +8,31 @@ import { stubLoginWidgets } from "./support/providers";
  * ishlaydi — xarita plitkalari, Telegram va Google vidjetlari, admin paneli (QR, rasmlar) bilan.
  */
 
-declare global {
-  interface Window {
-    __cspViolations?: string[];
-  }
-}
-
+/**
+ * Buzilishlar Node tomonida yig'iladi — sahifa almashganda yo'qolmaydi (oldin faqat oxirgi
+ * sahifa hisobga olinardi). Ba'zilari sahifa yuklangandan keyin, kechiktirilgan modullarda sodir
+ * bo'ladi (masalan, Zod eval tekshiruvi) — har sahifadan keyin biroz kutiladi (`visit`).
+ */
 async function watchCsp(page: Page) {
+  const violations: string[] = [];
+  await page.exposeBinding("__reportCsp", (_source, text: string) => violations.push(text));
   await page.addInitScript(() => {
-    window.__cspViolations = [];
     document.addEventListener("securitypolicyviolation", (event) => {
-      window.__cspViolations?.push(`${event.violatedDirective} ← ${event.blockedURI}`);
+      (window as unknown as { __reportCsp: (text: string) => void }).__reportCsp(
+        `${location.pathname}: ${event.violatedDirective} ← ${event.blockedURI}`,
+      );
     });
   });
-  const console: string[] = [];
   page.on("console", (message) => {
-    if (message.text().includes("Content Security Policy")) console.push(message.text());
+    if (message.text().includes("Content Security Policy")) violations.push(message.text());
   });
-  return async () => {
-    const violations = await page.evaluate(() => window.__cspViolations ?? []);
-    return [...violations, ...console];
-  };
+  return violations;
+}
+
+// "networkidle" emas: xarita plitkalarni to'xtovsiz yuklaydi, tarmoq hech tinchimaydi
+async function visit(page: Page, path: string) {
+  await page.goto(path, { waitUntil: "load" });
+  await page.waitForTimeout(1500);
 }
 
 test.describe("Xavfsizlik sarlavhalari", () => {
@@ -50,22 +54,20 @@ test.describe("Xavfsizlik sarlavhalari", () => {
   test("ommaviy sahifalar va xarita — CSP buzilishisiz", async ({ page }) => {
     const violations = await watchCsp(page);
     for (const path of ["/", "/kategoriyalar", "/biznes/ustoz-sartaroshxonasi", "/kirish"]) {
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await visit(page, path);
     }
     await page.goto("/xarita");
     // Xarita uslubi va plitkalari tashqi provayderdan (connect-src, img-src, worker-src)
     await expect(page.locator(".maplibregl-canvas")).toBeVisible();
-    await page.waitForLoadState("networkidle");
-    expect(await violations()).toEqual([]);
+    await visit(page, "/xarita");
+    expect(violations).toEqual([]);
   });
 
   test("admin paneli va biznes qo'shish — CSP buzilishisiz", async ({ page }) => {
     const violations = await watchCsp(page);
     await adminLogin(page, "root", "/admin/bizneslar/yangi");
-    await page.waitForLoadState("networkidle");
-    await page.goto("/admin/statistika");
-    await page.waitForLoadState("networkidle");
-    expect(await violations()).toEqual([]);
+    await visit(page, "/admin/bizneslar/yangi");
+    await visit(page, "/admin/statistika");
+    expect(violations).toEqual([]);
   });
 });

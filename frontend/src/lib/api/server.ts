@@ -1,6 +1,7 @@
 import "server-only";
 import createClient from "openapi-fetch";
 import { isDemoMode } from "@/lib/env";
+import { createBackendFetch, DEFAULT_API_TIMEOUT_MS } from "./backend-fetch";
 import type { paths } from "./schema";
 import type { ApiError } from "./types";
 
@@ -24,7 +25,9 @@ async function demoFetch(request: Request): Promise<Response> {
 /** Server komponentlari uchun tiplangan API klient (OpenAPI kontraktidan) */
 export const api = createClient<paths>({
   baseUrl: resolveBaseUrl(),
-  fetch: isDemoMode ? demoFetch : undefined,
+  fetch: isDemoMode
+    ? demoFetch
+    : createBackendFetch(Number(process.env.API_TIMEOUT_MS) || DEFAULT_API_TIMEOUT_MS),
 });
 
 export class ApiRequestError extends Error {

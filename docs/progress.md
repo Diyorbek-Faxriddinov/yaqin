@@ -1,6 +1,6 @@
 # Ish holati
 
-Oxirgi yangilanish: 2026-10-26
+Oxirgi yangilanish: 2026-10-31
 
 ## Bosqichlar
 
@@ -46,12 +46,38 @@ Oxirgi yangilanish: 2026-10-26
 
 | Qadam | Mazmuni                                                | Holat |
 | ----- | ------------------------------------------------------ | ----- |
-| 4.1   | Haqiqiy backend uchun maʼlumotlar (`seed_demo`) va E2E | ⏳    |
-| 4.2   | Mijoz kirishi: Telegram va Google                      | ⏳    |
-| 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ⏳    |
-| 4.4   | Mustahkamlik va tezlik                                 | ⏳    |
+| 4.1   | Haqiqiy backend uchun maʼlumotlar (`seed_demo`) va E2E | ✅    |
+| 4.2   | Mijoz kirishi: Telegram va Google                      | ✅    |
+| 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ✅    |
+| 4.4   | Mustahkamlik va tezlik                                 | 🔄    |
 | 4.5   | Telefonda sinov                                        | ⏳    |
 | 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
+
+## 4.4 natijalari
+
+- **Backend javob bermasa** (`frontend/src/lib/api/backend-fetch.ts`): server tomonidagi API soʻrovlari `API_TIMEOUT_MS` (standart 10 s) dan keyin toʻxtatiladi va tushunarli xato beradi (503 — `backend_timeout` / `backend_unavailable`). Logga faqat usul va yoʻl yoziladi (query string'da joylashuv boʻlishi mumkin). Ommaviy sayt, admin panel va hisobot sahifasida umumiy xato sahifasi (`RouteError`): "Nimadir xato ketdi" + "Qayta urinish".
+- **E2E `resilience`** (`e2e/resilience.spec.ts`, faqat backend rejimida): Next.js ulanishni qabul qilib javob bermaydigan portga ulanadi (`API_TIMEOUT_MS=1500`). Keshlangan bosh sahifa ochiladi; qidiruv va admin panel 15 s ichida xato sahifasini koʻrsatadi. Test maʼnoli ekani tekshirildi: vaqt chegarasi 60 s qilinganda yiqiladi.
+- **Admin oʻzgarishidan keyin ommaviy sahifa yangilanishi** (`e2e/cache-revalidation.spec.ts`, ikkala rejimda): biznes eʼlon qilinadi → koʻrinadi, yashiriladi → yoʻqoladi; ichki kategoriya qoʻshiladi/oʻchiriladi; sozlamalardagi kontakt Aloqa sahifasida. Topilgan va tuzatilgan xatolar (`frontend/src/lib/revalidate-tags.ts`):
+  - qoralama paytida ochilgan biznes sahifasi ("Sahifa topilmadi") eʼlondan keyin ham 404 boʻlib qolardi — kesh tegi notFound() natijasiga bogʻlanmaydi; endi `business:*` / `category:*` teglarida marshrut ham yangilanadi;
+  - poyga holati: yangilanishdan oldin boshlangan render keyin tugab, eski maʼlumotni keshga qayta yozardi (yashirilgan biznes koʻrinib qolardi, E2E'da 3 dan 2 marta) — yangilash javobdan 3 s keyin takrorlanadi (`after()`);
+  - biznes sahifasidagi Suspense oʻrami 404 holatini keshda qoldirardi — olib tashlandi, dev rejimidagi `params`/Suspense maslahati `instant = false` bilan yopildi (dev logida ogohlantirish yoʻq).
+- **CSP va Zod:** Lighthouse biznes sahifasida CSP buzilishini topdi — Zod 4 tezlik uchun `new Function` (eval) ishlatadi, CSP esa uni taqiqlaydi. `z.config({ jitless: true })` (`frontend/src/lib/zod-config.ts`). `e2e/security.spec.ts` buni oʻtkazib yuborgan edi (buzilishlar sahifa almashganda yoʻqolardi, kechiktirilgan modullar kutilmasdi) — test tuzatildi va qarshi tekshiruv bilan sinaldi: `jitless` oʻchirilganda `script-src ← eval` ushlanadi.
+- **Telefonda bosh sahifa konsol xatosi:** pastki navigatsiyadagi "Profil" / "Sevimlilar" oldindan yuklanganda proxy kirish sahifasiga yoʻnaltirar, Next esa undan profil segmentini soʻrab 404 olardi. Himoyalangan havolalar endi oldindan yuklanmaydi (`bottom-nav.tsx`). Proxy orqali hal qilish ishlamaydi — Next proxy'dan prefetch sarlavhalarini ataylab olib tashlaydi. E2E soʻrovning oʻzini tekshiradi (vaqtga bogʻliq emas); proxy uchun unit testlar qoʻshildi.
+- **Lighthouse** (13.5, mobil profil — sekinlashtirilgan CPU va tarmoq, haqiqiy backend, lokal `next start` + Caddy; har sahifa 3 marta):
+
+  | Sahifa          | Tezlik | Accessibility | Best practices | SEO | LCP        | TBT         |
+  | --------------- | ------ | ------------- | -------------- | --- | ---------- | ----------- |
+  | Bosh sahifa     | 67–69  | 100           | 100            | 100 | 4,6–4,7 s  | 530–630 ms  |
+  | Biznes sahifasi | 68–71  | 100           | 100            | 100 | 4,0–4,8 s  | 530–610 ms  |
+  | Kategoriyalar   | 68–70  | 100           | 100            | 100 | 4,2–5,0 s  | 530–630 ms  |
+  | Qidiruv         | 64–68  | 100           | 100            | 63  | 4,1–4,3 s  | 770–1070 ms |
+  | Xarita          | 37–39  | 100           | 100            | 100 | 8,4–10,1 s | 4,8–5,9 s   |
+
+  Qidiruv SEO'si ataylab past (`noindex` — natija sahifalari indekslanmaydi). Avvalgi oʻlchovdagi biznes sahifasining `noindex`i qayta chiqmadi; konsol xatolari yoʻq. CLS hamma joyda ~0.
+
+- Testlar: backend 473, frontend unit 220 (+9), E2E backend 254 (+13), demo 240 (+10).
+
+**Ochiq masalalar (tezlik):** LCP ~4,5 s ni asosan JavaScript bajarilishi ushlab turibdi (sekinlashtirilgan CPU'da asosiy chunk ~1,1 s; render'ni bloklovchi CSS ~250 ms). Xarita sahifasini MapLibre ogʻirlashtiradi. Hostingda siqish (Brotli), CDN va HTTP/2 raqamlarni oʻzgartiradi — shuning uchun chuqur optimallashtirish haqiqiy serverdagi oʻlchovdan keyin (5-bosqich) qilinishi maqsadga muvofiq. Maʼlum cheklov: qoralama paytida ochilgan biznesning sharhlar sahifasi eʼlondan keyin bir necha daqiqa 404 boʻlib qolishi mumkin (oʻzi tuzaladi).
 
 ## 4.3 natijalari
 
@@ -61,7 +87,7 @@ Oxirgi yangilanish: 2026-10-26
 - **E2E** (`e2e/security.spec.ts`): sarlavhalar bor; bosh sahifa, kategoriyalar, biznes sahifasi, kirish (vidjetlar bilan), xarita (tashqi plitkalar bilan), admin paneli va biznes qoʻshish — CSP buzilishisiz. Detektorning oʻzi ham sinaldi: ataylab qoʻshilgan begona skript, rasm va `fetch` bloklandi va ushlandi. Dev serverga qarshi ham oʻtdi.
 - Testlar: backend 473 (+1), frontend unit 211 (+4), E2E backend 241, demo 230 (+9 har birida).
 
-**Sizdan soʻralmoqda:** CSP endi haqiqiy Telegram va Google vidjetlarini ham cheklaydi. E2E ularni sinov skriptlari bilan tekshiradi; haqiqiy vidjetlar bilan yana bir marta sinab koʻrsangiz (Google — `localhost:8090`, Telegram — tunnel orqali), CSP ularni buzmaganini tasdiqlagan boʻlamiz.
+**Qoʻlda tasdiqlandi (2026-10-26, siz sinadingiz):** CSP bilan haqiqiy Google (`localhost:8090`) va Telegram (tunnel orqali) kirishi ishladi.
 
 ## 4.2 natijalari
 

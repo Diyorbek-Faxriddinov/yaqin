@@ -36,6 +36,25 @@ test.describe("Kirish va himoyalangan sahifalar", () => {
     await expect(page.getByRole("heading", { name: "Hali sevimlilar yoʻq" })).toBeVisible();
   });
 
+  test("pastki navigatsiyadagi Profil: oldindan yuklanmaydi, bosilganda — kirish", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile", "Pastki navigatsiya faqat telefonda");
+    // Profil oldindan yuklanmaydi: yo'naltirilgan prefetch kirish sahifasidan 404 olardi (vaqtga
+    // bog'liq — sekin qurilmada tez-tez). Shuning uchun natija emas, so'rovning o'zi tekshiriladi
+    const early: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.startsWith("/profil")) early.push(request.url());
+    });
+    await page.goto("/", { waitUntil: "load" });
+    await page.waitForTimeout(2000);
+    expect(early).toEqual([]);
+
+    await page.getByRole("navigation", { name: "Asosiy navigatsiya" }).getByText("Profil").click();
+    await expect(page).toHaveURL(/\/kirish\?next=%2Fprofil$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kirish");
+  });
+
   test("open redirect himoyasi: tashqi manzilga qaytmaydi", async ({ page }) => {
     await page.goto("/kirish?next=//evil.example.com");
     await page.getByRole("button", { name: "Demo foydalanuvchi sifatida kirish" }).click();
