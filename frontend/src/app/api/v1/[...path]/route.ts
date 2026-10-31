@@ -1,5 +1,6 @@
-import { revalidateTagsRepeated } from "@/lib/revalidate-tags";
+import { createBackendFetch, DEFAULT_API_TIMEOUT_MS } from "@/lib/api/backend-fetch";
 import { isDemoMode } from "@/lib/env";
+import { revalidateTagsRepeated } from "@/lib/revalidate-tags";
 
 const REVALIDATE_HEADER = "x-demo-revalidate";
 
@@ -43,7 +44,22 @@ async function proxyMedia(path: string): Promise<Response> {
   if (path.split("/").some((part) => part === ".." || part === "") || path.includes(":")) {
     return Response.json({ code: "not_found", message: "Not found" }, { status: 404 });
   }
-  const upstream = await fetch(`${process.env.API_URL}/media/${path}`, { cache: "no-store" });
+  // Server so'rovlari bilan bir xil vaqt chegarasi: backend javob bermasa, sahifadagi rasmlar
+  // (va `load` hodisasi) osilib qolmasin
+  const backendFetch = createBackendFetch(
+    Number(process.env.API_TIMEOUT_MS) || DEFAULT_API_TIMEOUT_MS,
+  );
+  let upstream: Response;
+  try {
+    upstream = await backendFetch(
+      new Request(`${process.env.API_URL}/media/${path}`, { cache: "no-store" }),
+    );
+  } catch {
+    return Response.json(
+      { code: "backend_unavailable", message: "Backend javob bermadi" },
+      { status: 503 },
+    );
+  }
   if (!upstream.ok || !upstream.body) {
     return Response.json({ code: "not_found", message: "Not found" }, { status: 404 });
   }

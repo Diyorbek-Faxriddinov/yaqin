@@ -8,14 +8,17 @@ test.describe("Sayt karkasi", () => {
     await expect(page.getByText(/Demo rejim/)).toHaveCount(isBackend ? 0 : 1);
   });
 
-  test("havolalarni oldindan yuklash xatosiz (marshrut taxmini o'chiq)", async ({ page }) => {
-    // Next'ning "optimistic routing"i til almashtirgichdagi `/ru` dan `/[locale]` qolipini
-    // o'rganib, `/haqida`, `/xarita` kabi manzillarni bosh sahifa deb taxmin qilardi va mavjud
-    // bo'lmagan segmentni so'rab 404 olardi (next.config.ts). Qolip o'rganilguncha kutib, keyin
-    // footer havolalari ko'rinadigan qilinadi — ular shundagina oldindan yuklanadi
+  test("bir qismli manzillarni oldindan yuklash xatosiz (til almashtirgich)", async ({ page }) => {
+    // Til almashtirgich Next `Link` bo'lganda Next `/ru` dan `/[locale]` qolipini o'rganib
+    // ("optimistic routing"), `/haqida`, `/xarita` kabi manzillarni bosh sahifa deb taxmin qilardi va
+    // mavjud bo'lmagan segmentni so'rab 404 olardi (language-switcher.tsx). Qolip o'rganilguncha
+    // kutib, keyin footer havolalari ko'rinadigan qilinadi — ular shundagina oldindan yuklanadi.
+    // Faqat bir qismli manzillar: parallel testlar biznes sahifalarini yangilayotganda ularning
+    // prefetch'i vaqtincha 404 bo'lishi mumkin — bu boshqa (zararsiz) holat
     const failed: string[] = [];
     page.on("response", (response) => {
-      if (response.url().includes("_rsc=") && response.status() >= 400) {
+      const { pathname, search } = new URL(response.url());
+      if (search.includes("_rsc=") && /^\/[^/]+$/.test(pathname) && response.status() >= 400) {
         failed.push(`${response.status()} ${response.url()}`);
       }
     });

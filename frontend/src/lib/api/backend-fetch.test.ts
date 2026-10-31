@@ -28,6 +28,16 @@ describe("createBackendFetch", () => {
     expect(Date.now() - started).toBeLessThan(1000);
   });
 
+  it("signal fetch'ga yetmasa ham (Next fon qayta to'ldirishi) — vaqt chegarasi ishlaydi", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    // Next eskirgan keshni qayta to'ldirganda signalni olib tashlaydi — fetch hech qachon tugamaydi
+    const ignoresSignal = () => new Promise<Response>(() => {});
+    const started = Date.now();
+    const error = await createBackendFetch(50, ignoresSignal)(REQUEST()).catch((e: unknown) => e);
+    expect((error as BackendUnavailableError).reason).toBe("backend_timeout");
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
   it("ulanib bo'lmasa — backend_unavailable; logda query string yo'q", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const refused = async () => {

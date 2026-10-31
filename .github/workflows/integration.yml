@@ -1,0 +1,127 @@
+name: Integratsiya
+
+# Frontend + backend birga: PostgreSQL (PostGIS) + Redis + Django + Next.js + Caddy + Playwright.
+# Lokal `npm run e2e:backend` bilan bir xil (frontend/scripts/e2e-backend.mjs) — productiondagi
+# tartib: bitta sayt, /api/v1 Django'ga, sahifalar Next.js'ga.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docs/api/**"
+      - "scripts/local/Caddyfile"
+      - ".github/workflows/integration.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docs/api/**"
+      - "scripts/local/Caddyfile"
+      - ".github/workflows/integration.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  CADDY_VERSION: "2.11.7"
+  # Rasmiy relizdagi caddy_2.11.7_checksums.txt dan (yuklab, qayta hisoblab tekshirilgan)
+  CADDY_SHA512: a7a433a1b133efc3c8d10eb0b99d52a24b5ef5c322dc77f5282182b1c0402139ab83f3a99f0c52409df77d20123fb0b523edad8a66d8f5e49136197bf61ef0e7
+
+jobs:
+  e2e-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Faqat CI uchun yaratilgan qiymatlar — boshqa hech qayerda ishlatilmaydi
+      DJANGO_SECRET_KEY: ci-only-secret-key-not-used-anywhere-else
+      TOTP_ENCRYPTION_KEY: 28GXnHkvaWTEsdJaYDN8BgG9bnPBwJtDRF9sf-qeAso=
+      DATABASE_HOST: localhost
+      DATABASE_USER: yaqin
+      DATABASE_PASSWORD: ci-yaqin-password
+      REDIS_URL: redis://localhost:6379/0
+      # e2e-backend.mjs va playwright.config.ts uchun (lokalda — backend/.venv va D:\tools\caddy)
+      BACKEND_PYTHON: python
+      CADDY_BIN: caddy
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # GeoDjango uchun GDAL/GEOS
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gdal-bin libgdal-dev
+
+      - name: Maʼlumotlar bazasini tayyorlash (setup-db.sql)
+        env:
+          PGPASSWORD: ci-only-password
+        run: psql -U postgres -h localhost -v ON_ERROR_STOP=1 -v app_password="'ci-yaqin-password'" -f backend/scripts/setup-db.sql
+
+      - name: Backend bogʻliqliklari (waitress — requirements-dev.txt da)
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Caddy (versiya va SHA-512 mahkamlangan)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/caddy.tar.gz" \
+            "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/caddy_${CADDY_VERSION}_linux_amd64.tar.gz"
+          echo "${CADDY_SHA512}  $RUNNER_TEMP/caddy.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/caddy.tar.gz" -C "$RUNNER_TEMP" caddy
+          sudo install "$RUNNER_TEMP/caddy" /usr/local/bin/caddy
+          caddy version
+
+      - run: npm ci
+        working-directory: frontend
+
+      - name: Playwright brauzerini oʻrnatish
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+
+      - name: E2E haqiqiy backend bilan (baza, build, testlar)
+        run: npm run e2e:backend
+        working-directory: frontend
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-backend
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          retention-days: 7

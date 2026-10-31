@@ -5,13 +5,15 @@
  * 2. Next.js build'i demo rejimsiz (`.next-backend`) — build vaqtida backend kerak
  *    (generateStaticParams biznes va kategoriya ro'yxatini API'dan oladi).
  * 3. Playwright: Caddy (8091) → Django (8001) + Next.js (3101); playwright.config.ts.
+ *    "Backend javob bermasa" testlari — build nusxasidan (`.next-resilience`, 3102).
  *
  * Talablar: PostgreSQL + PostGIS, backend muhiti (`backend/.venv` yoki BACKEND_PYTHON), Caddy
  * (`D:\tools\caddy\caddy.exe` yoki CADDY_BIN).
  */
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { cpSync, existsSync, rmSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { relative, sep } from "node:path";
 
 const python =
   process.env.BACKEND_PYTHON ??
@@ -70,6 +72,14 @@ try {
 } finally {
   backend.kill();
 }
+
+// "Backend javob bermasa" serveri uchun build nusxasi (ish vaqti keshi umumiy bo'lmasin —
+// playwright.config.ts, resilience). `cache` — ish vaqtida yig'iladi, nusxalanmaydi
+rmSync(".next-resilience", { recursive: true, force: true });
+cpSync(".next-backend", ".next-resilience", {
+  recursive: true,
+  filter: (source) => relative(".next-backend", source).split(sep)[0] !== "cache",
+});
 
 // 3. Testlar
 run("npx", ["playwright", "test", ...process.argv.slice(2)], {

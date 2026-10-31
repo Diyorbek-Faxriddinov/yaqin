@@ -40,18 +40,18 @@ scripts/            build yordamchilari; export-demo-data.ts — demo maʼlumotl
 
 Namuna — [`.env.example`](.env.example).
 
-| Oʻzgaruvchi                    | Vazifasi                                                                                                                                  |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`         | Ommaviy manzil: canonical, sitemap, Open Graph                                                                                            |
-| `NEXT_PUBLIC_DEMO_MODE`        | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq                                                                |
-| `API_URL`                      | Backend manzili (server tomoni, demo oʻchganda)                                                                                           |
-| `API_TIMEOUT_MS`               | Server tomonidagi API soʻrovining vaqt chegarasi (standart 10000) — oshsa, xato sahifasi ("Qayta urinish")                                |
-| `NEXT_PUBLIC_MAP_STYLE_URL`    | Xarita uslubi (standart — OpenFreeMap)                                                                                                    |
-| `REVALIDATE_SECRET`            | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                                                                                 |
-| `NEXT_PUBLIC_TELEGRAM_BOT`     | Telegram bot nomi (`@` siz) — kirish vidjeti; tokeni faqat backendda. Sozlash: [docs/auth-setup.md](../docs/auth-setup.md)                |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID — kirish tugmasi (backend `GOOGLE_CLIENT_ID` bilan bir xil)                                                        |
-| `NEXT_PUBLIC_DEMO_LOGIN`       | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG) |
-| `NEXT_DIST_DIR`                | Build papkasi (standart `.next`; backend E2E — `.next-backend`; `start.ps1 -Prod` — `.next-local`)                                        |
+| Oʻzgaruvchi                    | Vazifasi                                                                                                                                        |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`         | Ommaviy manzil: canonical, sitemap, Open Graph                                                                                                  |
+| `NEXT_PUBLIC_DEMO_MODE`        | `false` boʻlmasa — mock maʼlumotlar, demo ogohlantirishi, indekslash yopiq                                                                      |
+| `API_URL`                      | Backend manzili (server tomoni, demo oʻchganda)                                                                                                 |
+| `API_TIMEOUT_MS`               | Server tomonidagi API soʻrovining vaqt chegarasi (standart 10000) — oshsa, xato sahifasi ("Qayta urinish")                                      |
+| `NEXT_PUBLIC_MAP_STYLE_URL`    | Xarita uslubi (standart — OpenFreeMap)                                                                                                          |
+| `REVALIDATE_SECRET`            | Backend kesh yangilash webhook'i (`POST /api/revalidate`)                                                                                       |
+| `NEXT_PUBLIC_TELEGRAM_BOT`     | Telegram bot nomi (`@` siz) — kirish vidjeti; tokeni faqat backendda. Sozlash: [docs/auth-setup.md](../docs/auth-setup.md)                      |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID — kirish tugmasi (backend `GOOGLE_CLIENT_ID` bilan bir xil)                                                              |
+| `NEXT_PUBLIC_DEMO_LOGIN`       | `true` — haqiqiy backend bilan ham "Demo foydalanuvchi" tugmasi (faqat ishlab chiqish va E2E; backendda `DEMO_LOGIN_ENABLED` faqat DEBUG)       |
+| `NEXT_DIST_DIR`                | Build papkasi (standart `.next`; backend E2E — `.next-backend`; `start.ps1 -Prod` — `.next-local`; resilience E2E nusxasi — `.next-resilience`) |
 
 ## Muhim kelishuvlar
 
@@ -67,6 +67,9 @@ Namuna — [`.env.example`](.env.example).
 - Kirish talab qiladigan sahifalarga (`/profil...`) ommaviy sahifalardagi havolalar `prefetch={false}` bilan: kirilmagan foydalanuvchi uchun oldindan yuklash yoʻnaltirilib 404 oladi (proxy prefetch'ni ajrata olmaydi — Next sarlavhalarini olib tashlaydi).
 - **Til almashtirgich — oddiy `<a>`, Next `Link` emas.** Next `/ru` havolasidan `/[locale]` qolipini oʻrganib, prefikssiz oʻzbekcha manzillarni (`/haqida`) bosh sahifa deb taxmin qiladi va prefetch'da 404 oladi. Boshqa til manzillariga ham `Link` ishlatmang (`e2e/shell.spec.ts` ushlaydi).
 - Server sahifalaridagi API xatolari `error.tsx` → `RouteError` (`src/components/common/route-error.tsx`) ga tushadi; backend vaqtida javob bermasa — `BackendUnavailableError` (`src/lib/api/backend-fetch.ts`).
+- **Backend soʻrovlari faqat `createBackendFetch` orqali** (`src/lib/api/server.ts` dagi `api`, rasm proksisi ham): vaqt chegarasi taymer bilan poygada — Next eskirgan keshni fonda qayta toʻldirganda `signal` ni olib tashlaydi, oddiy `AbortSignal` bilan soʻrov abadiy kutardi. Toʻgʻridan-toʻgʻri `fetch(API_URL…)` yozmang.
+- **`use cache` ishlovchisi** — `cache-handler.mjs` (Next'ning standarti + tuzatish): Next 16.4.3 da xato bilan tugagan kesh toʻldirishi kalitni abadiy band qilardi (backend bir marta uzilsa, sahifalar ochilmay qolardi). Next yangilanganda `src/lib/cache-handler.test.ts` dagi "standart ishlovchi hali ham osilib qoladi" testi yiqilsa — xato tuzatilgan, oʻramni olib tashlash mumkin.
+- **Siqish Next'da oʻchirilgan** (`compress: false`) — reverse proxy siqadi (Caddy `encode zstd gzip`; productionda ham shart). Next'ning gzip'i xato bilan tugagan oqimli javobni baʼzan yopmasdi.
 - **Tarjimalar:** ommaviy layout `Admin` namespace'ini brauzerga yubormaydi (tarjimalarning ~58 %); admin matnlari faqat `app/[locale]/admin/layout.tsx` dagi provider orqali. Ommaviy client komponentda `useTranslations("Admin…")` ishlatmang.
 - **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
@@ -74,8 +77,8 @@ Namuna — [`.env.example`](.env.example).
 ## E2E: ikki rejim
 
 - **Demo** (`npm run build && npm run e2e`) — mock API, tez, tashqi talab yoʻq. CI'da har push'da.
-- **Haqiqiy backend** (`npm run e2e:backend`) — PostgreSQL + PostGIS, backend muhiti (`backend/.venv` yoki `BACKEND_PYTHON`) va Caddy (`D:\tools\caddy\caddy.exe` yoki `CADDY_BIN`) kerak. Skript `yaqin_e2e` bazasini noldan tayyorlaydi (`manage.py e2e_prepare`), demo rejimsiz build qiladi va testlarni Caddy (8091) → Django (8001) + Next.js (3101) orqali ishlatadi.
+- **Haqiqiy backend** (`npm run e2e:backend`) — PostgreSQL + PostGIS, backend muhiti (`backend/.venv` yoki `BACKEND_PYTHON`) va Caddy (`D:\tools\caddy\caddy.exe` yoki `CADDY_BIN`) kerak. Skript `yaqin_e2e` bazasini noldan tayyorlaydi (`manage.py e2e_prepare`), demo rejimsiz build qiladi va testlarni Caddy (8091) → Django (8001) + Next.js (3101) orqali ishlatadi. CI'da — `.github/workflows/integration.yml` (frontend, backend yoki kontrakt oʻzgarganda; PostgreSQL + Redis, Caddy versiyasi va xeshi mahkamlangan).
 - Admin kirishi: demo'da forma orqali (kod `123456`); backendda setup project (`e2e/backend.setup.ts`) haqiqiy TOTP bilan bir marta kiradi, testlar sessiyani ulaydi — backend bir kodni qayta qabul qilmaydi. Yangi testlarda `adminLogin()` (`e2e/support/admin.ts`) ishlating.
-- **`resilience`** project (faqat backend rejimida): Next.js (3102) javob bermaydigan portga (8009) ulanadi, `API_TIMEOUT_MS=1500` — xato sahifalari tekshiriladi (`e2e/resilience.spec.ts`).
+- **`resilience`** project (faqat backend rejimida): Next.js (3102, build nusxasi `.next-resilience` — 3101 bilan umumiy ish vaqti keshi boʻlmasin) javob bermaydigan portga (8009) ulanadi, `API_TIMEOUT_MS=1500` — xato sahifalari tekshiriladi (`e2e/resilience.spec.ts`).
 - Admin oʻzgarishidan keyingi kesh testlari (`e2e/cache-revalidation.spec.ts`) sahifani qayta yuklab kutadi (`eventually`, 15 s) — yuklama ostida takroriy yangilash kerak boʻlishi mumkin. Boshqa testlar sanaydigan kategoriya/tumanlarga maʼlumot qoʻshmang.
 - Rejimga bogʻliq tekshiruv: `isBackend` (`e2e/support/backend.ts`). Demo maʼlumot fixture'lari oʻzgarsa — `npx jiti scripts/export-demo-data.ts` (backend `seed_demo` shu faylni yuklaydi).

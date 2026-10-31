@@ -67,7 +67,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 
 ## Sifat
 
-- **Testlar:** frontend — Vitest (unit, mock API xatti-harakati) va Playwright (E2E, 3 ekran: 375 / 768 / 1280 px); backend — pytest (har bir javob API kontraktiga qarshi, maʼlumotlar bazasi cheklovlari, ruxsatlar). Ikkalasi ham har bir push'da CI'da.
+- **Testlar:** frontend — Vitest (unit, mock API xatti-harakati) va Playwright (E2E, 3 ekran: 375 / 768 / 1280 px); backend — pytest (har bir javob API kontraktiga qarshi, maʼlumotlar bazasi cheklovlari, ruxsatlar). Ikkalasi ham har bir push'da CI'da, ustiga integratsiya: haqiqiy backend bilan E2E (PostgreSQL + Redis + Django + Next.js + Caddy).
 - **Sifat vositalari:** ESLint, Prettier, TypeScript (strict); ruff, mypy (strict); `npm audit` va `pip-audit`.
 - **Accessibility:** axe (WCAG 2 A/AA) asosiy sahifalarda va admin panelda; klaviatura, ekran oʻquvchi yorliqlari.
 - **SEO:** canonical, hreflang (uz/ru), Open Graph rasmi, `sitemap.xml`, `robots.txt`, schema.org (`LocalBusiness`, `WebSite`).
@@ -88,7 +88,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 │   ├── phone-testing.md    telefonda sinash roʻyxati
 │   ├── design-system.md   dizayn tizimi
 │   └── progress.md        bajarilgan va qolgan ishlar
-└── .github/workflows/     CI
+└── .github/workflows/     CI: frontend, backend, integratsiya
 ```
 
 ## Frontend + backend birga (lokal)

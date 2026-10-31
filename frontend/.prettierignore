@@ -1,6 +1,7 @@
 .next
 .next-backend
 .next-local
+.next-resilience
 node_modules
 coverage
 playwright-report

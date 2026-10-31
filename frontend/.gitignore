@@ -12,6 +12,7 @@
 /.next/
 /.next-backend/
 /.next-local/
+/.next-resilience/
 /out/
 /build
 next-env.d.ts

@@ -10,8 +10,15 @@ const nextConfig: NextConfig = {
   // Faqat dev: start.ps1 -Tunnel (Cloudflare Tunnel) orqali ochilganda HMR va dev resurslari
   allowedDevOrigins: ["*.trycloudflare.com"],
   cacheComponents: true,
+  // `use cache` — standart ishlovchi + xato bilan tugagan to'ldirishdan keyin osilib qolmaslik
+  // tuzatishi (Next 16.4.3 xatosi; batafsil — cache-handler.mjs)
+  cacheHandlers: { default: require.resolve("./cache-handler.mjs") },
   partialPrefetching: true,
   poweredByHeader: false,
+  // Siqish — reverse proxy'da (Caddy `encode`, scripts/local/Caddyfile; productionda ham). Next'ning
+  // o'z gzip'i oqimli javob xato bilan tugaganda oxirgi bo'lakni ba'zan yubormaydi — sahifa
+  // "yuklanmoqda"da qolardi (backend javob bermasa, admin panel; e2e/resilience.spec.ts)
+  compress: false,
   // Brauzer xavfsizlik sarlavhalari — barcha sahifalarga (ADR-0013)
   async headers() {
     return [

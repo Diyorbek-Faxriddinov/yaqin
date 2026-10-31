@@ -63,6 +63,13 @@ test.describe("Kirish va himoyalangan sahifalar", () => {
 
   test("kirish sahifasi accessibility", async ({ page }) => {
     await page.goto("/kirish");
+    // Demo tugmasi jonlanguncha faolsiz; faollashish animatsiyasi o'rtasida kontrast o'lchanmasin
+    await expect(
+      page.getByRole("button", { name: "Demo foydalanuvchi sifatida kirish" }),
+    ).toBeEnabled();
+    await page.waitForFunction(() =>
+      document.getAnimations().every((animation) => animation.playState !== "running"),
+    );
     // Uchinchi tomon vidjetlari (Telegram, Google iframe'lari) bizning nazoratimizda emas
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa"])

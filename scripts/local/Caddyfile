@@ -8,6 +8,9 @@
 }
 
 http://localhost:{$YAQIN_PORT:8090} {
+	# Siqish shu yerda (Next.js'da o'chirilgan — next.config.ts, `compress: false`)
+	encode zstd gzip
+
 	# API va yuklangan rasmlar (/api/v1/media/) — Django
 	handle /api/v1/* {
 		reverse_proxy {$YAQIN_BACKEND:127.0.0.1:8000}

@@ -50,8 +50,23 @@ Oxirgi yangilanish: 2026-10-31
 | 4.2   | Mijoz kirishi: Telegram va Google                      | ✅    |
 | 4.3   | Xavfsizlik sarlavhalari (CSP, Permissions-Policy)      | ✅    |
 | 4.4   | Mustahkamlik va tezlik                                 | ✅    |
-| 4.5   | Telefonda sinov                                        | 🔄    |
-| 4.6   | CI'da integratsiya, hujjatlar                          | ⏳    |
+| 4.5   | Telefonda sinov                                        | ✅    |
+| 4.6   | CI'da integratsiya, hujjatlar                          | 🔄    |
+
+## 4.6 natijalari — CI'da integratsiya
+
+- **`.github/workflows/integration.yml`** — har push va PR'da (frontend, backend, kontrakt yoki Caddyfile oʻzgarsa): PostgreSQL + PostGIS + Redis, Django, Next.js, Caddy (versiya va SHA-512 mahkamlangan — relizdan yuklab, qayta hisoblab tekshirilgan), Playwright, `npm run e2e:backend`. Xato boʻlsa — hisobot artefakt sifatida. GitHub'da hali ishga tushmagan (siz push qilganingizda birinchi marta ishlaydi); lokal taqlid: `CI=1`, UTC vaqt, 2 worker (GitHub runner kabi) — toʻliq aylana ~6 daqiqa.
+- **CI taqlidi uchta haqiqiy xatoni ochdi** (hammasi productionga ham taalluqli — backend uzilganda):
+  1. **Next 16.4.3 kesh ishlovchisi:** xato bilan tugagan `use cache` toʻldirishidan keyin kalit abadiy "kutilmoqda" holatida qolardi — shu kalitni soʻragan har bir sahifa jarayon qayta ishga tushguncha ochilmasdi (16.5 canary'da ham tuzatilmagan). `frontend/cache-handler.mjs` — standart ishlovchi + bir qatorli tuzatish; unit test Next'ning oʻz ishlovchisi hali ham osilishini ham tekshiradi (tuzatilsa — bilib olamiz).
+  2. **Vaqt chegarasi yoʻqolishi:** Next eskirgan keshni fonda qayta toʻldirganda soʻrovdan `signal` ni olib tashlaydi — `AbortSignal.timeout` bilan qilingan vaqt chegarasi ishlamay, soʻrov javob bermaydigan backendni abadiy kutardi. `createBackendFetch` endi taymer bilan poygada; rasm proksisi ham shu orqali (avval umuman vaqt chegarasi yoʻq edi).
+  3. **Next'ning gzip'i:** xato bilan tugagan oqimli javobni baʼzan yopmasdi (8 tadan 1). Siqish reverse proxy'ga oʻtkazildi (`compress: false`, Caddyfile'da `encode zstd gzip`) — productionda ham shunday boʻlishi shart.
+- **Test infratuzilmasi:** "backend javob bermasa" serveri build'ning alohida nusxasida (`.next-resilience`) — avval 3101 bilan umumiy ish vaqti keshi xatolarni tasodifiy qilib yashirardi; "javob bermaydigan" port soket xatosidan yiqilmaydi; demo kirish tugmasi sahifa jonlanguncha faolsiz (admin kirishidagi kabi — undan oldingi bosish jim yoʻqolardi; E2E'da 4 ta beqaror test shundan edi).
+- **Hujjatlar:** ADR-0011 (demo va haqiqiy rejim) yangilandi; ADR-0007 va ADR-0013 ga 4.4–4.5 dagi qoʻshimchalar asl matn ichidan sanali "Yangilanish" boʻlimlariga koʻchirildi (ADR qoidasi: asl matn oʻzgarmaydi); ADR indeksiga shu tartib yozildi. README'lar — CI va yangi kelishuvlar.
+- Testlar: backend 481, frontend unit 225 (+4), E2E backend 261 (+1; CI taqlidida 0 beqaror), demo 246.
+
+**Ochiq masala:** backend butunlay oʻchgan holda bir nechta admin sahifasi brauzerda parallel ochilsa, HTML oqimi xato sahifasidan keyin baʼzan yopilmaydi (foydalanuvchi xato sahifasini ~2 s da koʻradi, lekin brauzer "yuklanmoqda" holatida qoladi). Faqat admin panel, faqat backend oʻchganda; ildizi Next ichida, topilmadi. E2E foydalanuvchi koʻradigan natijani tekshiradi.
+
+**5-bosqich uchun:** reverse proxy siqishi majburiy (Next'da oʻchirilgan); `cache-handler.mjs` server bilan birga joylanadi.
 
 ## 4.5 — tayyorgarlik (telefondagi sinovdan oldin)
 

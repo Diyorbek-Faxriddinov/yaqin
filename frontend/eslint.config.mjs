@@ -25,6 +25,10 @@ const eslintConfig = defineConfig([
     ".next/**",
     ".next-backend/**",
     ".next-local/**",
+    ".next-resilience/**",
+    // Playwright hisobotlari (CI rejimida HTML reporter)
+    "playwright-report/**",
+    "test-results/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

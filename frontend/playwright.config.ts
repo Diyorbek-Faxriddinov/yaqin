@@ -64,7 +64,8 @@ const backendServers: PlaywrightTestConfig["webServer"] = [
     },
   },
   {
-    command: `node -e "require('net').createServer(() => {}).listen(${HANGING_PORT}, '127.0.0.1')"`,
+    // Soket xatosi (mijoz ulanishni keskin uzsa) jarayonni yiqitmasin — "javob bermaydigan" qolsin
+    command: `node -e "require('net').createServer((s) => s.on('error', () => {})).listen(${HANGING_PORT}, '127.0.0.1')"`,
     port: HANGING_PORT,
     reuseExistingServer: false,
   },
@@ -75,7 +76,10 @@ const backendServers: PlaywrightTestConfig["webServer"] = [
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
-      NEXT_DIST_DIR: ".next-backend",
+      // Build'ning alohida nusxasi (e2e-backend.mjs): Next ish vaqtida sahifalarni build papkasiga
+      // yozadi — 3101 bilan umumiy bo'lsa, ikki xil backend'dagi serverlar bir-birining keshini
+      // o'qiydi (productionda yo'q holat; to'liq aylanada bu test vaqti-vaqti bilan osilib qolardi)
+      NEXT_DIST_DIR: ".next-resilience",
       API_URL: `http://127.0.0.1:${HANGING_PORT}/api/v1`,
       API_TIMEOUT_MS: "1500",
     },

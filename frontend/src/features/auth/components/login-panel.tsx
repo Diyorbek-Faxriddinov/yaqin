@@ -179,7 +179,8 @@ export function LoginPanel({
             <Button
               size="lg"
               className="w-full"
-              disabled={demoLogin.isPending}
+              // Sahifa jonlanguncha faolsiz — undan oldingi bosish jim yo'qolardi (admin kirishidagi kabi)
+              disabled={!hydrated || demoLogin.isPending}
               onClick={() => demoLogin.mutate()}
             >
               {demoLogin.isPending ? (

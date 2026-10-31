@@ -25,6 +25,17 @@ test.describe("Backend javob bermasa", () => {
     expect(Date.now() - started).toBeLessThan(15_000);
   });
 
+  test("rasm (next/image manbasi) javobsiz qolsa — cheksiz kutmaydi", async ({ request }) => {
+    // Optimizator rasmni Next.js'ning o'zidan (/api/v1/media/...) so'raydi, u esa backenddan
+    // oladi; vaqt chegarasisiz sahifadagi rasmlar va `load` hodisasi osilib qolardi
+    const started = Date.now();
+    const response = await request.get("/api/v1/media/businesses/x/rasm.webp", {
+      timeout: 15_000,
+    });
+    expect(response.status()).toBe(503);
+    expect(Date.now() - started).toBeLessThan(10_000);
+  });
+
   test("admin panel: sessiya tekshiruvi javobsiz qolsa — xato sahifasi", async ({
     page,
     context,
@@ -32,7 +43,11 @@ test.describe("Backend javob bermasa", () => {
     await context.addCookies([
       { name: "adminsessionid", value: "sinov", domain: "localhost", path: "/" },
     ]);
-    await page.goto("/admin");
+    // Foydalanuvchi ko'radigan natija tekshiriladi, `load` emas: parallel admin yuklashlarida HTML
+    // oqimi xato sahifasidan keyin ba'zan ochiq qoladi (Next ichida; docs/progress.md, 4.6 ochiq masala)
+    const started = Date.now();
+    await page.goto("/admin", { waitUntil: "commit" });
     await expect(page.getByRole("heading", { name: ERROR_TITLE })).toBeVisible({ timeout: 15_000 });
+    expect(Date.now() - started).toBeLessThan(15_000);
   });
 });
