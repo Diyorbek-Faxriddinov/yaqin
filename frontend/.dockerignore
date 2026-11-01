@@ -1,0 +1,14 @@
+# Image'ga faqat build uchun kerakli manba kiradi: lokal muhit, build natijalari va testlar emas
+.env*
+!.env.example
+node_modules
+.next
+.next-*
+test-results
+playwright-report
+e2e
+coverage
+public/vendor
+tsconfig.tsbuildinfo
+Dockerfile
+.dockerignore

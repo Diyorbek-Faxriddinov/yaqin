@@ -1,6 +1,6 @@
 # 0004. Backend steki
 
-- **Holat:** Qabul qilingan; 2026-10-26 da yangilangan (OpenAPI manbasi; fon vazifalari)
+- **Holat:** Qabul qilingan; 2026-10-26 va 2026-11-01 da yangilangan (OpenAPI manbasi; fon vazifalari; fayllar)
 - **Sana:** 2026-10-25
 
 ## Kontekst
@@ -43,3 +43,7 @@ Celery + beat rasmlarni qayta ishlash va davriy tozalash uchun rejalashtirilgan 
 Qaror: Celery ishlatilmaydi; tozalash — `python manage.py cleanup` buyrugʻi, serverda cron yoki systemd timer bilan (5-bosqich). Redis — faqat kesh (cheklov va bloklash hisoblagichlari barcha jarayonlar uchun umumiy). Natija: bitta jarayon (worker) va bitta broker kam, xato va kuzatish nuqtalari ham kam. Bildirishnomalar yoki ogʻir fon ishlari paydo boʻlsa, Celery qaytadan koʻrib chiqiladi.
 
 Testlar `factory_boy` oʻrniga tiplangan yordamchi funksiyalar bilan (`tests/factories.py`) — mypy strict bilan mos.
+
+## Yangilanish (2026-11-01): fayllar saqlanishi
+
+Rasmlar S3 oʻrniga serverdagi diskda saqlanadi va Caddy orqali beriladi. S3 faqat zaxira nusxalar uchun ishlatiladi. Sabab va shartlar — ADR-0005 yangilanishida. WSGI server — gunicorn (`backend/Dockerfile`).

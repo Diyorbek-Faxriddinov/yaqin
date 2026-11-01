@@ -4,14 +4,14 @@ Oxirgi yangilanish: 2026-11-01
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat                                      |
-| ------- | --------------------------------- | ------------------------------------------ |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                            |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                            |
-| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                            |
-| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))  |
-| 4       | Integratsiya va yakuniy tekshiruv | 🔄 Jarayonda ([reja](integration-plan.md)) |
-| 5       | Hosting va domen                  | ⏳                                         |
+| Bosqich | Mazmuni                           | Holat                                         |
+| ------- | --------------------------------- | --------------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                               |
+| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                               |
+| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                               |
+| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))     |
+| 4       | Integratsiya va yakuniy tekshiruv | ✅ Tasdiqlangan ([reja](integration-plan.md)) |
+| 5       | Hosting va domen                  | 🔄 Jarayonda ([tuzilma](deployment.md))       |
 
 ## 2-bosqich qadamlari
 
@@ -41,6 +41,47 @@ Oxirgi yangilanish: 2026-11-01
 | 3.7   | Admin API: moderatsiya, kategoriyalar, administratorlar, sozlamalar                  | ✅    |
 | 3.8   | Statistika, hisobot havolasi, davriy vazifalar, xavfsizlik                           | ✅    |
 | 3.9   | Kontrakt boʻyicha yakuniy tekshiruv, hujjatlar                                       | ✅    |
+
+## 5-bosqich qadamlari
+
+| Qadam | Mazmuni                                                                      | Holat |
+| ----- | ---------------------------------------------------------------------------- | ----- |
+| 5.1   | Provayder va domen                                                           | ✅    |
+| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test | 🔄    |
+| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                | ⏳    |
+| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google | ⏳    |
+| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring              | ⏳    |
+| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                  | ⏳    |
+
+## 5.2 natijalari — production sozlamalari ([deployment.md](deployment.md))
+
+- **Docker:**
+  - `backend/Dockerfile`: Python 3.13, GDAL, gunicorn 26.2.0, root huquqisiz.
+  - `frontend/Dockerfile`: Next.js standalone, uch bosqichli build.
+  - `deploy/compose.yaml`:
+    - xizmatlar: PostGIS, Redis, backend, kunlik tozalash, frontend, Caddy;
+    - healthcheck'lar, log hajmi cheklovi;
+    - tashqariga faqat 80/443;
+    - baza roli superuser emas.
+- **Caddy (`deploy/Caddyfile`):**
+  - Let's Encrypt, `www` → asosiy domen (301);
+  - siqish: `zstd`, `gzip`;
+  - rasmlar diskdan (`immutable`, `nosniff`);
+  - API so'rovlari 10 MB gacha;
+  - kesh webhook'i tashqaridan yopiq;
+  - loglar yozilmaydi (maxfiylik).
+- **Rasm optimizatori uchun ichki manzil** (`MEDIA_INTERNAL_URL`, `src/lib/api/media-url.ts`, unit test). Productionda Django rasmlarni bermaydi, avval optimizator `API_URL/media` ga murojaat qilardi — productionda rasmlar ochilmay qolardi.
+- **CI (`.github/workflows/docker.yml`):** image'lar yig'iladi, butun to'plam ishga tushadi, `deploy/smoke.sh` 20 ta tekshiruv qiladi.
+- **Mahalliy taqlid** (Docker'siz):
+  - standalone build, production Caddyfile nusxasi, waitress;
+  - tekshirildi: sahifalar, qidiruv, siqish, rasmlar (Caddy va optimizator), `www` yo'naltirish, 10 MB cheklovi (413), webhook (tashqaridan 404, ichkaridan 200).
+- **Topilgan va hal qilingan muammo:** standalone server `HOSTNAME=127.0.0.1` bilan bosh sahifani o'ziga 307 bilan yo'naltirardi. Docker'dagi `0.0.0.0` bilan to'g'ri ishlaydi, Dockerfile'da izoh bilan mahkamlandi.
+- **Tekshirilmagan:** Dockerfile'lar va compose haqiqiy Docker'da faqat GitHub Actions'da ishlaydi (lokalda Docker yo'q). `docker compose config` va `caddy validate` bilan lokal tekshirildi.
+
+## 5.1 natijalari — provayder va domen
+
+- **Servercore (Toshkent)** tanlandi (ADR-0005 yangilanishi). Akkaunt tekshiruvda, server hali yaratilmagan — pul sarflanmagan.
+- **Domen `yaqinapp.uz`** — faol, 2027-11-01 gacha (registrator Eskiz). `yaqin.uz` egasi bilan gaplashilmoqda.
 
 ## 4-bosqich qadamlari
 

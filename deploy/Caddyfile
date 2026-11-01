@@ -1,0 +1,57 @@
+# Production reverse proxy (deploy/compose.yaml). Lokal nusxasi — scripts/local/Caddyfile.
+#
+# SITE_ADDRESS: productionda "yaqinapp.uz, www.yaqinapp.uz" — Caddy Let's Encrypt sertifikatini
+# o'zi oladi va yangilaydi, http'ni https'ga yo'naltiradi. CI'da — "http://localhost".
+# Kirish loglari yozilmaydi: so'rov manzilida joylashuv (lat/lng) bo'lishi mumkin (maxfiylik siyosati).
+{
+	admin off
+	email {$ACME_EMAIL}
+}
+
+{$SITE_ADDRESS} {
+	# www → asosiy domen (bitta kanonik manzil)
+	@www header_regexp www Host ^www\.(.+)$
+	redir @www https://{re.www.1}{uri} permanent
+
+	# Siqish shu yerda (Next.js'da o'chirilgan — next.config.ts, `compress: false`)
+	encode zstd gzip
+
+	header {
+		-Server
+		# HSTS — HTTPS to'liq ishlashi tasdiqlangach (5.6) yoqiladi; yoqilgach brauzerlar saytni
+		# HTTP orqali ochmaydi, xato sozlamani tezda qaytarib bo'lmaydi
+		# Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+
+	# Kesh yangilash webhook'i faqat ichki tarmoqdan (backend → frontend:3000 to'g'ridan-to'g'ri)
+	handle /api/revalidate {
+		respond 404
+	}
+
+	# Yuklangan rasmlar — diskdan to'g'ridan-to'g'ri. Fayl nomi rasm ID'si, mazmuni o'zgarmaydi
+	handle_path /api/v1/media/* {
+		root * /srv/media
+		header Cache-Control "public, max-age=31536000, immutable"
+		header X-Content-Type-Options nosniff
+		file_server
+	}
+
+	# API — Django. Rasm yuklash 5 MB gacha (backend tekshiradi), multipart bilan zaxira
+	handle /api/v1/* {
+		request_body {
+			max_size 10MB
+		}
+		reverse_proxy backend:8000
+	}
+
+	# Qolgan hammasi (sahifalar) — Next.js
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
+
+# Ichki fayl serveri: Next.js rasm optimizatori uchun (MEDIA_INTERNAL_URL). Tashqariga ochilmagan
+http://:8081 {
+	root * /srv/media
+	file_server
+}

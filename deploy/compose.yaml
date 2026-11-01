@@ -1,0 +1,160 @@
+# Production to'plami (ADR-0005): bitta VPS, Docker Compose. Tashqariga faqat Caddy (80/443) ochiq.
+#
+#   cd deploy && cp env.example .env   # qiymatlarni to'ldiring (maxfiy — Git'ga kirmaydi)
+#   docker compose up -d
+#
+# Batafsil (birinchi joylash, yangilash, migratsiyalar): docs/deployment.md
+
+name: yaqin
+
+x-logging: &logging # Loglar diskni to'ldirmasin
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD kerak}
+      # postgres/init/01-yaqin.sh — ilova roli (superuser emas) va kengaytmalar, faqat birinchi ishga tushishda
+      APP_DB_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD kerak}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    command:
+      ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=50"]
+    healthcheck:
+      # TCP orqali: init skriptlari vaqtida server faqat unix socket'da — tayyor deb hisoblanmasin
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d yaqin"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    # Faqat kesh (cheklov va bloklash hisoblagichlari) — diskka yozilmaydi
+    command:
+      [
+        "redis-server",
+        "--save",
+        "",
+        "--appendonly",
+        "no",
+        "--maxmemory",
+        "64mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  backend:
+    image: ${BACKEND_IMAGE:-yaqin-backend:local}
+    build: ../backend
+    restart: unless-stopped
+    environment: &backend-env
+      DJANGO_DEBUG: "false"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY kerak}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:?TOTP_ENCRYPTION_KEY kerak}
+      # "backend" — frontend serverining ichki so'rovlari (Host: backend:8000)
+      DJANGO_ALLOWED_HOSTS: ${SITE_DOMAIN:?SITE_DOMAIN kerak},backend,localhost,127.0.0.1
+      DJANGO_ALLOWED_ORIGINS: ${SITE_URL:?SITE_URL kerak}
+      DATABASE_HOST: db
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      REDIS_URL: redis://redis:6379/0
+      FRONTEND_REVALIDATE_URL: http://frontend:3000/api/revalidate
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?REVALIDATE_SECRET kerak}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # HTTPS Caddy'da: u http'ni https'ga yo'naltiradi. Django o'zi yo'naltirmaydi — frontend'ning
+      # ichki http so'rovlari ham shu backendga keladi
+      DJANGO_BEHIND_HTTPS_PROXY: "true"
+      DJANGO_SSL_REDIRECT: "false"
+      DJANGO_NUM_PROXIES: "1"
+    volumes:
+      - media:/app/media
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=5)",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    logging: *logging
+
+  # Kunlik tozalash (muddati o'tgan sessiyalar, 12 oydan eski yopilgan so'rovlar) — ADR-0004
+  scheduler:
+    image: ${BACKEND_IMAGE:-yaqin-backend:local}
+    restart: unless-stopped
+    environment: *backend-env
+    command:
+      ["sh", "-c", "while true; do python manage.py cleanup; sleep 86400; done"]
+    depends_on:
+      backend: { condition: service_healthy }
+    logging: *logging
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-yaqin-frontend:local}
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8000/api/v1
+      # next/image optimizatori rasmlarni Caddy'ning ichki fayl serveridan oladi (media-url.ts)
+      MEDIA_INTERNAL_URL: http://caddy:8081
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    depends_on:
+      backend: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/robots.txt').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    logging: *logging
+
+  caddy:
+    image: caddy:2.11.7-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS kerak}
+      # Let's Encrypt ogohlantirishlari (sertifikat muddati) uchun
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL kerak}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - media:/srv/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend: { condition: service_healthy }
+      frontend: { condition: service_healthy }
+    logging: *logging
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:

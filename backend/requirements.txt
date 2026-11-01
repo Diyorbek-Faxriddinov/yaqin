@@ -15,3 +15,5 @@ cryptography==50.0.2
 Pillow==13.0.0
 # Productionda kesh: cheklov (throttle) va bloklash hisoblagichlari barcha jarayonlar uchun umumiy
 redis==8.1.0
+# Productionda WSGI server (Linux; backend/Dockerfile). Lokal Windows'da — waitress (requirements-dev)
+gunicorn==26.2.0

@@ -1,0 +1,14 @@
+# Image'ga faqat ilova kodi kiradi: maxfiy fayllar, lokal muhit, testlar va demo maʼlumotlar emas
+.env
+.env.*
+!.env.example
+.venv
+media
+demo
+tests
+**/__pycache__
+.mypy_cache
+.pytest_cache
+.ruff_cache
+Dockerfile
+.dockerignore

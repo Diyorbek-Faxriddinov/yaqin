@@ -8,7 +8,7 @@ Har bir muhim qaror qisqa hujjat sifatida yoziladi: **kontekst → qaror → oqi
 | 0002 | [Modulli monolit](0002-modulli-monolit.md)                                                   | Qabul qilingan              |
 | 0003 | [Frontend steki](0003-frontend-steki.md)                                                     | Qabul qilingan              |
 | 0004 | [Backend steki](0004-backend-steki.md)                                                       | Qabul qilingan, yangilangan |
-| 0005 | [Hosting va maʼlumotlar lokalizatsiyasi](0005-hosting-va-lokalizatsiya.md)                   | Qabul qilingan              |
+| 0005 | [Hosting va maʼlumotlar lokalizatsiyasi](0005-hosting-va-lokalizatsiya.md)                   | Qabul qilingan, yangilangan |
 | 0006 | [Autentifikatsiya usullari](0006-autentifikatsiya.md)                                        | Qabul qilingan, yangilangan |
 | 0007 | [Boshqariladigan biznes modeli](0007-boshqariladigan-biznes.md)                              | Qabul qilingan, yangilangan |
 | 0008 | [MVP doirasi](0008-mvp-doirasi.md)                                                           | Qabul qilingan              |

@@ -7,6 +7,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   // Haqiqiy backend bilan E2E alohida build'da (demo build'ni buzmaslik uchun): NEXT_DIST_DIR=.next-backend
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // Production Docker image (frontend/Dockerfile): faqat kerakli fayllar bilan mustaqil server.
+  // Lokal ishlab chiqish va E2E `next start` bilan — odatiy build
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   // Faqat dev: start.ps1 -Tunnel (Cloudflare Tunnel) orqali ochilganda HMR va dev resurslari
   allowedDevOrigins: ["*.trycloudflare.com"],
   cacheComponents: true,

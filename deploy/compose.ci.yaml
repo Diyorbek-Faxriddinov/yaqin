@@ -1,0 +1,6 @@
+# Faqat CI (.github/workflows/docker.yml): frontend image'i build vaqtida backendga
+# host tarmog'i orqali ulanadi. Productionda backend porti tashqariga ochilmaydi.
+services:
+  backend:
+    ports:
+      - "127.0.0.1:8000:8000"

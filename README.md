@@ -2,7 +2,7 @@
 
 **Yaqin** — Toshkentdagi hali onlayn boʻlmagan doʻkonlar, ustalar, salonlar, kafelar va boshqa kundalik xizmatlarni xaritada koʻrsatuvchi platforma. Foydalanuvchi oʻziga eng yaqin xizmatni topadi: narxlar, ish vaqti, manzil va sharhlar bilan. Bizneslarni platforma jamoasi joyida, egasining roziligi bilan qoʻshadi.
 
-> **Holat:** frontend (2-bosqich) va backend (3-bosqich) tayyor — backend kontraktdagi barcha endpointlarni bajaradi; keyingi qadam — integratsiya (4-bosqich), [docs/progress.md](docs/progress.md). Standart holatda frontend **demo (mock) maʼlumotlar** bilan ishlaydi (backend bilan — pastdagi "Frontend + backend birga") — demo har bir sahifada koʻrsatiladi va demo sayt qidiruv tizimlariga yopiq. Batafsil — [docs/progress.md](docs/progress.md).
+> **Holat:** frontend, backend va ularning integratsiyasi (2–4-bosqichlar) tayyor; hozir — hosting (5-bosqich: Servercore, `yaqinapp.uz`; tuzilma — [docs/deployment.md](docs/deployment.md)). Standart holatda frontend **demo (mock) maʼlumotlar** bilan ishlaydi (backend bilan — pastdagi "Frontend + backend birga") — demo har bir sahifada koʻrsatiladi va demo sayt qidiruv tizimlariga yopiq. Batafsil — [docs/progress.md](docs/progress.md).
 
 ## Imkoniyatlar
 
@@ -62,7 +62,7 @@ Brauzer ──► Next.js (SSR, kesh teglari) ──► /api/v1 ──► demo: 
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Frontend | Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind CSS 4, shadcn/ui, next-intl, TanStack Query, React Hook Form + Zod, MapLibre |
 | Backend  | Django 5.2 LTS + DRF, PostgreSQL 17 + PostGIS, Redis (kesh), pytest + kontrakt testlari                                                                |
-| Infra    | GitHub Actions, Docker Compose, Oʻzbekistondagi hosting (5-bosqich)                                                                                    |
+| Infra    | GitHub Actions, Docker Compose, Caddy (HTTPS), Servercore VPS — Toshkent ([docs/deployment.md](docs/deployment.md))                                    |
 
 Har bir tanlovning sababi — [docs/adr](docs/adr).
 
@@ -80,6 +80,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 .
 ├── frontend/              Next.js ilovasi (batafsil: frontend/README.md)
 ├── backend/               Django ilovasi (batafsil: backend/README.md)
+├── deploy/                production: Docker Compose, Caddyfile, smoke test (docs/deployment.md)
 ├── docs/
 │   ├── api/openapi.yaml   API kontrakti
 │   ├── adr/               arxitektura qarorlari
@@ -87,9 +88,10 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 │   ├── integration-plan.md 4-bosqich (integratsiya) rejasi
 │   ├── auth-setup.md       Telegram, Google va admin 2FA'ni sozlash
 │   ├── phone-testing.md    telefonda sinash roʻyxati
+│   ├── deployment.md       production tuzilmasi va joylash
 │   ├── design-system.md   dizayn tizimi
 │   └── progress.md        bajarilgan va qolgan ishlar
-└── .github/workflows/     CI: frontend, backend, integratsiya
+└── .github/workflows/     CI: frontend, backend, integratsiya, Docker (production to'plami)
 ```
 
 ## Frontend + backend birga (lokal)
