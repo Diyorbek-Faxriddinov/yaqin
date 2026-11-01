@@ -1,0 +1,2227 @@
+{
+  "kiyim-kechak": [
+    {
+      "key": "size",
+      "name": {
+        "uz": "Oʻlcham",
+        "ru": "Размер"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "xs",
+          "label": {
+            "uz": "XS",
+            "ru": "XS"
+          }
+        },
+        {
+          "value": "s",
+          "label": {
+            "uz": "S",
+            "ru": "S"
+          }
+        },
+        {
+          "value": "m",
+          "label": {
+            "uz": "M",
+            "ru": "M"
+          }
+        },
+        {
+          "value": "l",
+          "label": {
+            "uz": "L",
+            "ru": "L"
+          }
+        },
+        {
+          "value": "xl",
+          "label": {
+            "uz": "XL",
+            "ru": "XL"
+          }
+        },
+        {
+          "value": "2xl",
+          "label": {
+            "uz": "2XL",
+            "ru": "2XL"
+          }
+        },
+        {
+          "value": "3xl",
+          "label": {
+            "uz": "3XL",
+            "ru": "3XL"
+          }
+        },
+        {
+          "value": "4xl",
+          "label": {
+            "uz": "4XL",
+            "ru": "4XL"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "material",
+      "name": {
+        "uz": "Mato",
+        "ru": "Материал"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "cotton",
+          "label": {
+            "uz": "Paxta",
+            "ru": "Хлопок"
+          }
+        },
+        {
+          "value": "wool",
+          "label": {
+            "uz": "Jun",
+            "ru": "Шерсть"
+          }
+        },
+        {
+          "value": "silk",
+          "label": {
+            "uz": "Ipak",
+            "ru": "Шёлк"
+          }
+        },
+        {
+          "value": "linen",
+          "label": {
+            "uz": "Zigʻir",
+            "ru": "Лён"
+          }
+        },
+        {
+          "value": "denim",
+          "label": {
+            "uz": "Jinsi",
+            "ru": "Деним"
+          }
+        },
+        {
+          "value": "leather",
+          "label": {
+            "uz": "Charm",
+            "ru": "Кожа"
+          }
+        },
+        {
+          "value": "synthetic",
+          "label": {
+            "uz": "Sintetika",
+            "ru": "Синтетика"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "season",
+      "name": {
+        "uz": "Mavsum",
+        "ru": "Сезон"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "summer",
+          "label": {
+            "uz": "Yoz",
+            "ru": "Лето"
+          }
+        },
+        {
+          "value": "winter",
+          "label": {
+            "uz": "Qish",
+            "ru": "Зима"
+          }
+        },
+        {
+          "value": "demi",
+          "label": {
+            "uz": "Bahor-kuz",
+            "ru": "Демисезон"
+          }
+        },
+        {
+          "value": "all",
+          "label": {
+            "uz": "Barcha mavsum",
+            "ru": "Всесезонный"
+          }
+        }
+      ],
+      "filterable": false
+    }
+  ],
+  "poyabzal": [
+    {
+      "key": "size",
+      "name": {
+        "uz": "Oʻlcham",
+        "ru": "Размер"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "35",
+          "label": {
+            "uz": "35",
+            "ru": "35"
+          }
+        },
+        {
+          "value": "36",
+          "label": {
+            "uz": "36",
+            "ru": "36"
+          }
+        },
+        {
+          "value": "37",
+          "label": {
+            "uz": "37",
+            "ru": "37"
+          }
+        },
+        {
+          "value": "38",
+          "label": {
+            "uz": "38",
+            "ru": "38"
+          }
+        },
+        {
+          "value": "39",
+          "label": {
+            "uz": "39",
+            "ru": "39"
+          }
+        },
+        {
+          "value": "40",
+          "label": {
+            "uz": "40",
+            "ru": "40"
+          }
+        },
+        {
+          "value": "41",
+          "label": {
+            "uz": "41",
+            "ru": "41"
+          }
+        },
+        {
+          "value": "42",
+          "label": {
+            "uz": "42",
+            "ru": "42"
+          }
+        },
+        {
+          "value": "43",
+          "label": {
+            "uz": "43",
+            "ru": "43"
+          }
+        },
+        {
+          "value": "44",
+          "label": {
+            "uz": "44",
+            "ru": "44"
+          }
+        },
+        {
+          "value": "45",
+          "label": {
+            "uz": "45",
+            "ru": "45"
+          }
+        },
+        {
+          "value": "46",
+          "label": {
+            "uz": "46",
+            "ru": "46"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "material",
+      "name": {
+        "uz": "Material",
+        "ru": "Материал"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "leather",
+          "label": {
+            "uz": "Charm",
+            "ru": "Кожа"
+          }
+        },
+        {
+          "value": "faux_leather",
+          "label": {
+            "uz": "Sunʼiy charm",
+            "ru": "Искусственная кожа"
+          }
+        },
+        {
+          "value": "suede",
+          "label": {
+            "uz": "Zamsh",
+            "ru": "Замша"
+          }
+        },
+        {
+          "value": "textile",
+          "label": {
+            "uz": "Mato",
+            "ru": "Текстиль"
+          }
+        },
+        {
+          "value": "rubber",
+          "label": {
+            "uz": "Rezina",
+            "ru": "Резина"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "season",
+      "name": {
+        "uz": "Mavsum",
+        "ru": "Сезон"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "summer",
+          "label": {
+            "uz": "Yoz",
+            "ru": "Лето"
+          }
+        },
+        {
+          "value": "winter",
+          "label": {
+            "uz": "Qish",
+            "ru": "Зима"
+          }
+        },
+        {
+          "value": "demi",
+          "label": {
+            "uz": "Bahor-kuz",
+            "ru": "Демисезон"
+          }
+        },
+        {
+          "value": "all",
+          "label": {
+            "uz": "Barcha mavsum",
+            "ru": "Всесезонный"
+          }
+        }
+      ],
+      "filterable": false
+    }
+  ],
+  "elektronika": [
+    {
+      "key": "condition",
+      "name": {
+        "uz": "Holati",
+        "ru": "Состояние"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "new",
+          "label": {
+            "uz": "Yangi",
+            "ru": "Новый"
+          }
+        },
+        {
+          "value": "used",
+          "label": {
+            "uz": "Ishlatilgan",
+            "ru": "Б/у"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "memory",
+      "name": {
+        "uz": "Xotira",
+        "ru": "Память"
+      },
+      "type": "number",
+      "unit": "GB",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "oziq-ovqat": [
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "producer",
+      "name": {
+        "uz": "Ishlab chiqaruvchi",
+        "ru": "Производитель"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "uy-rozgor": [
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "qurilish-mollari": [
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "price_unit",
+      "name": {
+        "uz": "Narx birligi",
+        "ru": "Единица цены"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "piece",
+          "label": {
+            "uz": "Dona",
+            "ru": "Штука"
+          }
+        },
+        {
+          "value": "kg",
+          "label": {
+            "uz": "Kilogramm",
+            "ru": "Килограмм"
+          }
+        },
+        {
+          "value": "m",
+          "label": {
+            "uz": "Metr",
+            "ru": "Метр"
+          }
+        },
+        {
+          "value": "m2",
+          "label": {
+            "uz": "Kvadrat metr",
+            "ru": "Квадратный метр"
+          }
+        },
+        {
+          "value": "m3",
+          "label": {
+            "uz": "Kub metr",
+            "ru": "Кубический метр"
+          }
+        },
+        {
+          "value": "bag",
+          "label": {
+            "uz": "Qop",
+            "ru": "Мешок"
+          }
+        },
+        {
+          "value": "litre",
+          "label": {
+            "uz": "Litr",
+            "ru": "Литр"
+          }
+        }
+      ],
+      "filterable": false
+    }
+  ],
+  "kosmetika": [
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "volume",
+      "name": {
+        "uz": "Hajmi",
+        "ru": "Объём"
+      },
+      "type": "number",
+      "unit": "ml",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "oyinchoqlar": [
+    {
+      "key": "age",
+      "name": {
+        "uz": "Yosh",
+        "ru": "Возраст"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "0-3",
+          "label": {
+            "uz": "0–3 yosh",
+            "ru": "0–3 года"
+          }
+        },
+        {
+          "value": "3-6",
+          "label": {
+            "uz": "3–6 yosh",
+            "ru": "3–6 лет"
+          }
+        },
+        {
+          "value": "6-12",
+          "label": {
+            "uz": "6–12 yosh",
+            "ru": "6–12 лет"
+          }
+        },
+        {
+          "value": "12-plus",
+          "label": {
+            "uz": "12 yoshdan katta",
+            "ru": "Старше 12 лет"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "gul-sovga": [
+    {
+      "key": "stems",
+      "name": {
+        "uz": "Gullar soni",
+        "ru": "Количество цветов"
+      },
+      "type": "number",
+      "unit": "dona",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "restoranlar": [
+    {
+      "key": "portion",
+      "name": {
+        "uz": "Porsiya",
+        "ru": "Порция"
+      },
+      "type": "number",
+      "unit": "g",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "spicy",
+      "name": {
+        "uz": "Achchiq",
+        "ru": "Острое"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "vegetarian",
+      "name": {
+        "uz": "Vegetarian",
+        "ru": "Вегетарианское"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "kafelar": [
+    {
+      "key": "portion",
+      "name": {
+        "uz": "Porsiya",
+        "ru": "Порция"
+      },
+      "type": "number",
+      "unit": "g",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "spicy",
+      "name": {
+        "uz": "Achchiq",
+        "ru": "Острое"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "vegetarian",
+      "name": {
+        "uz": "Vegetarian",
+        "ru": "Вегетарианское"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "choyxonalar": [
+    {
+      "key": "portion",
+      "name": {
+        "uz": "Porsiya",
+        "ru": "Порция"
+      },
+      "type": "number",
+      "unit": "g",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "spicy",
+      "name": {
+        "uz": "Achchiq",
+        "ru": "Острое"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "vegetarian",
+      "name": {
+        "uz": "Vegetarian",
+        "ru": "Вегетарианское"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "fast-food": [
+    {
+      "key": "portion",
+      "name": {
+        "uz": "Porsiya",
+        "ru": "Порция"
+      },
+      "type": "number",
+      "unit": "g",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "spicy",
+      "name": {
+        "uz": "Achchiq",
+        "ru": "Острое"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "vegetarian",
+      "name": {
+        "uz": "Vegetarian",
+        "ru": "Вегетарианское"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "qandolatxonalar": [
+    {
+      "key": "weight",
+      "name": {
+        "uz": "Ogʻirligi",
+        "ru": "Вес"
+      },
+      "type": "number",
+      "unit": "g",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "halal",
+      "name": {
+        "uz": "Halol",
+        "ru": "Халяль"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "sartaroshxonalar": [
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "gozallik-salonlari": [
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "manikyur": [
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "kosmetologiya": [
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "santexnika": [
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "home_visit",
+      "name": {
+        "uz": "Uyga chiqish",
+        "ru": "Выезд на дом"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "elektrik": [
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "home_visit",
+      "name": {
+        "uz": "Uyga chiqish",
+        "ru": "Выезд на дом"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "texnika-tamiri": [
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "home_visit",
+      "name": {
+        "uz": "Uyga chiqish",
+        "ru": "Выезд на дом"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "telefon-tamiri": [
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "uy-tozalash": [
+    {
+      "key": "price_unit",
+      "name": {
+        "uz": "Narx birligi",
+        "ru": "Единица цены"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "m2",
+          "label": {
+            "uz": "Kvadrat metr",
+            "ru": "Квадратный метр"
+          }
+        },
+        {
+          "value": "room",
+          "label": {
+            "uz": "Xona",
+            "ru": "Комната"
+          }
+        },
+        {
+          "value": "hour",
+          "label": {
+            "uz": "Soat",
+            "ru": "Час"
+          }
+        }
+      ],
+      "filterable": false
+    }
+  ],
+  "yuk-tashish": [
+    {
+      "key": "capacity",
+      "name": {
+        "uz": "Yuk koʻtarish",
+        "ru": "Грузоподъёмность"
+      },
+      "type": "number",
+      "unit": "t",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "loaders",
+      "name": {
+        "uz": "Yuk tashuvchilar bilan",
+        "ru": "С грузчиками"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "kimyoviy-tozalash": [
+    {
+      "key": "turnaround",
+      "name": {
+        "uz": "Tayyor boʻlish muddati",
+        "ru": "Срок выполнения"
+      },
+      "type": "number",
+      "unit": "kun",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "atelye": [
+    {
+      "key": "turnaround",
+      "name": {
+        "uz": "Tayyor boʻlish muddati",
+        "ru": "Срок выполнения"
+      },
+      "type": "number",
+      "unit": "kun",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "avtoservis": [
+    {
+      "key": "car_type",
+      "name": {
+        "uz": "Mashina turi",
+        "ru": "Тип автомобиля"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "sedan",
+          "label": {
+            "uz": "Yengil",
+            "ru": "Легковой"
+          }
+        },
+        {
+          "value": "suv",
+          "label": {
+            "uz": "Krossover",
+            "ru": "Кроссовер"
+          }
+        },
+        {
+          "value": "minivan",
+          "label": {
+            "uz": "Miniven",
+            "ru": "Минивэн"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "uz": "Yuk mashinasi",
+            "ru": "Грузовой"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "warranty",
+      "name": {
+        "uz": "Kafolat",
+        "ru": "Гарантия"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "avtomoyka": [
+    {
+      "key": "car_type",
+      "name": {
+        "uz": "Mashina turi",
+        "ru": "Тип автомобиля"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "sedan",
+          "label": {
+            "uz": "Yengil",
+            "ru": "Легковой"
+          }
+        },
+        {
+          "value": "suv",
+          "label": {
+            "uz": "Krossover",
+            "ru": "Кроссовер"
+          }
+        },
+        {
+          "value": "minivan",
+          "label": {
+            "uz": "Miniven",
+            "ru": "Минивэн"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "uz": "Yuk mashinasi",
+            "ru": "Грузовой"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "shinomontaj": [
+    {
+      "key": "car_type",
+      "name": {
+        "uz": "Mashina turi",
+        "ru": "Тип автомобиля"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "sedan",
+          "label": {
+            "uz": "Yengil",
+            "ru": "Легковой"
+          }
+        },
+        {
+          "value": "suv",
+          "label": {
+            "uz": "Krossover",
+            "ru": "Кроссовер"
+          }
+        },
+        {
+          "value": "minivan",
+          "label": {
+            "uz": "Miniven",
+            "ru": "Минивэн"
+          }
+        },
+        {
+          "value": "truck",
+          "label": {
+            "uz": "Yuk mashinasi",
+            "ru": "Грузовой"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "ehtiyot-qismlar": [
+    {
+      "key": "condition",
+      "name": {
+        "uz": "Holati",
+        "ru": "Состояние"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "new",
+          "label": {
+            "uz": "Yangi",
+            "ru": "Новый"
+          }
+        },
+        {
+          "value": "used",
+          "label": {
+            "uz": "Ishlatilgan",
+            "ru": "Б/у"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    },
+    {
+      "key": "car_make",
+      "name": {
+        "uz": "Avtomobil markasi",
+        "ru": "Марка автомобиля"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "dorixonalar": [
+    {
+      "key": "prescription",
+      "name": {
+        "uz": "Retsept bilan",
+        "ru": "По рецепту"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "diagnostika": [
+    {
+      "key": "turnaround",
+      "name": {
+        "uz": "Tayyor boʻlish muddati",
+        "ru": "Срок выполнения"
+      },
+      "type": "number",
+      "unit": "kun",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "oquv-markazlari": [
+    {
+      "key": "duration_months",
+      "name": {
+        "uz": "Davomiyligi",
+        "ru": "Длительность"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "language",
+      "name": {
+        "uz": "Til",
+        "ru": "Язык"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "uz",
+          "label": {
+            "uz": "Oʻzbek",
+            "ru": "Узбекский"
+          }
+        },
+        {
+          "value": "ru",
+          "label": {
+            "uz": "Rus",
+            "ru": "Русский"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "uz": "Ingliz",
+            "ru": "Английский"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "format",
+      "name": {
+        "uz": "Format",
+        "ru": "Формат"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "offline",
+          "label": {
+            "uz": "Oflayn",
+            "ru": "Офлайн"
+          }
+        },
+        {
+          "value": "online",
+          "label": {
+            "uz": "Onlayn",
+            "ru": "Онлайн"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "learners",
+      "name": {
+        "uz": "Oʻquvchilar",
+        "ru": "Ученики"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        },
+        {
+          "value": "teens",
+          "label": {
+            "uz": "Oʻsmirlar",
+            "ru": "Подростки"
+          }
+        },
+        {
+          "value": "adults",
+          "label": {
+            "uz": "Kattalar",
+            "ru": "Взрослые"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "til-kurslari": [
+    {
+      "key": "duration_months",
+      "name": {
+        "uz": "Davomiyligi",
+        "ru": "Длительность"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "language",
+      "name": {
+        "uz": "Til",
+        "ru": "Язык"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "uz",
+          "label": {
+            "uz": "Oʻzbek",
+            "ru": "Узбекский"
+          }
+        },
+        {
+          "value": "ru",
+          "label": {
+            "uz": "Rus",
+            "ru": "Русский"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "uz": "Ingliz",
+            "ru": "Английский"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "format",
+      "name": {
+        "uz": "Format",
+        "ru": "Формат"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "offline",
+          "label": {
+            "uz": "Oflayn",
+            "ru": "Офлайн"
+          }
+        },
+        {
+          "value": "online",
+          "label": {
+            "uz": "Onlayn",
+            "ru": "Онлайн"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "learners",
+      "name": {
+        "uz": "Oʻquvchilar",
+        "ru": "Ученики"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        },
+        {
+          "value": "teens",
+          "label": {
+            "uz": "Oʻsmirlar",
+            "ru": "Подростки"
+          }
+        },
+        {
+          "value": "adults",
+          "label": {
+            "uz": "Kattalar",
+            "ru": "Взрослые"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "repetitorlar": [
+    {
+      "key": "language",
+      "name": {
+        "uz": "Til",
+        "ru": "Язык"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "uz",
+          "label": {
+            "uz": "Oʻzbek",
+            "ru": "Узбекский"
+          }
+        },
+        {
+          "value": "ru",
+          "label": {
+            "uz": "Rus",
+            "ru": "Русский"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "uz": "Ingliz",
+            "ru": "Английский"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "format",
+      "name": {
+        "uz": "Format",
+        "ru": "Формат"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "offline",
+          "label": {
+            "uz": "Oflayn",
+            "ru": "Офлайн"
+          }
+        },
+        {
+          "value": "online",
+          "label": {
+            "uz": "Onlayn",
+            "ru": "Онлайн"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "learners",
+      "name": {
+        "uz": "Oʻquvchilar",
+        "ru": "Ученики"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        },
+        {
+          "value": "teens",
+          "label": {
+            "uz": "Oʻsmirlar",
+            "ru": "Подростки"
+          }
+        },
+        {
+          "value": "adults",
+          "label": {
+            "uz": "Kattalar",
+            "ru": "Взрослые"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "fitnes": [
+    {
+      "key": "membership_months",
+      "name": {
+        "uz": "Abonement muddati",
+        "ru": "Срок абонемента"
+      },
+      "type": "number",
+      "unit": "oy",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "audience",
+      "name": {
+        "uz": "Kim uchun",
+        "ru": "Для кого"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "men",
+          "label": {
+            "uz": "Erkaklar",
+            "ru": "Мужчины"
+          }
+        },
+        {
+          "value": "women",
+          "label": {
+            "uz": "Ayollar",
+            "ru": "Женщины"
+          }
+        },
+        {
+          "value": "kids",
+          "label": {
+            "uz": "Bolalar",
+            "ru": "Дети"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "oyin-markazlari": [
+    {
+      "key": "age",
+      "name": {
+        "uz": "Yosh",
+        "ru": "Возраст"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "0-3",
+          "label": {
+            "uz": "0–3 yosh",
+            "ru": "0–3 года"
+          }
+        },
+        {
+          "value": "3-6",
+          "label": {
+            "uz": "3–6 yosh",
+            "ru": "3–6 лет"
+          }
+        },
+        {
+          "value": "6-12",
+          "label": {
+            "uz": "6–12 yosh",
+            "ru": "6–12 лет"
+          }
+        },
+        {
+          "value": "12-plus",
+          "label": {
+            "uz": "12 yoshdan katta",
+            "ru": "Старше 12 лет"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "bolalar-maskanlari": [
+    {
+      "key": "age",
+      "name": {
+        "uz": "Yosh",
+        "ru": "Возраст"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "0-3",
+          "label": {
+            "uz": "0–3 yosh",
+            "ru": "0–3 года"
+          }
+        },
+        {
+          "value": "3-6",
+          "label": {
+            "uz": "3–6 yosh",
+            "ru": "3–6 лет"
+          }
+        },
+        {
+          "value": "6-12",
+          "label": {
+            "uz": "6–12 yosh",
+            "ru": "6–12 лет"
+          }
+        },
+        {
+          "value": "12-plus",
+          "label": {
+            "uz": "12 yoshdan katta",
+            "ru": "Старше 12 лет"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "mehmonxonalar": [
+    {
+      "key": "room_type",
+      "name": {
+        "uz": "Xona turi",
+        "ru": "Тип номера"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "single",
+          "label": {
+            "uz": "Bir kishilik",
+            "ru": "Одноместный"
+          }
+        },
+        {
+          "value": "double",
+          "label": {
+            "uz": "Ikki kishilik",
+            "ru": "Двухместный"
+          }
+        },
+        {
+          "value": "family",
+          "label": {
+            "uz": "Oilaviy",
+            "ru": "Семейный"
+          }
+        },
+        {
+          "value": "suite",
+          "label": {
+            "uz": "Lyuks",
+            "ru": "Люкс"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "guests",
+      "name": {
+        "uz": "Necha kishi",
+        "ru": "Вместимость"
+      },
+      "type": "number",
+      "unit": "kishi",
+      "options": [],
+      "filterable": false
+    },
+    {
+      "key": "breakfast",
+      "name": {
+        "uz": "Nonushta bilan",
+        "ru": "С завтраком"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "turistik-xizmatlar": [
+    {
+      "key": "days",
+      "name": {
+        "uz": "Davomiyligi",
+        "ru": "Длительность"
+      },
+      "type": "number",
+      "unit": "kun",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "toyxonalar": [
+    {
+      "key": "capacity_guests",
+      "name": {
+        "uz": "Sigʻimi",
+        "ru": "Вместимость"
+      },
+      "type": "number",
+      "unit": "kishi",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "fotograflar": [
+    {
+      "key": "turnaround",
+      "name": {
+        "uz": "Tayyor boʻlish muddati",
+        "ru": "Срок выполнения"
+      },
+      "type": "number",
+      "unit": "kun",
+      "options": [],
+      "filterable": false
+    }
+  ],
+  "veterinariya": [
+    {
+      "key": "animal",
+      "name": {
+        "uz": "Hayvon turi",
+        "ru": "Вид животного"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "cat",
+          "label": {
+            "uz": "Mushuklar",
+            "ru": "Кошки"
+          }
+        },
+        {
+          "value": "dog",
+          "label": {
+            "uz": "Itlar",
+            "ru": "Собаки"
+          }
+        },
+        {
+          "value": "bird",
+          "label": {
+            "uz": "Qushlar",
+            "ru": "Птицы"
+          }
+        },
+        {
+          "value": "fish",
+          "label": {
+            "uz": "Baliqlar",
+            "ru": "Рыбы"
+          }
+        },
+        {
+          "value": "rodent",
+          "label": {
+            "uz": "Kemiruvchilar",
+            "ru": "Грызуны"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "home_visit",
+      "name": {
+        "uz": "Uyga chiqish",
+        "ru": "Выезд на дом"
+      },
+      "type": "boolean",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "zoodokonlar": [
+    {
+      "key": "animal",
+      "name": {
+        "uz": "Hayvon turi",
+        "ru": "Вид животного"
+      },
+      "type": "multiselect",
+      "unit": null,
+      "options": [
+        {
+          "value": "cat",
+          "label": {
+            "uz": "Mushuklar",
+            "ru": "Кошки"
+          }
+        },
+        {
+          "value": "dog",
+          "label": {
+            "uz": "Itlar",
+            "ru": "Собаки"
+          }
+        },
+        {
+          "value": "bird",
+          "label": {
+            "uz": "Qushlar",
+            "ru": "Птицы"
+          }
+        },
+        {
+          "value": "fish",
+          "label": {
+            "uz": "Baliqlar",
+            "ru": "Рыбы"
+          }
+        },
+        {
+          "value": "rodent",
+          "label": {
+            "uz": "Kemiruvchilar",
+            "ru": "Грызуны"
+          }
+        }
+      ],
+      "filterable": true
+    },
+    {
+      "key": "brand",
+      "name": {
+        "uz": "Brend",
+        "ru": "Бренд"
+      },
+      "type": "text",
+      "unit": null,
+      "options": [],
+      "filterable": true
+    }
+  ],
+  "yuristlar": [
+    {
+      "key": "format",
+      "name": {
+        "uz": "Format",
+        "ru": "Формат"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "offline",
+          "label": {
+            "uz": "Oflayn",
+            "ru": "Офлайн"
+          }
+        },
+        {
+          "value": "online",
+          "label": {
+            "uz": "Onlayn",
+            "ru": "Онлайн"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ],
+  "buxgalteriya": [
+    {
+      "key": "format",
+      "name": {
+        "uz": "Format",
+        "ru": "Формат"
+      },
+      "type": "select",
+      "unit": null,
+      "options": [
+        {
+          "value": "offline",
+          "label": {
+            "uz": "Oflayn",
+            "ru": "Офлайн"
+          }
+        },
+        {
+          "value": "online",
+          "label": {
+            "uz": "Onlayn",
+            "ru": "Онлайн"
+          }
+        },
+        {
+          "value": "mixed",
+          "label": {
+            "uz": "Aralash",
+            "ru": "Смешанный"
+          }
+        }
+      ],
+      "filterable": true
+    }
+  ]
+}

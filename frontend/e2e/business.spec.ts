@@ -29,6 +29,14 @@ test.describe("Biznes profili", () => {
     const hours = page.getByRole("region", { name: "Ish vaqti" });
     await expect(hours.getByRole("row")).toHaveCount(7);
 
+    // Qulayliklar — ikonka va nomi bilan (demo: karta, Payme/Click, oldindan yozilish)
+    const amenities = page.getByRole("list", { name: "Qulayliklar" });
+    await expect(amenities.getByRole("listitem")).toHaveText([
+      "Karta orqali toʻlov",
+      "Payme, Click",
+      "Oldindan yozilish",
+    ]);
+
     // Barcha aloqa kanallari (asosiy tugmada faqat birinchi raqam)
     const contacts = page.getByRole("region", { name: "Aloqa" });
     await expect(contacts.getByRole("link").first()).toHaveAttribute("href", /^tel:\+998\d{9}$/);
@@ -150,7 +158,7 @@ test.describe("Do'kon katalogi", () => {
     // Bo'limlar va kartochkalar (rasm bo'lmasa — kategoriya ikonkasi)
     await expect(catalog.getByRole("heading", { name: "Erkaklar" })).toBeVisible();
     await expect(catalog.getByRole("listitem")).toHaveCount(3);
-    await expect(catalog).toContainText("Oʻlcham: S, M, L, XL, XXL");
+    await expect(catalog).toContainText("Oʻlcham: S, M, L, XL, 2XL");
     await expectNoA11yViolations(page, [".maplibregl-canvas-container"]);
 
     await catalog.getByRole("link", { name: "Erkaklar koʻylagi" }).click();

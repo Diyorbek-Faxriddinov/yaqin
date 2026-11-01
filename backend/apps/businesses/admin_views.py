@@ -144,6 +144,8 @@ def admin_business(business: Business, lang: Lang, request: Request) -> dict[str
         "phones": [{"number": p["number"], "label": p.get("label")} for p in business.phones],
         "telegram": business.telegram or None,
         "instagram": business.instagram or None,
+        "website": business.website or None,
+        "amenities": business.amenities,
         "schedule": business.schedule,
         "status": business.status,
         "publishedAt": business.published_at.isoformat() if business.published_at else None,

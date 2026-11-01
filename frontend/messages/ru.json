@@ -217,6 +217,22 @@
     "thumbnail": "Показать фото {index}",
     "counter": "{index} / {total}"
   },
+  "Amenities": {
+    "title": "Удобства",
+    "card_payment": "Оплата картой",
+    "mobile_payment": "Payme, Click",
+    "delivery": "Доставка",
+    "takeaway": "С собой",
+    "parking": "Парковка",
+    "wifi": "Wi-Fi",
+    "air_conditioning": "Кондиционер",
+    "family_room": "Семейная комната",
+    "kids_area": "Детский уголок",
+    "prayer_room": "Молельная комната",
+    "wheelchair_access": "Доступно для колясок",
+    "appointment": "Запись заранее",
+    "women_section": "Отдельно для женщин"
+  },
   "MapPage": {
     "title": "Карта",
     "description": "Магазины и услуги Ташкента на карте.",
@@ -549,7 +565,9 @@
       "phoneInvalid": "Неверный номер. Пример: 90 123 45 67",
       "telegram": "Telegram (необязательно)",
       "telegramPlaceholder": "имя_пользователя",
-      "instagram": "Instagram (необязательно)"
+      "instagram": "Instagram (необязательно)",
+      "website": "Сайт (необязательно)",
+      "amenitiesHint": "Уточните у владельца — клиенты выбирают по ним (карта, парковка...)."
     },
     "consent": {
       "title": "Согласие владельца",
@@ -656,6 +674,7 @@
       "givenBy": "Не менее 2 символов",
       "telegram": "Латиница, цифры и _ (5–32 символа)",
       "instagram": "Латиница, цифры, _ и . (до 30 символов)",
+      "website": "Введите полный адрес, например https://yaqin.uz",
       "tooLong": "Слишком длинно"
     },
     "common": {

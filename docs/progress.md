@@ -48,10 +48,21 @@ Oxirgi yangilanish: 2026-11-01
 | ----- | ------------------------------------------------------------------------------------------------------------- | ----- |
 | 5.1   | Provayder va domen                                                                                            | ✅    |
 | 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | 🔄    |
+| 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | 🔄    |
 | 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ⏳    |
 | 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ⏳    |
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
+
+## 5.2a natijalari — standart xususiyatlar va biznes qulayliklari (ADR-0014 yangilanishi)
+
+- **Topilma.** Production bazasida kategoriyalar xususiyatsiz boshlanardi (ular faqat demo maʼlumotlarida edi). Natijada mahsulot oʻlchami va brendi yana erkin matn boʻlib qolardi.
+- **Standart toʻplam.** 46 kategoriya uchun, data migratsiyasi bilan (faqat boʻsh kategoriyalarni toʻldiradi). Mock bilan bir manba, test solishtiradi. Admin API qoidalaridan oʻtadi.
+- **Biznes qulayliklari** (13 ta). Kontrakt, backend (`ArrayField`), mock, admin "Aloqa" boʻlimida tugmachalar, biznes sahifasida ikonkali roʻyxat.
+- **Veb-sayt endi admin panelda kiritiladi** (avval kiritib boʻlmasdi). Protokolsiz yozilsa, `https://` qoʻshiladi.
+- **Demo fixture'lar standart toʻplamga oʻtkazildi.** Kiyim oʻlchami `2XL`, mato — tanlov, poyabzal oʻlchamlari — turlangan.
+- **Testlar.** Backend 519 (+10), frontend unit 240, mock 72 (+1), E2E demo 255 passed, E2E haqiqiy backend (CI rejimi) 270 passed.
+- **Qilinmadi** (sabablari — ADR-0014 yangilanishi): jonli navbat, oʻz chatimiz, kategoriyaga xos alohida sahifa koʻrinishlari. Hostingdan keyingi roʻyxat: tungi rejim, egadan taklif, qidiruv takliflari UI, "tekshirilgan sana", bayram kunlari, chegirmalar (tugash sanasi majburiy), xususiyat va qulaylik filtrlari, video havolasi.
 
 ## 5.2 natijalari — production sozlamalari ([deployment.md](deployment.md))
 

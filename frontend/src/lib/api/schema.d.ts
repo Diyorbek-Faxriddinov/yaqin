@@ -1464,7 +1464,15 @@ export interface components {
             /** Format: uri */
             website: string | null;
             gallery: components["schemas"]["Image"][];
+            /** @description Biznes qulayliklari, `Amenity` tartibida */
+            amenities: components["schemas"]["Amenity"][];
         };
+        /**
+         * @description Biznes qulayligi (qat'iy ro'yxat; nomi va ikonkasi frontendda, ikkala tilda). Tartib —
+         *     ko'rsatish tartibi.
+         * @enum {string}
+         */
+        Amenity: "card_payment" | "mobile_payment" | "delivery" | "takeaway" | "parking" | "wifi" | "air_conditioning" | "family_room" | "kids_area" | "prayer_room" | "wheelchair_access" | "appointment" | "women_section";
         /**
          * @description - fixed — aniq narx (`min`);
          *     - from — "... dan" (`min`);
@@ -1677,6 +1685,9 @@ export interface components {
             phones: components["schemas"]["Phone"][];
             telegram: string | null;
             instagram: string | null;
+            /** Format: uri */
+            website: string | null;
+            amenities: components["schemas"]["Amenity"][];
             schedule: components["schemas"]["WeeklySchedule"] | null;
             status: components["schemas"]["BusinessStatus"];
             /**
@@ -1711,6 +1722,9 @@ export interface components {
             phones?: components["schemas"]["Phone"][];
             telegram?: string | null;
             instagram?: string | null;
+            /** @description http:// yoki https:// bilan to'liq manzil */
+            website?: string | null;
+            amenities?: components["schemas"]["Amenity"][];
             schedule?: components["schemas"]["WeeklySchedule"] | null;
             consent?: components["schemas"]["Consent"] | null;
             status?: components["schemas"]["BusinessStatus"];

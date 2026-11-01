@@ -155,6 +155,15 @@ test.describe("Biznes qo'shish ustasi", () => {
     await page.getByRole("button", { name: "Keyingi" }).click();
     await expect(page.getByText("5/7-qadam")).toBeVisible();
     await page.getByPlaceholder("90 123 45 67").fill("90 765 43 21");
+    // Veb-sayt protokolsiz yozilsa ham — https:// qo'shiladi
+    await page.getByLabel("Veb-sayt (ixtiyoriy)").fill("dilnoza-moda.uz");
+    const amenities = page.getByRole("group", { name: "Qulayliklar" });
+    await amenities.getByRole("button", { name: "Karta orqali toʻlov" }).click();
+    await amenities.getByRole("button", { name: "Toʻxtash joyi" }).click();
+    await expect(amenities.getByRole("button", { name: "Toʻxtash joyi" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     await page.getByLabel("Kim rozilik berdi").fill("Egasi Dilnoza opa");
     await page.getByRole("button", { name: "Keyingi" }).click();
     await expect(page.getByText("6/7-qadam")).toBeVisible();
@@ -175,7 +184,8 @@ test.describe("Biznes qo'shish ustasi", () => {
       "aria-pressed",
       "true",
     );
-    await dialog.getByLabel("Mato").fill("Paxta");
+    await dialog.getByRole("combobox", { name: "Mato" }).click();
+    await page.getByRole("option", { name: "Paxta", exact: true }).click();
     await dialog.getByRole("button", { name: "Xususiyat qoʻshish" }).click();
     await dialog.getByRole("textbox", { name: "Nomi" }).last().fill("Rang");
     await dialog.getByRole("textbox", { name: "Qiymati" }).last().fill("Oq");
@@ -197,7 +207,7 @@ test.describe("Biznes qo'shish ustasi", () => {
         .getByRole("group", { name: "Oʻlcham" })
         .getByRole("button", { name: "M", exact: true }),
     ).toHaveAttribute("aria-pressed", "true");
-    await expect(dialog.getByLabel("Mato")).toHaveValue("Paxta");
+    await expect(dialog.getByRole("combobox", { name: "Mato" })).toHaveText("Paxta");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 
@@ -207,6 +217,13 @@ test.describe("Biznes qo'shish ustasi", () => {
 
     const slug = `e2e-kiyim-dokoni-${suffix}`;
     await page.goto(`/biznes/${slug}`);
+    await expect(page.getByRole("list", { name: "Qulayliklar" }).getByRole("listitem")).toHaveText([
+      "Karta orqali toʻlov",
+      "Toʻxtash joyi",
+    ]);
+    await expect(
+      page.getByRole("region", { name: "Aloqa" }).getByRole("link", { name: /dilnoza-moda\.uz/ }),
+    ).toHaveAttribute("href", "https://dilnoza-moda.uz");
     const catalog = page.getByRole("region", { name: "Mahsulotlar" });
     await expect(catalog).toContainText("Oʻlcham: S, M");
     await catalog.getByRole("link", { name: "Yozgi futbolka" }).click();

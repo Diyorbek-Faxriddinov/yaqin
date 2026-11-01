@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AMENITY_ICONS } from "@/features/business/components/amenities";
+import { AMENITIES, sortAmenities } from "@/lib/amenities";
 import { BrowserApiError } from "@/lib/api/browser";
-import type { AdminBusinessUpdate } from "@/lib/api/types";
+import type { AdminBusinessUpdate, Amenity } from "@/lib/api/types";
+import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format/date";
 import { formatPhone, normalizeUzPhone } from "@/lib/format/phone";
 import { useUpdateBusiness } from "../../use-admin-business";
@@ -17,10 +20,21 @@ import type { SectionProps } from "./section-props";
 
 const TELEGRAM = /^[A-Za-z0-9_]{5,32}$/;
 const INSTAGRAM = /^[A-Za-z0-9_.]{1,30}$/;
+
+/** Backend URLValidator bilan bir xil asosiy talablar: http(s) va nuqtali domen */
+function validWebsite(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function ContactsSection({ business, canEdit, submitLabel, onDone }: SectionProps) {
   const t = useTranslations("Admin");
+  const tAmenity = useTranslations("Amenities");
   const locale = useLocale();
   const update = useUpdateBusiness(business.id);
   const [phones, setPhones] = useState<string[]>(
@@ -28,6 +42,8 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
   );
   const [telegram, setTelegram] = useState(business.telegram ?? "");
   const [instagram, setInstagram] = useState(business.instagram ?? "");
+  const [website, setWebsite] = useState(business.website ?? "");
+  const [amenities, setAmenities] = useState<Amenity[]>(business.amenities);
   const [consentRemoved, setConsentRemoved] = useState(false);
   const [givenBy, setGivenBy] = useState("");
   const [givenAt, setGivenAt] = useState(today);
@@ -46,6 +62,12 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
     const ig = instagram.trim().replace(/^@/, "");
     if (tg && !TELEGRAM.test(tg)) next.telegram = t("validation.telegram");
     if (ig && !INSTAGRAM.test(ig)) next.instagram = t("validation.instagram");
+    // "yaqin.uz" kabi yozilsa — https:// qo'shiladi (admin telefonda tez yozadi)
+    const site =
+      website.trim() && !/^https?:\/\//i.test(website.trim())
+        ? `https://${website.trim()}`
+        : website.trim();
+    if (site && !validWebsite(site)) next.website = t("validation.website");
     if (!existingConsent && givenBy.trim() && givenBy.trim().length < 2)
       next.givenBy = t("validation.givenBy");
     setErrors(next);
@@ -55,6 +77,8 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
       phones: (normalized as string[]).map((number) => ({ number, label: null })),
       telegram: tg || null,
       instagram: ig || null,
+      website: site || null,
+      amenities,
     };
     if (!existingConsent && givenBy.trim()) {
       body.consent = {
@@ -178,6 +202,62 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
             )}
           </div>
         </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="business-website">{t("contacts.website")}</Label>
+          <Input
+            id="business-website"
+            type="url"
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="https://"
+            maxLength={300}
+            value={website}
+            aria-invalid={Boolean(errors.website)}
+            aria-describedby={errors.website ? "website-error" : undefined}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+          {errors.website && (
+            <p id="website-error" className="text-sm text-destructive">
+              {errors.website}
+            </p>
+          )}
+        </div>
+
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">{tAmenity("title")}</legend>
+          <p className="text-sm text-muted-foreground">{t("contacts.amenitiesHint")}</p>
+          <div className="flex flex-wrap gap-2">
+            {AMENITIES.map((amenity) => {
+              const Icon = AMENITY_ICONS[amenity];
+              const pressed = amenities.includes(amenity);
+              return (
+                <button
+                  key={amenity}
+                  type="button"
+                  aria-pressed={pressed}
+                  onClick={() =>
+                    setAmenities((list) =>
+                      pressed
+                        ? list.filter((a) => a !== amenity)
+                        : sortAmenities([...list, amenity]),
+                    )
+                  }
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-60",
+                    pressed
+                      ? "border-primary bg-primary-soft font-medium text-primary-soft-foreground"
+                      : "hover:bg-muted",
+                  )}
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                  {tAmenity(amenity)}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <section aria-labelledby="consent-title" className="space-y-3 rounded-xl border p-4">
           <h3 id="consent-title" className="flex items-center gap-2 font-semibold">

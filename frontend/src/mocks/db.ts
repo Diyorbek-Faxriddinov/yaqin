@@ -317,8 +317,9 @@ export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {
     phones: business.phones,
     telegram: business.telegram,
     instagram: business.instagram,
-    website: null,
+    website: business.website,
     gallery: photosOf(business.id),
+    amenities: business.amenities,
   };
 }
 

@@ -1,4 +1,6 @@
-import type { WeeklySchedule } from "@/lib/api/types";
+import type { Amenity, CategoryIconKey, WeeklySchedule } from "@/lib/api/types";
+import { AMENITIES } from "../../lib/amenities";
+import { CATEGORIES } from "./categories";
 import { DISTRICTS } from "./districts";
 import { demoId, seededRandom } from "./ids";
 
@@ -20,6 +22,7 @@ export type DemoBusiness = {
   description: string | null;
   address: { text: string; landmark: string | null };
   phones: Array<{ number: string; label: string | null }>;
+  amenities: Amenity[];
 };
 
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7];
@@ -129,6 +132,56 @@ const ROWS: Row[] = [
   ["Atirgul gul doʻkoni", "gul-sovga", "mirobod", [30000, 1500000], "dailyLate", [4.8, 39], 3, true, null],
 ];
 
+/** Yo'nalish bo'yicha mos qulayliklar — demo bizneslarga shulardan tasodifiy (deterministik) tanlanadi */
+const AMENITY_POOLS: Record<CategoryIconKey, Amenity[]> = {
+  shopping: ["card_payment", "mobile_payment", "delivery", "parking", "air_conditioning"],
+  food: [
+    "card_payment",
+    "mobile_payment",
+    "delivery",
+    "takeaway",
+    "parking",
+    "wifi",
+    "air_conditioning",
+    "family_room",
+    "kids_area",
+    "prayer_room",
+  ],
+  beauty: [
+    "card_payment",
+    "mobile_payment",
+    "appointment",
+    "women_section",
+    "air_conditioning",
+    "wifi",
+  ],
+  "home-services": ["card_payment", "mobile_payment", "appointment"],
+  auto: ["card_payment", "mobile_payment", "parking", "appointment", "wifi"],
+  health: [
+    "card_payment",
+    "mobile_payment",
+    "parking",
+    "appointment",
+    "wheelchair_access",
+    "air_conditioning",
+  ],
+  education: ["card_payment", "mobile_payment", "wifi", "air_conditioning", "women_section"],
+  sport: ["card_payment", "mobile_payment", "parking", "women_section", "air_conditioning"],
+  travel: ["card_payment", "mobile_payment", "wifi", "parking", "prayer_room"],
+  events: ["card_payment", "parking", "prayer_room", "air_conditioning", "family_room"],
+  pets: ["card_payment", "mobile_payment", "appointment", "delivery"],
+  professional: ["card_payment", "mobile_payment", "appointment", "wifi"],
+};
+
+function demoAmenities(slug: string, categorySlug: string): Amenity[] {
+  const category = CATEGORIES.find((c) => c.slug === categorySlug);
+  const pool = category?.iconKey ? AMENITY_POOLS[category.iconKey] : [];
+  // Alohida tasodifiy ketma-ketlik — mavjud demo qiymatlar (joylashuv) o'zgarmasin
+  const random = seededRandom(`amenities:${slug}`);
+  const picked = new Set(pool.filter(() => random() < 0.6));
+  return AMENITIES.filter((amenity) => picked.has(amenity));
+}
+
 /** Lotin nomidan URL uchun slug: "Ustoz sartaroshxonasi" → "ustoz-sartaroshxonasi" */
 function slugify(name: string): string {
   return name
@@ -173,6 +226,7 @@ export const BUSINESSES: DemoBusiness[] = ROWS.map(
         landmark,
       },
       phones: [{ number: `+99800000${String(index + 1).padStart(4, "0")}`, label: null }],
+      amenities: demoAmenities(slug, categorySlug),
     };
   },
 );

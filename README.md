@@ -11,6 +11,7 @@
 - Kategoriyalar, qidiruv (lotin va kirill yozuvida; mahsulot nomi boʻyicha ham — natijada nima uchun topilgani), tuman va "hozir ochiq" filtrlari, masofa boʻyicha saralash
 - Xarita (MapLibre + OpenFreeMap), biznes profili: rasmlar galereyasi (rasm kesilmaydi), doʻkonda — rasmli mahsulot kartochkalari, xizmatlarda — narx roʻyxati; mahsulot sahifasi rasmlar, tavsif va xususiyatlar bilan (rus tilida ham)
 - Bogʻlanish: qoʻngʻiroq, Telegram, Yandex/Google xaritada yoʻl; barcha telefonlar, Instagram va veb-sayt
+- Biznes qulayliklari: karta va Payme/Click orqali toʻlov, yetkazib berish, toʻxtash joyi, Wi-Fi, namozxona va boshqalar
 - Telegram yoki Google orqali kirish (demo'da — demo foydalanuvchi): sharhlar, sevimlilar, notoʻgʻri maʼlumot haqida xabar
 - "Biznesingizni qoʻshing" soʻrov formasi, "Biz haqimizda", "Aloqa", foydalanish shartlari va maxfiylik siyosati
 - Ikki til: oʻzbek (lotin, prefikssiz) va rus (`/ru`)
@@ -20,7 +21,7 @@
 - Parol + 2FA (TOTP) kirishi; yangi administrator birinchi kirishda vaqtinchalik parolni almashtiradi va autentifikator ilovasini QR orqali ulaydi
 
 - Doʻkonda turib 7 qadamda biznes qoʻshish: GPS, kamera rasmlari (EXIF, jumladan GPS, telefonda ham, serverda ham olib tashlanadi), ish vaqti, katalog, egasining roziligi
-- Katalog: mahsulot va xizmatlar rasmlari (5 tagacha), tavsifi, kategoriya xususiyatlari turiga mos maydonlar bilan (oʻlchamlar — tugmachalar, son — birligi bilan), boʻlim takliflari ([ADR-0014](docs/adr/0014-dokon-katalogi.md))
+- Katalog: mahsulot va xizmatlar rasmlari (5 tagacha), tavsifi, kategoriya xususiyatlari turiga mos maydonlar bilan (oʻlchamlar — tugmachalar, son — birligi bilan), boʻlim takliflari; 46 kategoriya uchun tayyor standart xususiyatlar ([ADR-0014](docs/adr/0014-dokon-katalogi.md))
 - Eʼlon qilish va saytdan yashirish; xato kiritilgan (hech qachon eʼlon qilinmagan) qoralamani oʻchirish — eʼlon qilingan biznes oʻchirilmaydi, yashiriladi
 - Soʻrovlar, sharhlar moderatsiyasi, shikoyatlar, kategoriyalar va atributlar, foydalanuvchilarni bloklash
 - Administratorlar, rollar va granular ruxsatlar (manbasi bilan), audit jurnali, sozlamalar

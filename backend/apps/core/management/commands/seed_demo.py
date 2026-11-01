@@ -140,6 +140,7 @@ class Command(BaseCommand):
                 location=Point(row["location"]["lng"], row["location"]["lat"], srid=4326),
                 phones=row["phones"],
                 schedule=row["schedule"],
+                amenities=row["amenities"],
                 status=Business.Status.PUBLISHED,
                 published_at=when(row["createdAt"]),
                 consent_given_by="Demo egasi",

@@ -224,6 +224,10 @@ def test_update_fields(root: AdminClient, revalidated: MagicMock) -> None:
         ({"schedule": {"is24x7": False, "days": [{"weekday": 9, "intervals": []}]}}, "schedule"),
         ({"consent": {"givenBy": "Aziz", "givenAt": "kecha", "note": None}}, "consent"),
         ({"categorySlug": "goʻzallik"}, "categorySlug"),
+        ({"website": "yaqin.uz"}, "website"),
+        ({"website": "javascript:alert(1)"}, "website"),
+        ({"amenities": ["card_payment", "jacuzzi"]}, "amenities"),
+        ({"amenities": "wifi"}, "amenities"),
     ],
 )
 def test_update_validation(root: AdminClient, body: dict[str, Any], field: str) -> None:
@@ -554,3 +558,28 @@ def test_item_validation(root: AdminClient, change: dict[str, Any], field: str) 
     response = root.call("POST", f"/admin/businesses/{business.id}/items", {**PRODUCT, **change})
     assert response.status_code == 400
     assert field in response.json()["fields"]
+
+
+def test_website_and_amenities(root: AdminClient, client: Client, revalidated: MagicMock) -> None:
+    business = make_business(**publishable(name="Ustoz", slug="ustoz"))
+    url = f"/admin/businesses/{business.id}"
+    body = root.call(
+        "PATCH",
+        url,
+        {
+            "website": " https://ustoz.uz/ ",
+            # Takror va tartib — kontrakt tartibida, takrorsiz saqlanadi
+            "amenities": ["wifi", "card_payment", "wifi", "parking"],
+        },
+    ).json()
+    assert body["website"] == "https://ustoz.uz/"
+    assert body["amenities"] == ["card_payment", "parking", "wifi"]
+
+    detail = public_get(client, "/businesses/ustoz").json()
+    assert detail["website"] == "https://ustoz.uz/"
+    assert detail["amenities"] == ["card_payment", "parking", "wifi"]
+
+    cleared = root.call("PATCH", url, {"website": None, "amenities": []}).json()
+    assert cleared["website"] is None
+    assert cleared["amenities"] == []
+    assert public_get(client, "/businesses/ustoz").json()["amenities"] == []

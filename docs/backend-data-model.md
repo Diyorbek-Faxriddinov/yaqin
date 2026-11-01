@@ -26,6 +26,7 @@ erDiagram
         geography location "Point, 4326; qoralamada NULL"
         jsonb phones "E.164 roʻyxati"
         jsonb schedule "WeeklySchedule yoki NULL"
+        text_array amenities "Amenity qiymatlari, kontrakt tartibida"
         text status "draft | published | hidden"
         timestamptz consent_given_at "rozilik"
         int rating_count
@@ -38,7 +39,7 @@ erDiagram
         text name_uz
         text name_ru
         text icon_key "faqat yoʻnalishda"
-        jsonb attributes "AdminAttribute roʻyxati"
+        jsonb attributes "AdminAttribute roʻyxati (standart toʻplam — catalog 0003)"
     }
     Item {
         uuid id

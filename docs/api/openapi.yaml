@@ -2426,6 +2426,7 @@ components:
               instagram,
               website,
               gallery,
+              amenities,
             ]
           properties:
             description: { type: [string, "null"] }
@@ -2448,6 +2449,31 @@ components:
             gallery:
               type: array
               items: { $ref: "#/components/schemas/Image" }
+            amenities:
+              type: array
+              uniqueItems: true
+              description: Biznes qulayliklari, `Amenity` tartibida
+              items: { $ref: "#/components/schemas/Amenity" }
+
+    Amenity:
+      type: string
+      description: |
+        Biznes qulayligi (qat'iy ro'yxat; nomi va ikonkasi frontendda, ikkala tilda). Tartib —
+        ko'rsatish tartibi.
+      enum:
+        - card_payment
+        - mobile_payment
+        - delivery
+        - takeaway
+        - parking
+        - wifi
+        - air_conditioning
+        - family_room
+        - kids_area
+        - prayer_room
+        - wheelchair_access
+        - appointment
+        - women_section
 
     ItemPrice:
       type: object
@@ -2788,6 +2814,8 @@ components:
         - phones
         - telegram
         - instagram
+        - website
+        - amenities
         - schedule
         - status
         - publishedAt
@@ -2817,6 +2845,11 @@ components:
           items: { $ref: "#/components/schemas/Phone" }
         telegram: { type: [string, "null"] }
         instagram: { type: [string, "null"] }
+        website: { type: [string, "null"], format: uri }
+        amenities:
+          type: array
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/Amenity" }
         schedule:
           oneOf:
             - $ref: "#/components/schemas/WeeklySchedule"
@@ -2873,6 +2906,14 @@ components:
         instagram:
           type: [string, "null"]
           pattern: "^[A-Za-z0-9_.]{1,30}$"
+        website:
+          type: [string, "null"]
+          maxLength: 300
+          description: http:// yoki https:// bilan to'liq manzil
+        amenities:
+          type: array
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/Amenity" }
         schedule:
           oneOf:
             - $ref: "#/components/schemas/WeeklySchedule"

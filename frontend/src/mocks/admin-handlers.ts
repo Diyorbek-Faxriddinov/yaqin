@@ -8,6 +8,7 @@ import type {
   ItemAttributeInput,
   WeeklySchedule,
 } from "@/lib/api/types";
+import { AMENITIES, sortAmenities } from "@/lib/amenities";
 import { isValidPoint } from "@/lib/geo";
 import {
   API,
@@ -106,6 +107,8 @@ export function toAdminBusiness(record: DemoBusinessRecord, lang: Lang): AdminBu
     phones: record.phones,
     telegram: record.telegram,
     instagram: record.instagram,
+    website: record.website,
+    amenities: record.amenities,
     schedule: record.schedule,
     status: record.status,
     publishedAt: record.publishedAt,
@@ -129,6 +132,17 @@ function toListItem(record: DemoBusinessRecord, lang: Lang): AdminBusinessListIt
     itemsCount: itemsOf(record).length,
     updatedAt: record.updatedAt,
   };
+}
+
+/** Backend URLValidator(schemes=["http", "https"]) bilan bir xil asosiy talablar */
+function validWebsite(value: string): boolean {
+  if (value.length > 300) return false;
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.includes(".");
+  } catch {
+    return false;
+  }
 }
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -221,6 +235,8 @@ export function createDraftBusiness(
     consent: null,
     telegram: null,
     instagram: null,
+    website: null,
+    amenities: [],
     ...extra,
   };
   demoState.businesses.push(record);
@@ -596,6 +612,22 @@ export const adminHandlers = [
         const pattern = key === "telegram" ? /^[A-Za-z0-9_]{5,32}$/ : /^[A-Za-z0-9_.]{1,30}$/;
         if (value && !pattern.test(value)) fields[key] = ["Foydalanuvchi nomi noto'g'ri"];
         else next[key] = value || null;
+      }
+    }
+    if ("website" in body) {
+      const website = typeof body.website === "string" ? body.website.trim() : "";
+      if (website && !validWebsite(website)) fields.website = ["Toʻliq manzil: https://..."];
+      else next.website = website || null;
+    }
+    if ("amenities" in body) {
+      const amenities = body.amenities;
+      if (
+        !Array.isArray(amenities) ||
+        !amenities.every((a) => (AMENITIES as readonly unknown[]).includes(a))
+      ) {
+        fields.amenities = ["Qulaylik notoʻgʻri"];
+      } else {
+        next.amenities = sortAmenities(amenities as string[]);
       }
     }
     if ("schedule" in body) {

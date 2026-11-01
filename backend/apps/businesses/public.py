@@ -252,6 +252,7 @@ def detail(business: Business, lang: Lang, request: Request) -> dict[str, Any]:
         "instagram": business.instagram or None,
         "website": business.website or None,
         "gallery": [image(photo, request) for photo in business.photos.all()],
+        "amenities": business.amenities,
     }
 
 

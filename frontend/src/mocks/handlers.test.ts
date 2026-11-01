@@ -157,9 +157,9 @@ describe("mahsulot bo'yicha qidiruv va xususiyatlar (ADR-0014)", () => {
     const slug = shops.body.items[0]!.slug;
     const ru = await get<Item>(`/businesses/${slug}/items/erkaklar-koylagi?lang=ru`);
     expect(ru.body.attributes).toEqual([
-      { key: "size", name: "Размер", value: "S, M, L, XL, XXL" },
+      { key: "size", name: "Размер", value: "S, M, L, XL, 2XL" },
       { key: "rang", name: "Rang", value: "Oq, koʻk" },
-      { key: "material", name: "Материал", value: "Paxta" },
+      { key: "material", name: "Материал", value: "Хлопок" },
     ]);
   });
 });

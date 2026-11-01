@@ -120,6 +120,8 @@ scripts/
 - Har bir admin amali audit jurnaliga yoziladi: `apps.staff.audit.audit(admin, action, target_type, target_id, summary)`. Jurnal faqat qoʻshiladi (DB trigger); `summary` ga parol, token va shaxsiy maʼlumot yozilmaydi.
 - Productionda — `Dockerfile` (gunicorn, root huquqisiz) va `deploy/compose.yaml` ([docs/deployment.md](../docs/deployment.md)). Yangi muhit o'zgaruvchisi qo'shilsa — `deploy/compose.yaml` va `deploy/env.example` ga ham.
 - Yuklangan rasm (biznes va mahsulot) faqat `apps/businesses/photos.py` orqali saqlanadi (format, oʻlcham, qayta kodlash). Rasmlar `MEDIA_ROOT` da, manzili saytga nisbatan — `/api/v1/media/...` (frontend `next/image` shu yoʻlni kutadi); ishlab chiqishda Django beradi (faqat `DEBUG`), productionda — Caddy diskdan (`deploy/Caddyfile`).
+- Standart kategoriya xususiyatlari — `apps/catalog/migrations/0003_standard_attributes.py` (muzlatilgan; faqat bo'sh kategoriyalarni to'ldiradi). Toʻplam oʻzgarsa — yangi migratsiya va frontend `standard-attributes.json` (test solishtiradi).
+- Biznes qulayliklari — `Business.Amenity` (kontraktdagi `Amenity` bilan bir xil tartib).
 - Mahsulot xususiyatlari — `apps/businesses/attributes.py` (ADR-0014): kategoriya xususiyati xom qiymat (`raw`) va saqlangan paytdagi koʻrinish bilan saqlanadi; frontend mock'idagi `item-attributes.ts` bilan bir xil. Katalog oʻzgarsa — `business.refresh_search_text()` (mahsulot nomlari qidiruvda).
 - Yangi ruxsat qoʻshilsa — avval kontraktdagi `AdminPermission` ga, keyin `apps/staff/permissions.py` ga (test ikkalasini solishtiradi).
 - Sessiya va boshqa maxfiy tokenlar bazada faqat SHA-256 xeshi ko'rinishida; admin 2FA kalitlari — shifrlangan.

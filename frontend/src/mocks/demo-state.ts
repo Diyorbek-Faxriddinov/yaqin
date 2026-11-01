@@ -40,6 +40,7 @@ export type DemoBusinessRecord = Omit<DemoBusiness, "location"> & {
   consent: Consent | null;
   telegram: string | null;
   instagram: string | null;
+  website: string | null;
   updatedAt: string;
   /** Birinchi marta e'lon qilingan vaqt; shundan keyin slug (sahifa manzili) o'zgarmaydi */
   publishedAt: string | null;
@@ -249,6 +250,7 @@ function seedBusinesses(): DemoBusinessRecord[] {
     consent: { givenBy: "Demo egasi", givenAt: business.createdAt, note: null },
     telegram: null,
     instagram: null,
+    website: null,
     updatedAt: business.createdAt,
     publishedAt: business.createdAt,
   }));

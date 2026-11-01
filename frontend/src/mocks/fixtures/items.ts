@@ -238,9 +238,9 @@ const TEMPLATES: Record<string, Template[]> = {
   ],
   "kiyim-kechak": [
     p("Erkaklar koʻylagi", "Erkaklar", "fixed", 180000, null, [
-      ["size", "s,m,l,xl,xxl"],
+      ["size", "s,m,l,xl,2xl"],
       [null, "Rang", "Oq, koʻk"],
-      ["material", "Paxta"],
+      ["material", "cotton"],
     ]),
     p("Ayollar koʻylagi", "Ayollar", "fixed", 250000, null, [
       ["size", "s,m,l"],
@@ -250,8 +250,14 @@ const TEMPLATES: Record<string, Template[]> = {
     p("Jinsi shim", "Erkaklar", "fixed", 300000, null, [[null, "Bel oʻlchami", "30–38"]]),
   ],
   poyabzal: [
-    p("Erkaklar tuflisi", "Erkaklar", "fixed", 450000, null, [[null, "Oʻlcham", "39–45"]]),
-    p("Krossovka", "Sport", "fixed", 380000, null, [[null, "Oʻlcham", "36–45"]]),
+    p("Erkaklar tuflisi", "Erkaklar", "fixed", 450000, null, [
+      ["size", "39,40,41,42,43,44,45"],
+      ["material", "leather"],
+    ]),
+    p("Krossovka", "Sport", "fixed", 380000, null, [
+      ["size", "36,37,38,39,40,41,42,43,44,45"],
+      ["material", "textile"],
+    ]),
   ],
   elektronika: [
     p("Smartfon 128 GB", "Telefonlar", "from", 2500000, null, [

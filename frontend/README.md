@@ -74,6 +74,7 @@ Namuna — [`.env.example`](.env.example).
 - **`generateStaticParams`** Cache Components rejimida kamida bitta natija qaytarishi shart — boʻlishi mumkin boʻlsa `atLeastOne()` (`src/lib/static-params.ts`) bilan oʻrang (yangi bazada bizneslar yoʻq, mahsuloti yoʻq biznes bor).
 - **Production** — `Dockerfile` (standalone, `NEXT_OUTPUT=standalone`), [docs/deployment.md](../docs/deployment.md). `NEXT_PUBLIC_*` build vaqtida yoziladi; build backendga ulanadi. `HOSTNAME=0.0.0.0` shart (aks holda bosh sahifa o'ziga 307 bilan yo'naltiriladi). Rasm optimizatori fayllarni `MEDIA_INTERNAL_URL` dan oladi (`src/lib/api/media-url.ts`; Django productionda rasm bermaydi).
 - **Rasmlar galereyasi** — `src/components/common/media-gallery.tsx` (biznes va mahsulot sahifalari): rasm hech qachon kesilmaydi (`object-contain` + xiralashtirilgan fon). Admin rasm yuklash — `features/admin/components/photo-manager.tsx` (biznes va mahsulot uchun umumiy, brauzerda siqadi).
+- **Biznes qulayliklari** — tartib `src/lib/amenities.ts` da (kontrakt bilan bir xil), ikonkalar va ro'yxat — `features/business/components/amenities.tsx`, nomlar — `Amenities` namespace.
 - **Mahsulot xususiyatlari** (ADR-0014): kategoriya xususiyati — `key` va xom qiymat bilan yuboriladi, nom va qiymatni backend soʻralgan tilda qaytaradi; mock'dagi qoidalar `src/mocks/item-attributes.ts` — backend `apps/businesses/attributes.py` bilan bir xil saqlang.
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
 

@@ -6,6 +6,7 @@
 - `db.ts` — xotiradagi "maʼlumotlar bazasi": filtrlash, qidiruv, saralash, sahifalash.
 - `handlers.ts` — MSW handler'lari, [docs/api/openapi.yaml](../../../docs/api/openapi.yaml) kontraktiga mos.
 - `fetch.ts` — `mockFetch(request)`: so'rovni tarmoqsiz, shu handler'lar orqali javoblaydi.
+- `fixtures/standard-attributes.json` — standart kategoriya xususiyatlari (backend migratsiyasi bilan bir xil, `seed_demo` va eksport orqali tekshiriladi).
 - `item-attributes.ts` — mahsulot xususiyatlari (kategoriya xususiyati: tekshiruv, tilga moslash) — backend `apps/businesses/attributes.py` bilan bir xil (ADR-0014).
 
 ## Backend bilan bir xil maʼlumot

@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Any
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.utils.dateparse import parse_datetime
 
 from apps.businesses import attributes as item_attributes
@@ -147,6 +149,19 @@ def apply_update(business: Business, body: dict[str, Any]) -> list[str]:
                 fields[key] = ["Foydalanuvchi nomi notoʻgʻri"]
             else:
                 setattr(business, key, handle)
+    if "website" in body:
+        website = text(body["website"])
+        if not website or _valid_website(website):
+            business.website = website
+        else:
+            fields["website"] = ["Toʻliq manzil: https://..."]
+    if "amenities" in body:
+        amenities = body["amenities"]
+        if isinstance(amenities, list) and set(amenities) <= set(Business.Amenity.values):
+            # Kontraktdagi tartibda, takrorsiz
+            business.amenities = [a for a in Business.Amenity.values if a in amenities]
+        else:
+            fields["amenities"] = ["Qulaylik notoʻgʻri"]
     if "schedule" in body:
         if body["schedule"] is None or schedule_problem(body["schedule"]) is None:
             business.schedule = body["schedule"]
@@ -177,6 +192,16 @@ def apply_update(business: Business, body: dict[str, Any]) -> list[str]:
     if fields:
         raise invalid(fields)
     return list(body)
+
+
+def _valid_website(value: str) -> bool:
+    if len(value) > 300:
+        return False
+    try:
+        URLValidator(schemes=["http", "https"])(value)
+    except ValidationError:
+        return False
+    return True
 
 
 def publish_problems(business: Business) -> Fields:

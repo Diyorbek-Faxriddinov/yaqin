@@ -20,6 +20,7 @@ export type ItemAttribute = Schemas["ItemAttribute"];
 export type AdminItem = Schemas["AdminItem"];
 export type ItemAttributeInput = Schemas["ItemAttributeInput"];
 export type Image = Schemas["Image"];
+export type Amenity = Schemas["Amenity"];
 export type Review = Schemas["Review"];
 export type ReviewPage = Schemas["ReviewPage"];
 export type MapMarker = Schemas["MapMarker"];

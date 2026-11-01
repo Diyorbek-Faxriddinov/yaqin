@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models as gis
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -18,6 +19,23 @@ class Business(TimestampedModel):
         PUBLISHED = "published"
         HIDDEN = "hidden"
 
+    class Amenity(models.TextChoices):
+        """Qulayliklar — kontraktdagi `Amenity` (tartib — ko'rsatish tartibi)."""
+
+        CARD_PAYMENT = "card_payment"
+        MOBILE_PAYMENT = "mobile_payment"
+        DELIVERY = "delivery"
+        TAKEAWAY = "takeaway"
+        PARKING = "parking"
+        WIFI = "wifi"
+        AIR_CONDITIONING = "air_conditioning"
+        FAMILY_ROOM = "family_room"
+        KIDS_AREA = "kids_area"
+        PRAYER_ROOM = "prayer_room"
+        WHEELCHAIR_ACCESS = "wheelchair_access"
+        APPOINTMENT = "appointment"
+        WOMEN_SECTION = "women_section"
+
     slug = models.SlugField(max_length=140, unique=True)
     name = models.CharField(max_length=120)
     description = models.TextField(max_length=2000, blank=True)
@@ -31,6 +49,10 @@ class Business(TimestampedModel):
     telegram = models.CharField(max_length=32, blank=True)
     instagram = models.CharField(max_length=30, blank=True)
     website = models.URLField(max_length=300, blank=True)
+    # Qulayliklar (karta orqali to'lov, to'xtash joyi...) — Amenity tartibida, takrorsiz
+    amenities = ArrayField(
+        models.CharField(max_length=32, choices=Amenity.choices), default=list, blank=True
+    )
     # Kontraktdagi WeeklySchedule; null — ish vaqti nomaʼlum
     schedule = models.JSONField(null=True, blank=True, validators=[validate_schedule])
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT)

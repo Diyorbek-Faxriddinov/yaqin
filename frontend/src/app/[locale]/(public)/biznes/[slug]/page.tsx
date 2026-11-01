@@ -4,6 +4,7 @@ import { BadgeCheck, MapPin } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Breadcrumbs, type Crumb } from "@/components/common/breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { AmenityList } from "@/features/business/components/amenities";
 import { BusinessJsonLd } from "@/features/business/components/business-json-ld";
 import { MediaGallery } from "@/components/common/media-gallery";
 import { BusinessOpenStatus } from "@/features/business/components/business-open-status";
@@ -167,6 +168,7 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
               <BusinessOpenStatus schedule={business.schedule} />
               {business.priceRange && <PriceTag price={business.priceRange} className="text-sm" />}
             </div>
+            <AmenityList amenities={business.amenities} />
           </header>
 
           <ContactActions

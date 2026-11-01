@@ -217,6 +217,22 @@
     "thumbnail": "{index}-rasmni koʻrsatish",
     "counter": "{index} / {total}"
   },
+  "Amenities": {
+    "title": "Qulayliklar",
+    "card_payment": "Karta orqali toʻlov",
+    "mobile_payment": "Payme, Click",
+    "delivery": "Yetkazib berish",
+    "takeaway": "Olib ketish",
+    "parking": "Toʻxtash joyi",
+    "wifi": "Wi-Fi",
+    "air_conditioning": "Konditsioner",
+    "family_room": "Oilaviy xona",
+    "kids_area": "Bolalar burchagi",
+    "prayer_room": "Namozxona",
+    "wheelchair_access": "Aravachada kirish qulay",
+    "appointment": "Oldindan yozilish",
+    "women_section": "Ayollar uchun alohida"
+  },
   "MapPage": {
     "title": "Xarita",
     "description": "Toshkentdagi doʻkon va xizmatlar xaritada.",
@@ -549,7 +565,9 @@
       "phoneInvalid": "Raqam notoʻgʻri. Namuna: 90 123 45 67",
       "telegram": "Telegram (ixtiyoriy)",
       "telegramPlaceholder": "foydalanuvchi_nomi",
-      "instagram": "Instagram (ixtiyoriy)"
+      "instagram": "Instagram (ixtiyoriy)",
+      "website": "Veb-sayt (ixtiyoriy)",
+      "amenitiesHint": "Egasidan soʻrang — mijozlar shular boʻyicha tanlaydi (karta, toʻxtash joyi...)."
     },
     "consent": {
       "title": "Egasining roziligi",
@@ -656,6 +674,7 @@
       "givenBy": "Kamida 2 belgi",
       "telegram": "Lotin harflari, raqamlar va _ (5–32 belgi)",
       "instagram": "Lotin harflari, raqamlar, _ va . (30 belgigacha)",
+      "website": "Toʻliq manzil kiriting, masalan https://yaqin.uz",
       "tooLong": "Juda uzun"
     },
     "common": {

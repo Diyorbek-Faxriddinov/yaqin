@@ -440,7 +440,7 @@ describe("do'kon katalogi (ADR-0014)", () => {
     const created = (await (
       await save([
         { key: "size", name: "", value: "l,s" },
-        { key: "material", name: "", value: "Paxta" },
+        { key: "material", name: "", value: "cotton" },
         { key: null, name: "Rang", value: "Qora" },
       ])
     ).json()) as AdminItem;
@@ -452,13 +452,13 @@ describe("do'kon katalogi (ADR-0014)", () => {
     ]);
     expect(created.attributeValues).toEqual([
       { key: "size", name: "Oʻlcham", value: "s,l" },
-      { key: "material", name: "Mato", value: "Paxta" },
+      { key: "material", name: "Mato", value: "cotton" },
       { key: null, name: "Rang", value: "Qora" },
     ]);
     const ru = (await (await call(`${path}?lang=ru`, session)).json()) as AdminItem[];
     expect(ru[0]?.attributes.slice(0, 2)).toEqual([
       { key: "size", name: "Размер", value: "S, L" },
-      { key: "material", name: "Материал", value: "Paxta" },
+      { key: "material", name: "Материал", value: "Хлопок" },
     ]);
   });
 
@@ -500,5 +500,32 @@ describe("do'kon katalogi (ADR-0014)", () => {
     // Mahsulot o'chirilsa — rasmlari ham
     await call(`/admin/businesses/${shop.id}/items/${created.id}`, session, { method: "DELETE" });
     expect(ids.some((id) => demoState.media.has(id))).toBe(false);
+  });
+});
+
+describe("qulayliklar va veb-sayt (5.2a)", () => {
+  it("tartib va takrorsiz saqlanadi; noto'g'ri qiymat — 400", async () => {
+    const session = await adminLogin();
+    const draft = await createDraft(session);
+    const patch = (body: object) =>
+      call(`/admin/businesses/${draft.id}`, session, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+
+    const saved = (await (
+      await patch({ website: "https://ustoz.uz", amenities: ["wifi", "card_payment", "wifi"] })
+    ).json()) as AdminBusiness;
+    expect(saved.website).toBe("https://ustoz.uz");
+    expect(saved.amenities).toEqual(["card_payment", "wifi"]);
+
+    const badSite = await patch({ website: "ustoz.uz" });
+    expect(((await badSite.json()) as ApiError).fields?.website).toEqual([
+      "Toʻliq manzil: https://...",
+    ]);
+    const badAmenity = await patch({ amenities: ["jacuzzi"] });
+    expect(((await badAmenity.json()) as ApiError).fields?.amenities).toEqual([
+      "Qulaylik notoʻgʻri",
+    ]);
   });
 });
