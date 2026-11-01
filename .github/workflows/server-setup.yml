@@ -50,7 +50,9 @@ jobs:
           STOPSIGNAL SIGRTMIN+3
           CMD ["/sbin/init"]
           EOF
-          docker run -d --name server --privileged -v server-docker:/var/lib/docker yaqin-server
+          # Ichki Docker rasmlari alohida volume'da: overlay ichida overlay ishlamaydi
+          docker run -d --name server --privileged \
+            -v server-docker:/var/lib/docker -v server-containerd:/var/lib/containerd yaqin-server
 
           ssh-keygen -q -t ed25519 -N '' -f ~/test_key
           docker exec server install -d -m 700 /root/.ssh
