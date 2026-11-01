@@ -27,13 +27,24 @@ has_status() {
 	shift
 	[ "$(curl -s -o /dev/null -w '%{http_code}' "$@")" = "$expected" ]
 }
+# Javob avval o'zgaruvchiga olinadi, keyin tekshiriladi: `curl | grep -q` pipefail bilan
+# vaqtga bog'liq yiqiladi (grep birinchi moslikda chiqadi → curl SIGPIPE, kod 23)
+headers_of() { curl -s -o /dev/null -D - "$@" | tr -d '\r' | tr '[:upper:]' '[:lower:]'; }
 # Javob sarlavhalarida (kichik harflarda) qolip bormi: has_header 'qolip' URL [curl parametrlari]
 has_header() {
-	local pattern=$1
+	local pattern=$1 headers
 	shift
-	curl -s -o /dev/null -D - "$@" | tr -d '\r' | tr '[:upper:]' '[:lower:]' | grep -q "$pattern"
+	headers=$(headers_of "$@") && grep -q "$pattern" <<<"$headers"
 }
-body_contains() { curl -sf "$2" | grep -q "$1"; }
+lacks_header() {
+	local pattern=$1 headers
+	shift
+	headers=$(headers_of "$@") && ! grep -q "$pattern" <<<"$headers"
+}
+body_contains() {
+	local body
+	body=$(curl -sf "$2") && grep -q "$1" <<<"$body"
+}
 in_backend() { docker compose exec -T backend "$@"; }
 
 check "API health" body_contains '"status":"ok"' "$BASE/api/v1/health"
@@ -47,7 +58,7 @@ check "robots.txt" has_status 200 "$BASE/robots.txt"
 # Sahifa HTML'idagi matn emas: tarjimalar paketida "Demo rejim" so'zi baribir bor
 check "Demo rejim o'chiq" body_contains '^Sitemap:' "$BASE/robots.txt"
 check "CSP sarlavhasi" has_header '^content-security-policy:' "$BASE/"
-check "Server nomi yashirin" bash -c "! curl -s -o /dev/null -D - '$BASE/' | grep -qi '^x-powered-by:'"
+check "Server nomi yashirin" lacks_header '^x-powered-by:' "$BASE/"
 check "Siqish (gzip)" has_header '^content-encoding: gzip' -H 'Accept-Encoding: gzip' "$BASE/"
 check "Webhook tashqaridan yopiq" has_status 404 -X POST "$BASE/api/revalidate"
 check "Mavjud bo'lmagan sahifa — 404" has_status 404 "$BASE/bunday-sahifa-yoq"
