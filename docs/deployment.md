@@ -67,7 +67,24 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 
 ## Server (5.3)
 
-Servercore, Toshkent: Ubuntu 24.04 LTS, 2 vCPU, 4 GB RAM, 50 GB disk, ochiq IP. Kirish faqat SSH kalit bilan: maxfiy qismi administrator kompyuterida (`~/.ssh/yaqin_ed25519`, parol bilan himoyalangan), ochiq qismi Servercore'da.
+Servercore, Toshkent (`uz-2a`), server `yaqin-prod`:
+
+- Ubuntu 24.04 LTS, Standard Line, 2 vCPU, 4 GB RAM.
+- Disk: 50 GB SSD Universal — tarmoq disk, nusxalanadi. Lokal NVMe tanlanmadi: server oʻchirilsa yoki buzilsa, undagi maʼlumot yoʻqoladi.
+- Tarmoq: floating IP va router (1:1 NAT, mijoz IP manzili saqlanadi). Server qayta yaratilsa ham IP oʻzgarmaydi. Security group — `default`.
+- Narx (2026-11-02): **439 960 soʻm/oy**: hisoblash 273 733, disk 95 838, IP va router 70 389; 3 TB trafik bepul. Soatbay yechiladi, balans oldindan toʻldiriladi. Disk kichraytirilmaydi, CPU va RAM oʻzgartirilsa server qayta yuklanadi.
+
+Kirish faqat SSH kalit bilan. Maxfiy qismi administrator kompyuterida (`~/.ssh/yaqin_ed25519`, parol bilan himoyalangan, Windows `ssh-agent` da), ochiq qismi Servercore'da. Root paroli faqat panel konsoli uchun, administratorda saqlanadi.
+
+Kompyuterdagi `~/.ssh/config`:
+
+```text
+Host yaqin
+  HostName <floating IP>
+  User deploy
+  IdentityFile ~/.ssh/yaqin_ed25519
+  IdentitiesOnly yes
+```
 
 Yangi server bir marta, kompyuterdan tayyorlanadi:
 
