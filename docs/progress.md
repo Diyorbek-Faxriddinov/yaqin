@@ -44,14 +44,14 @@ Oxirgi yangilanish: 2026-11-01
 
 ## 5-bosqich qadamlari
 
-| Qadam | Mazmuni                                                                      | Holat |
-| ----- | ---------------------------------------------------------------------------- | ----- |
-| 5.1   | Provayder va domen                                                           | ✅    |
-| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test | 🔄    |
-| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                | ⏳    |
-| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google | ⏳    |
-| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring              | ⏳    |
-| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                  | ⏳    |
+| Qadam | Mazmuni                                                                                                       | Holat |
+| ----- | ------------------------------------------------------------------------------------------------------------- | ----- |
+| 5.1   | Provayder va domen                                                                                            | ✅    |
+| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | 🔄    |
+| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ⏳    |
+| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ⏳    |
+| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
+| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
 
 ## 5.2 natijalari — production sozlamalari ([deployment.md](deployment.md))
 

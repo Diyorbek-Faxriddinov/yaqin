@@ -34,7 +34,6 @@ has_header() {
 	curl -s -o /dev/null -D - "$@" | tr -d '\r' | tr '[:upper:]' '[:lower:]' | grep -q "$pattern"
 }
 body_contains() { curl -sf "$2" | grep -q "$1"; }
-body_lacks() { ! curl -sf "$2" | grep -q "$1"; }
 in_backend() { docker compose exec -T backend "$@"; }
 
 check "API health" body_contains '"status":"ok"' "$BASE/api/v1/health"
@@ -44,7 +43,9 @@ check "Kategoriyalar sahifasi" has_status 200 "$BASE/kategoriyalar"
 check "Admin kirish sahifasi" has_status 200 "$BASE/admin/kirish"
 check "Kategoriyalar API" has_status 200 "$BASE/api/v1/categories?lang=uz"
 check "robots.txt" has_status 200 "$BASE/robots.txt"
-check "Demo rejim o'chiq" body_lacks 'Demo rejim' "$BASE/"
+# Demo build robots.txt'da butun saytni yopadi; haqiqiy build — sitemap bilan (src/app/robots.ts).
+# Sahifa HTML'idagi matn emas: tarjimalar paketida "Demo rejim" so'zi baribir bor
+check "Demo rejim o'chiq" body_contains '^Sitemap:' "$BASE/robots.txt"
 check "CSP sarlavhasi" has_header '^content-security-policy:' "$BASE/"
 check "Server nomi yashirin" bash -c "! curl -s -o /dev/null -D - '$BASE/' | grep -qi '^x-powered-by:'"
 check "Siqish (gzip)" has_header '^content-encoding: gzip' -H 'Accept-Encoding: gzip' "$BASE/"
