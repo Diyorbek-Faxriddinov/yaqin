@@ -2,10 +2,14 @@
 #
 # SITE_ADDRESS: productionda "yaqinapp.uz, www.yaqinapp.uz" — Caddy Let's Encrypt sertifikatini
 # o'zi oladi va yangilaydi, http'ni https'ga yo'naltiradi. CI'da — "http://localhost".
+# Sertifikat uchun email berilmaydi: Let's Encrypt 2025 yildan muddat haqida xat yubormaydi.
 # Kirish loglari yozilmaydi: so'rov manzilida joylashuv (lat/lng) bo'lishi mumkin (maxfiylik siyosati).
+#
+# SITE_INDEXING: "open" bo'lmaguncha qidiruv tizimlari uchun sayt yopiq — barcha javoblarda
+# X-Robots-Tag: noindex, robots.txt butun saytni yopadi. Ochish (5.6): .env da SITE_INDEXING=open,
+# keyin `docker compose up -d caddy`. Image qayta yig'ilmaydi.
 {
 	admin off
-	email {$ACME_EMAIL}
 }
 
 {$SITE_ADDRESS} {
@@ -15,6 +19,20 @@
 
 	# Siqish shu yerda (Next.js'da o'chirilgan — next.config.ts, `compress: false`)
 	encode zstd gzip
+
+	@noindex expression `"{$SITE_INDEXING:closed}" != "open"`
+	header @noindex X-Robots-Tag "noindex, nofollow"
+	@closedRobots {
+		path /robots.txt
+		expression `"{$SITE_INDEXING:closed}" != "open"`
+	}
+	handle @closedRobots {
+		header Content-Type "text/plain; charset=utf-8"
+		respond <<TXT
+			User-agent: *
+			Disallow: /
+			TXT 200
+	}
 
 	header {
 		-Server

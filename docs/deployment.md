@@ -1,6 +1,6 @@
 # Production: tuzilma va joylash
 
-Holat: 5.3 — sozlamalar repoda va CI'da tekshiriladi, server sozlash skripti tayyor. Birinchi joylash (5.4), zaxira va monitoring (5.5) — keyingi qadamlar, bu hujjat ular bilan to'ldiriladi.
+Holat: 5.4 — server tayyor (5.3), image'lar Release workflow'i bilan yig'iladi, joylash `deploy.sh` bilan. Zaxira va monitoring (5.5) — keyingi qadam, bu hujjat u bilan to'ldiriladi.
 
 ## Tuzilma
 
@@ -40,17 +40,19 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 
 ## Fayllar
 
-| Fayl                                                                        | Vazifasi                                                          |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [deploy/compose.yaml](../deploy/compose.yaml)                               | Production to'plami                                               |
-| [deploy/Caddyfile](../deploy/Caddyfile)                                     | Reverse proxy (lokal nusxasi — `scripts/local/Caddyfile`)         |
-| [deploy/env.example](../deploy/env.example)                                 | Muhit o'zgaruvchilari namunasi. Serverda `.env` — Git'ga kirmaydi |
-| [deploy/smoke.sh](../deploy/smoke.sh)                                       | Ishga tushgan to'plamni tekshirish (CI va serverda)               |
-| [deploy/revalidate.sh](../deploy/revalidate.sh)                             | Joylashdan keyin frontend keshini yangilash                       |
-| [deploy/compose.ci.yaml](../deploy/compose.ci.yaml)                         | Faqat CI: frontend build'i uchun backend porti                    |
-| [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                        |
-| [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                            |
-| [.github/workflows/server-setup.yml](../.github/workflows/server-setup.yml) | `server-setup.sh` ni systemd'li Ubuntu 24.04 konteynerida sinash  |
+| Fayl                                                                        | Vazifasi                                                                  |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [deploy/compose.yaml](../deploy/compose.yaml)                               | Production to'plami                                                       |
+| [deploy/Caddyfile](../deploy/Caddyfile)                                     | Reverse proxy (lokal nusxasi — `scripts/local/Caddyfile`)                 |
+| [deploy/env.example](../deploy/env.example)                                 | Muhit o'zgaruvchilari namunasi. Serverda `.env` — Git'ga kirmaydi         |
+| [deploy/smoke.sh](../deploy/smoke.sh)                                       | Ishga tushgan to'plamni tekshirish (CI va serverda)                       |
+| [deploy/revalidate.sh](../deploy/revalidate.sh)                             | Joylashdan keyin frontend keshini yangilash                               |
+| [deploy/deploy.sh](../deploy/deploy.sh)                                     | Serverda joylash va yangilash: `./deploy.sh <commit>`                     |
+| [deploy/compose.ci.yaml](../deploy/compose.ci.yaml)                         | Faqat CI: frontend build'i uchun backend porti                            |
+| [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                                |
+| [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                                    |
+| [.github/workflows/release.yml](../.github/workflows/release.yml)           | Production image'lari → smoke test → `ghcr.io` (qo'lda ishga tushiriladi) |
+| [.github/workflows/server-setup.yml](../.github/workflows/server-setup.yml) | `server-setup.sh` ni systemd'li Ubuntu 24.04 konteynerida sinash          |
 
 ## CI ([docker.yml](../.github/workflows/docker.yml))
 
@@ -63,7 +65,9 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
    - CSP, siqish, 404;
    - webhook tashqaridan yopiqligi va ichki tarmoqdan ishlashi;
    - rasm: Caddy, `immutable`, `nosniff`, optimizator, papkadan chiqib bo'lmasligi;
+   - demo rejim o'chiqligi (frontend'ning o'z `robots.txt` i) va indekslash holati;
    - `check --deploy`.
+6. Yana bir marta `SITE_INDEXING=open` bilan: 5.6 da ochiladigan holat ham sinalgan bo'lsin.
 
 ## Server (5.3)
 
@@ -107,19 +111,51 @@ Shundan keyin root bo'lib kirib bo'lmaydi, faqat `ssh deploy@IP`. Birinchi ulani
 
 Skript qayta ishga tushirilsa ham xavfsiz (`deploy` bo'lib: `sudo bash server-setup.sh`). CI uni haqiqiy serverdagidek sinaydi: provayder rasmiga o'xshash konteynerga root bo'lib SSH orqali ishga tushiradi, keyin root va parol bilan kirib bo'lmasligini, sudo, Docker, firewall, fail2ban va qayta ishga tushirishni tekshiradi. Swap konteynerda sinalmaydi.
 
-## Joylash (5.4 da to'ldiriladi)
+## Joylash
 
-Serverda, `deploy/` papkasida:
+### Image'lar ([release.yml](../.github/workflows/release.yml))
+
+GitHub → Actions → **Release** → Run workflow. Image'lar production qiymatlari bilan yig'iladi, butun to'plamda smoke test o'tadi va `ghcr.io/diyorbek-faxriddinov/yaqin-{backend,frontend}:<commit>` ga joylanadi. Natija sahifasida serverdagi buyruq yoziladi.
+
+- `NEXT_PUBLIC_*` qiymatlari repo **Variables**'dan olinadi: `SITE_URL`, `TELEGRAM_BOT`, `GOOGLE_CLIENT_ID`. Ular maxfiy emas, brauzer kodiga baribir yoziladi.
+- Repo ochiq, image'lar ham ochiq: server ularni tokensiz yuklaydi. Birinchi release'dan keyin GitHub → Packages → har bir image → Package settings → Change visibility → **Public** (bir marta).
+
+### Birinchi joylash
+
+Serverda (`ssh yaqin`):
 
 ```bash
-cp env.example .env && chmod 600 .env        # qiymatlarni serverning o'zida yarating
-docker compose up -d --wait db redis
-docker compose run --rm backend python manage.py migrate --noinput
-docker compose up -d --wait
-./revalidate.sh
-BASE=https://yaqinapp.uz ./smoke.sh
-# birinchi marta — parol interaktiv so'raladi (ekranga va tarixga chiqmaydi)
-docker compose run --rm backend python manage.py createroot --username root --display-name "Bosh administrator"
+git clone https://github.com/Diyorbek-Faxriddinov/yaqin.git ~/yaqin
+cd ~/yaqin/deploy
+cp env.example .env && chmod 600 .env
+# Maxfiy qiymatlar serverning o'zida yaratiladi va ekranga chiqmaydi
+for key in POSTGRES_PASSWORD DATABASE_PASSWORD DJANGO_SECRET_KEY REVALIDATE_SECRET; do
+  sed -i "s|^$key=.*|$key=$(openssl rand -hex 32)|" .env
+done
+sed -i "s|^TOTP_ENCRYPTION_KEY=.*|TOTP_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr '+/' '-_')|" .env
+nano .env    # TELEGRAM_BOT_TOKEN va GOOGLE_CLIENT_ID — administrator o'zi yozadi
+./deploy.sh <commit>
 ```
 
-Yangilash: yangi image'lar → `migrate` → `up -d --wait` → `./revalidate.sh` → `smoke.sh`.
+Keyin administrator o'z kompyuteridan (parol interaktiv so'raladi, ekranga va tarixga chiqmaydi):
+
+```bash
+ssh -t yaqin 'cd yaqin/deploy && docker compose run --rm backend python manage.py createroot --username root --display-name "Bosh administrator"'
+```
+
+**`.env` zaxirasi.** Administrator o'z terminalida `ssh yaqin cat yaqin/deploy/.env` bilan ko'radi va parol menejeriga saqlaydi (chatga yoki boshqa joyga emas). `TOTP_ENCRYPTION_KEY` yo'qolsa, barcha administratorlar 2FA'ni qaytadan sozlaydi. `POSTGRES_PASSWORD` va `DATABASE_PASSWORD` baza birinchi ishga tushganda yoziladi; keyin `.env` da o'zgartirish yetmaydi.
+
+### Yangilash
+
+Release → `ssh yaqin` → `cd yaqin/deploy && ./deploy.sh <commit>`. Skript repo'ni shu commit'ga o'tkazadi (compose va Caddyfile image'lar bilan mos bo'ladi), image'larni yuklaydi, migratsiya qiladi, to'plamni yangilaydi, keshni yangilaydi va smoke test o'tkazadi.
+
+Orqaga qaytish: `./deploy.sh <oldingi commit>`. Migratsiyalar orqaga qaytmaydi, ya'ni yangi migratsiyali release'dan qaytish uchun zaxira nusxadan tiklash kerak (5.5).
+
+### Qidiruv tizimlari
+
+`.env` dagi `SITE_INDEXING` `open` bo'lmaguncha sayt indekslanmaydi:
+
+- Caddy barcha javoblarga `X-Robots-Tag: noindex, nofollow` qo'shadi;
+- `robots.txt` butun saytni yopadi.
+
+Ochish (5.6, egasining qarori bilan): `SITE_INDEXING=open`, keyin `docker compose up -d caddy`. Image qayta yig'ilmaydi; ochiq holat CI'da ham sinaladi.

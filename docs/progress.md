@@ -50,9 +50,17 @@ Oxirgi yangilanish: 2026-11-01
 | 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | ✅    |
 | 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | ✅    |
 | 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ✅    |
-| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ⏳    |
+| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | 🔄    |
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
+
+## 5.4 natijalari — birinchi joylash (jarayonda)
+
+- **Release workflow** ([release.yml](../.github/workflows/release.yml)): production image'lari smoke testdan keyin `ghcr.io` ga joylanadi, qo'lda ishga tushiriladi.
+- **[deploy/deploy.sh](../deploy/deploy.sh)**: `./deploy.sh <commit>` — repo shu commit'ga, image'lar, migratsiyalar, to'plam, kesh, smoke test.
+- **Indekslash kaliti** (`SITE_INDEXING`, Caddy): `open` bo'lmaguncha `X-Robots-Tag: noindex` va yopiq `robots.txt`. Ikkala holat lokal Caddy 2.11.7 bilan va CI'da sinaladi; smoke test holatga qarab tekshiradi.
+- **Sertifikat uchun email olib tashlandi** (`ACME_EMAIL`): Let's Encrypt 2025 yildan muddat haqida xat yubormaydi, shaxsiy emailni serverga yozishga hojat yo'q.
+- **DNS.** Domen reyestrda Eskiz nameserver'lariga bog'langan, lekin Eskiz'da zona yaratilmagan edi: so'rovlarga `REFUSED`.
 
 ## 5.3 natijalari — server
 

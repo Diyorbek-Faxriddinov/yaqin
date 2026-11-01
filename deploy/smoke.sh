@@ -46,6 +46,17 @@ body_contains() {
 	body=$(curl -sf "$2") && grep -q "$1" <<<"$body"
 }
 in_backend() { docker compose exec -T backend "$@"; }
+# Frontend'ning o'z javobi (Caddy'siz): in_frontend_body 'regex' /yo'l
+in_frontend_body() {
+	docker compose exec -T frontend node -e "
+fetch('http://127.0.0.1:3000' + process.argv[2]).then((r) => r.text())
+  .then((t) => process.exit(new RegExp(process.argv[1], 'm').test(t) ? 0 : 1), () => process.exit(1))
+" "$1" "$2"
+}
+
+# Indekslash holati — .env dagi SITE_INDEXING (Caddyfile): "open" bo'lmaguncha yopiq
+INDEXING=${SITE_INDEXING:-$(sed -n 's/^SITE_INDEXING=//p' .env 2>/dev/null)}
+[ "$INDEXING" = open ] || INDEXING=closed
 
 check "API health" body_contains '"status":"ok"' "$BASE/api/v1/health"
 check "Bosh sahifa (uz)" body_contains 'Yaqin' "$BASE/"
@@ -55,8 +66,16 @@ check "Admin kirish sahifasi" has_status 200 "$BASE/admin/kirish"
 check "Kategoriyalar API" has_status 200 "$BASE/api/v1/categories?lang=uz"
 check "robots.txt" has_status 200 "$BASE/robots.txt"
 # Demo build robots.txt'da butun saytni yopadi; haqiqiy build — sitemap bilan (src/app/robots.ts).
-# Sahifa HTML'idagi matn emas: tarjimalar paketida "Demo rejim" so'zi baribir bor
-check "Demo rejim o'chiq" body_contains '^Sitemap:' "$BASE/robots.txt"
+# Frontend'ning o'zidan so'raladi: tashqarida robots.txt'ni indekslash holati belgilaydi. Sahifa
+# HTML'idagi matn emas: tarjimalar paketida "Demo rejim" so'zi baribir bor
+check "Demo rejim o'chiq" in_frontend_body '^Sitemap:' /robots.txt
+if [ "$INDEXING" = closed ]; then
+	check "Indekslash yopiq — robots.txt" body_contains '^Disallow: /$' "$BASE/robots.txt"
+	check "Indekslash yopiq — X-Robots-Tag" has_header '^x-robots-tag: noindex' "$BASE/"
+else
+	check "Indekslash ochiq — robots.txt" body_contains '^Sitemap:' "$BASE/robots.txt"
+	check "Indekslash ochiq — X-Robots-Tag yo'q" lacks_header '^x-robots-tag:' "$BASE/"
+fi
 check "CSP sarlavhasi" has_header '^content-security-policy:' "$BASE/"
 check "Server nomi yashirin" lacks_header '^x-powered-by:' "$BASE/"
 check "Siqish (gzip)" has_header '^content-encoding: gzip' -H 'Accept-Encoding: gzip' "$BASE/"
