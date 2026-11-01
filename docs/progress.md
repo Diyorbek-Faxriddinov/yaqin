@@ -47,12 +47,19 @@ Oxirgi yangilanish: 2026-11-01
 | Qadam | Mazmuni                                                                                                       | Holat |
 | ----- | ------------------------------------------------------------------------------------------------------------- | ----- |
 | 5.1   | Provayder va domen                                                                                            | ✅    |
-| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | 🔄    |
-| 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | 🔄    |
-| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ⏳    |
+| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | ✅    |
+| 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | ✅    |
+| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | 🔄    |
 | 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ⏳    |
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
+
+## 5.3 natijalari — server (jarayonda)
+
+- **SSH kalit** administrator kompyuterida yaratildi (ed25519, parol bilan), maxfiy qismi hech qayerga yuborilmaydi.
+- **[deploy/server-setup.sh](../deploy/server-setup.sh)**: tizim yangilanishi, `deploy` foydalanuvchisi, SSH faqat kalit bilan, ufw (22/80/443), fail2ban, avtomatik xavfsizlik yangilanishlari, Docker, swap, vaqt zonasi — [deployment.md](deployment.md#server-53).
+- **CI** ([server-setup.yml](../.github/workflows/server-setup.yml)) skriptni systemd'li Ubuntu 24.04 konteynerida SSH orqali ishga tushirib tekshiradi.
+- Server yaratish va skriptni haqiqiy serverda ishga tushirish — keyingi ish.
 
 ## 5.2a natijalari — standart xususiyatlar va biznes qulayliklari (ADR-0014 yangilanishi)
 

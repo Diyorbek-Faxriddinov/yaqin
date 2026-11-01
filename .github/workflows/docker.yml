@@ -11,12 +11,14 @@ on:
       - "backend/**"
       - "frontend/**"
       - "deploy/**"
+      - "!deploy/server-setup.sh"
       - ".github/workflows/docker.yml"
   pull_request:
     paths:
       - "backend/**"
       - "frontend/**"
       - "deploy/**"
+      - "!deploy/server-setup.sh"
       - ".github/workflows/docker.yml"
 
 permissions:

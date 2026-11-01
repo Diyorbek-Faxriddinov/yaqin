@@ -1,6 +1,6 @@
 # Production: tuzilma va joylash
 
-Holat: 5.2 — sozlamalar repoda va CI'da tekshiriladi. Server (5.3), birinchi joylash (5.4), zaxira va monitoring (5.5) — keyingi qadamlar, bu hujjat ular bilan to'ldiriladi.
+Holat: 5.3 — sozlamalar repoda va CI'da tekshiriladi, server sozlash skripti tayyor. Birinchi joylash (5.4), zaxira va monitoring (5.5) — keyingi qadamlar, bu hujjat ular bilan to'ldiriladi.
 
 ## Tuzilma
 
@@ -40,15 +40,17 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 
 ## Fayllar
 
-| Fayl                                                            | Vazifasi                                                          |
-| --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [deploy/compose.yaml](../deploy/compose.yaml)                   | Production to'plami                                               |
-| [deploy/Caddyfile](../deploy/Caddyfile)                         | Reverse proxy (lokal nusxasi — `scripts/local/Caddyfile`)         |
-| [deploy/env.example](../deploy/env.example)                     | Muhit o'zgaruvchilari namunasi. Serverda `.env` — Git'ga kirmaydi |
-| [deploy/smoke.sh](../deploy/smoke.sh)                           | Ishga tushgan to'plamni tekshirish (CI va serverda)               |
-| [deploy/revalidate.sh](../deploy/revalidate.sh)                 | Joylashdan keyin frontend keshini yangilash                       |
-| [deploy/compose.ci.yaml](../deploy/compose.ci.yaml)             | Faqat CI: frontend build'i uchun backend porti                    |
-| [.github/workflows/docker.yml](../.github/workflows/docker.yml) | Image'lar + butun to'plam + smoke test                            |
+| Fayl                                                                        | Vazifasi                                                          |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [deploy/compose.yaml](../deploy/compose.yaml)                               | Production to'plami                                               |
+| [deploy/Caddyfile](../deploy/Caddyfile)                                     | Reverse proxy (lokal nusxasi — `scripts/local/Caddyfile`)         |
+| [deploy/env.example](../deploy/env.example)                                 | Muhit o'zgaruvchilari namunasi. Serverda `.env` — Git'ga kirmaydi |
+| [deploy/smoke.sh](../deploy/smoke.sh)                                       | Ishga tushgan to'plamni tekshirish (CI va serverda)               |
+| [deploy/revalidate.sh](../deploy/revalidate.sh)                             | Joylashdan keyin frontend keshini yangilash                       |
+| [deploy/compose.ci.yaml](../deploy/compose.ci.yaml)                         | Faqat CI: frontend build'i uchun backend porti                    |
+| [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                        |
+| [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                            |
+| [.github/workflows/server-setup.yml](../.github/workflows/server-setup.yml) | `server-setup.sh` ni systemd'li Ubuntu 24.04 konteynerida sinash  |
 
 ## CI ([docker.yml](../.github/workflows/docker.yml))
 
@@ -63,7 +65,32 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
    - rasm: Caddy, `immutable`, `nosniff`, optimizator, papkadan chiqib bo'lmasligi;
    - `check --deploy`.
 
-## Joylash (5.3–5.4 da to'ldiriladi)
+## Server (5.3)
+
+Servercore, Toshkent: Ubuntu 24.04 LTS, 2 vCPU, 4 GB RAM, 50 GB disk, ochiq IP. Kirish faqat SSH kalit bilan: maxfiy qismi administrator kompyuterida (`~/.ssh/yaqin_ed25519`, parol bilan himoyalangan), ochiq qismi Servercore'da.
+
+Yangi server bir marta, kompyuterdan tayyorlanadi:
+
+```bash
+scp deploy/server-setup.sh root@IP:/root/
+ssh root@IP bash /root/server-setup.sh
+```
+
+Shundan keyin root bo'lib kirib bo'lmaydi, faqat `ssh deploy@IP`. Birinchi ulanishni yopishdan oldin yangi oynada `deploy` bo'lib kirib ko'ring. Kirib bo'lmasa — Servercore panelidagi konsol orqali.
+
+| Sozlama        | Qiymat                                                                                                                                                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SSH            | Faqat kalit bilan, faqat `deploy`; root va parol bilan kirish yopiq. `sshd_config.d/00-yaqin.conf` — provayderning `50-cloud-init.conf` idan oldin o'qiladi, shuning uchun ustun                               |
+| `deploy`       | Paroli yo'q, sudo parolsiz (docker guruhi baribir root'ga teng — himoya SSH kalitida)                                                                                                                          |
+| Firewall (ufw) | Faqat 22/tcp, 80/tcp, 443/tcp, 443/udp (HTTP/3). Docker ochgan portlar ufw'dan o'tib ketadi — compose faqat Caddy portlarini ochadi                                                                            |
+| fail2ban       | SSH: 10 daqiqada 5 xato → 1 soat blok                                                                                                                                                                          |
+| Yangilanishlar | Xavfsizlik yangilanishlari avtomatik (`unattended-upgrades`), kerak bo'lsa 04:00 da qayta yuklash; konteynerlar `restart: unless-stopped` bilan o'zi turadi. Docker paketlari avtomatik yangilanmaydi — qo'lda |
+| Docker         | Rasmiy repo, kalit barmoq izi tekshiriladi. Loglar `local` driver bilan: konteyner boshiga ko'pi bilan 5 × 20 MB                                                                                               |
+| Boshqa         | Swap 2 GB (`swappiness=10`), vaqt zonasi Asia/Tashkent                                                                                                                                                         |
+
+Skript qayta ishga tushirilsa ham xavfsiz (`deploy` bo'lib: `sudo bash server-setup.sh`). CI uni haqiqiy serverdagidek sinaydi: provayder rasmiga o'xshash konteynerga root bo'lib SSH orqali ishga tushiradi, keyin root va parol bilan kirib bo'lmasligini, sudo, Docker, firewall, fail2ban va qayta ishga tushirishni tekshiradi. Swap konteynerda sinalmaydi.
+
+## Joylash (5.4 da to'ldiriladi)
 
 Serverda, `deploy/` papkasida:
 

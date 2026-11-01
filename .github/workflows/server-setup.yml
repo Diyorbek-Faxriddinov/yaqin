@@ -1,0 +1,121 @@
+name: Server sozlash
+
+# deploy/server-setup.sh haqiqiy serverdagidek sinaladi: systemd'li Ubuntu 24.04 konteyneriga
+# (root paroli bor, cloud-init parol bilan kirishni yoqib qo'ygan — provayder rasmidagidek) root
+# bo'lib SSH orqali ishga tushiriladi. Keyin SSH qulfi, sudo, Docker, firewall, fail2ban, vaqt
+# zonasi va qayta ishga tushirish tekshiriladi. Swap konteynerda yoqilmaydi (SWAP_SIZE=0).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/server-setup.sh"
+      - ".github/workflows/server-setup.yml"
+  pull_request:
+    paths:
+      - "deploy/server-setup.sh"
+      - ".github/workflows/server-setup.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-setup-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: shellcheck
+        run: shellcheck deploy/server-setup.sh
+
+      - name: Yangi server (systemd'li Ubuntu 24.04 konteyneri)
+        run: |
+          docker build -t yaqin-server - <<'EOF'
+          FROM ubuntu:24.04
+          RUN apt-get update \
+           && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              systemd systemd-sysv openssh-server sudo \
+           && rm -rf /var/lib/apt/lists/*
+          RUN echo 'root:parol-test' | chpasswd \
+           && echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config.d/50-cloud-init.conf
+          STOPSIGNAL SIGRTMIN+3
+          CMD ["/sbin/init"]
+          EOF
+          docker run -d --name server --privileged -v server-docker:/var/lib/docker yaqin-server
+
+          ssh-keygen -q -t ed25519 -N '' -f ~/test_key
+          docker exec server install -d -m 700 /root/.ssh
+          docker cp ~/test_key.pub server:/root/.ssh/authorized_keys
+          docker exec server chown root:root /root/.ssh/authorized_keys
+
+          ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' server)
+          mkdir -p ~/.ssh
+          cat >~/.ssh/config <<EOF
+          Host server
+            HostName $ip
+            IdentityFile ~/test_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+            UserKnownHostsFile ~/.ssh/known_hosts_test
+            BatchMode yes
+            ConnectTimeout 10
+          EOF
+          for _ in $(seq 30); do ssh root@server true 2>/dev/null && break; sleep 2; done
+          ssh root@server true
+
+      - name: Skript (root bo'lib, SSH orqali)
+        run: |
+          scp deploy/server-setup.sh root@server:/root/
+          ssh root@server SWAP_SIZE=0 bash /root/server-setup.sh
+
+      - name: Tekshiruv
+        # Natija avval o'zgaruvchiga olinadi: `ssh | grep -q` pipefail bilan SIGPIPE'dan yiqiladi
+        run: |
+          set -x
+          # root bo'lib ham, parol bilan ham kirib bo'lmaydi
+          if ssh root@server true; then echo "root bo'lib kirib bo'ldi"; exit 1; fi
+          out=$(ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive \
+            deploy@server true 2>&1 || true)
+          grep -q 'Permission denied (publickey)' <<<"$out"
+          sshd=$(ssh deploy@server 'sudo sshd -T')
+          grep -qx 'passwordauthentication no' <<<"$sshd"
+          grep -qx 'permitrootlogin no' <<<"$sshd"
+
+          # deploy: kalit bilan kiradi, parolsiz sudo, docker guruhi
+          ssh deploy@server 'sudo -n true'
+          out=$(ssh deploy@server 'docker run --rm hello-world')
+          grep -q 'Hello from Docker' <<<"$out"
+          ssh deploy@server 'docker compose version'
+          test "$(ssh deploy@server "docker info --format '{{.LoggingDriver}}'")" = local
+
+          # firewall: faqat 22, 80, 443
+          status=$(ssh deploy@server 'sudo ufw status')
+          echo "$status"
+          grep -q '^Status: active' <<<"$status"
+          for port in 22/tcp 80/tcp 443/tcp 443/udp; do grep -q "^$port " <<<"$status"; done
+          test "$(grep -c ALLOW <<<"$status")" -eq 8 # 4 port × IPv4/IPv6
+
+          ssh deploy@server 'sudo fail2ban-client status sshd'
+          test "$(ssh deploy@server 'date +%Z')" = +05
+          out=$(ssh deploy@server 'apt-config dump Unattended-Upgrade::Automatic-Reboot-Time')
+          grep -q '"04:00"' <<<"$out"
+
+      - name: Qayta ishga tushirish (deploy + sudo)
+        run: |
+          scp deploy/server-setup.sh deploy@server:
+          ssh deploy@server 'sudo SWAP_SIZE=0 bash server-setup.sh'
+          out=$(ssh deploy@server 'docker run --rm hello-world')
+          grep -q 'Hello from Docker' <<<"$out"
+
+      - name: Konteyner loglari
+        if: failure()
+        run: docker exec server journalctl --no-pager -n 200 || true

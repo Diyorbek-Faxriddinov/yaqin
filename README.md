@@ -81,7 +81,7 @@ Har bir tanlovning sababi — [docs/adr](docs/adr).
 .
 ├── frontend/              Next.js ilovasi (batafsil: frontend/README.md)
 ├── backend/               Django ilovasi (batafsil: backend/README.md)
-├── deploy/                production: Docker Compose, Caddyfile, smoke test (docs/deployment.md)
+├── deploy/                production: Docker Compose, Caddyfile, smoke test, server sozlash (docs/deployment.md)
 ├── docs/
 │   ├── api/openapi.yaml   API kontrakti
 │   ├── adr/               arxitektura qarorlari
