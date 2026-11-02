@@ -22,8 +22,14 @@ $ErrorActionPreference = "Stop"
 if (-not (Test-Path $Rclone)) { throw "rclone topilmadi: $Rclone" }
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmm"
 
+# Hash tekshiruvi o'chiq: rclone serverda `md5sum` ni argumentsiz chaqirib, Windows'dagi ssh bilan
+# kirish oqimini kutib qolardi (2026-11-02 da osilib qolgan). Kerak ham emas — restic fayllari
+# o'zgarmaydi, nomi mazmunining hash'i; restic check butunlikni o'zi tekshiradi.
+# known-hosts none: server kalitini rclone emas, tashqi ssh tekshiradi (~/.ssh/known_hosts)
 & $Rclone sync ":sftp:/var/backups/restic" "$Target\repo" `
     --sftp-ssh "ssh $Server" `
+    --sftp-shell-type unix --sftp-disable-hashcheck `
+    --sftp-known-hosts-file none `
     --backup-dir "$Target\olib-tashlangan\$stamp" `
     --stats-one-line --stats 0 -v
 if ($LASTEXITCODE -ne 0) { throw "Ko'chirish muvaffaqiyatsiz (rclone kodi: $LASTEXITCODE)" }
@@ -35,4 +41,4 @@ if ($LASTEXITCODE -ne 0) { throw "Serverga belgi qo'yilmadi (ssh kodi: $LASTEXIT
 $files = Get-ChildItem "$Target\repo" -Recurse -File
 $size = ($files | Measure-Object -Property Length -Sum).Sum
 $snapshots = @(Get-ChildItem "$Target\repo\snapshots" -File).Count
-Write-Host ("Tayyor: {0} — {1} zaxira, {2} fayl, {3:N1} MB" -f "$Target\repo", $snapshots, $files.Count, ($size / 1MB))
+Write-Host ("Tayyor: {0}: {1} zaxira, {2} fayl, {3:N1} MB" -f "$Target\repo", $snapshots, $files.Count, ($size / 1MB))

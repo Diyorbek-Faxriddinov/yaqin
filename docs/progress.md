@@ -62,7 +62,14 @@ Oxirgi yangilanish: 2026-11-01
   - `healthcheck.sh` — konteynerlar, disk, sertifikat, zaxira yoshi → Telegram;
   - `install.sh` — restic, parol, repozitoriy, systemd taymerlari.
 - **S3 Toshkentda hozircha yo'q.** Servercore'da uz-2 uchun bucket yaratib bo'lmaydi; narxi 1 GB uchun oyiga 415 so'm. Chet eldagi S3 qonunga ko'ra mos emas (ADR-0005). Shuning uchun **vaqtinchalik yechim**: zaxira server diskida, shifrlangan nusxasi administrator kompyuterida (`scripts/local/backup-copy.ps1`, rclone + SSH, parolsiz). S3 ishga tushgach, unga ko'chiriladi.
-- **Telegram ogohlantirishlari:** chat ID `.env` ga yozildi, sinov xabari yuborildi.
+- **Telegram ogohlantirishlari:** chat ID `.env` ga yozildi, sinov xabari keldi (administrator tasdiqladi).
+- **Serverda** (2026-11-02, Release'siz — compose va Caddyfile o'zgarmagan):
+  - `install.sh`: restic, `BACKUP_PASSWORD`, repozitoriy, uchta taymer;
+  - birinchi zaxira olindi: 24 jadval, 8627 qator, rasm hali yo'q;
+  - **tiklash sinovi o'tdi**, natija Telegram'ga keldi;
+  - `deploy` repozitoriydagi barcha fayllarni o'qiy oladi.
+- **Kompyuter nusxasi** ishladi (`D:\yaqin-zaxira\repo`); ikkinchi marta "nothing to transfer". Healthcheck avval "zaxira va nusxa yo'q" deb ogohlantirdi, keyin "tuzaldi" deb yozdi.
+- **Topilgan va tuzatilgan:** rclone serverda `md5sum` ni argumentsiz chaqirib, Windows'dagi ssh bilan kirish oqimini kutib qolardi. Hash tekshiruvi o'chirildi: restic fayllari o'zgarmaydi, butunlikni restic check tekshiradi.
 - **CI** ([backup.yml](../.github/workflows/backup.yml)): ikki rejimda (S3 va lokal papka). To'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
 
 ## 5.4 natijalari — birinchi joylash
