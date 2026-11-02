@@ -74,6 +74,7 @@ Oxirgi yangilanish: 2026-11-01
   - Tuzatildi: `||`; `NEXT_PUBLIC_SITE_URL` ham shunday.
   - Test qo'shildi: eski kodda yiqiladi.
   - Smoke testga "xarita uslubi brauzer kodida" tekshiruvi qo'shildi. U hozirgi production image'da yiqilishi tekshirildi.
+  - `addd5c07cb20` joylandi (smoke 23/23). Brauzerda tekshirildi: kompyuter va telefon ekranida uslub va 19 ta plitka yuklandi, xato yo'q.
 - **Topilgan va tuzatilgan:** rclone serverda `md5sum` ni argumentsiz chaqirib, Windows'dagi ssh bilan kirish oqimini kutib qolardi. Hash tekshiruvi o'chirildi: restic fayllari o'zgarmaydi, butunlikni restic check tekshiradi.
 - **CI** ([backup.yml](../.github/workflows/backup.yml)): ikki rejimda (S3 va lokal papka). To'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
 
