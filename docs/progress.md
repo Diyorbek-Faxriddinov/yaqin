@@ -51,8 +51,17 @@ Oxirgi yangilanish: 2026-11-01
 | 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | ✅    |
 | 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ✅    |
 | 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ✅    |
-| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
+| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | 🔄    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
+
+## 5.5 natijalari — zaxira va monitoring (jarayonda)
+
+- **[deploy/backup/](../deploy/backup/)**:
+  - `backup.sh` — `pg_dump`, qatorlar soni, rasmlar → restic → S3;
+  - `restore-test.sh` — vaqtinchalik konteynerga tiklab solishtiradi;
+  - `healthcheck.sh` — konteynerlar, disk, sertifikat, zaxira yoshi → Telegram;
+  - `install.sh` — restic, parol, repozitoriy, systemd taymerlari.
+- **CI** ([backup.yml](../.github/workflows/backup.yml)): to'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
 
 ## 5.4 natijalari — birinchi joylash
 

@@ -53,6 +53,8 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 | [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                                |
 | [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                                    |
 | [.github/workflows/release.yml](../.github/workflows/release.yml)           | Production image'lari → smoke test → `ghcr.io` (qo'lda ishga tushiriladi) |
+| [deploy/backup/](../deploy/backup/)                                         | Zaxira, tiklash sinovi, monitoring (5.5)                                  |
+| [.github/workflows/backup.yml](../.github/workflows/backup.yml)             | Zaxira → tiklash sikli (S3 o'rnida `rclone serve s3`)                     |
 | [.github/workflows/server-setup.yml](../.github/workflows/server-setup.yml) | `server-setup.sh` ni systemd'li Ubuntu 24.04 konteynerida sinash          |
 
 ## CI ([docker.yml](../.github/workflows/docker.yml))
@@ -167,3 +169,19 @@ Orqaga qaytish: `./deploy.sh <oldingi commit>`. Migratsiyalar orqaga qaytmaydi, 
 - `robots.txt` butun saytni yopadi.
 
 Ochish (5.6, egasining qarori bilan): `SITE_INDEXING=open`, keyin `docker compose up -d caddy`. Image qayta yig'ilmaydi; ochiq holat CI'da ham sinaladi.
+
+## Zaxira va monitoring (5.5)
+
+Skriptlar — [deploy/backup/](../deploy/backup/), root sifatida systemd taymerlari bilan ishlaydi. Sozlamalar va maxfiy qiymatlar `deploy/.env` da (`BACKUP_*`, `ALERT_TELEGRAM_CHAT_ID`), kiritish — `set-secret.sh`.
+
+| Skript            | Qachon                  | Nima qiladi                                                                                                                                                                                           |
+| ----------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backup.sh`       | Har kuni 03:00          | `pg_dump` + qatorlar soni + rasmlar → restic (serverda shifrlanadi) → S3. Saqlanadi: 7 kunlik, 4 haftalik, 6 oylik                                                                                    |
+| `restore-test.sh` | Har oyning 1-kuni 05:00 | Eng so'nggi zaxira vaqtinchalik konteynerga tiklanadi va zaxira vaqtidagi qatorlar soni, rasmlar soni va hajmi bilan solishtiriladi; repozitoriyning 5 foizi o'qib tekshiriladi. Natija — Telegram'ga |
+| `healthcheck.sh`  | Har 5 daqiqada          | Konteynerlar, disk (85%), sertifikat (14 kun), oxirgi zaxira (26 soat). Holat o'zgarganda Telegram'ga bir marta xabar                                                                                 |
+| `install.sh`      | Bir marta               | restic, `BACKUP_PASSWORD`, repozitoriy (`restic init`), taymerlar. Qayta ishga tushirish xavfsiz                                                                                                      |
+
+- **Zaxirada nima bor:** baza va yuklangan rasmlar. `.env` (maxfiy kalitlar) zaxiraga kirmaydi — u administratorning parol menejerida. Sertifikatlar ham kirmaydi, Caddy qayta oladi.
+- **`BACKUP_PASSWORD`** zaxiralarni ochadigan yagona kalit. Yo'qolsa, zaxiralar foydasiz — parol menejerida saqlanadi.
+- **Server o'zi o'chsa** ichki monitoring ishlamaydi — buni tashqi tekshiruv (UptimeRobot, `/api/v1/health`) ushlaydi.
+- `root` taymerlari `deploy` foydalanuvchisiga tegishli skriptlarni bajaradi. Bu qo'shimcha xavf emas: `deploy` docker guruhida, ya'ni baribir root'ga teng (5.3).
