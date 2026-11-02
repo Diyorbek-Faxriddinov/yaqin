@@ -11,6 +11,7 @@ require_root
 DISK_LIMIT=85
 CERT_DAYS=14
 BACKUP_MAX_AGE=$((26 * 3600))
+PC_COPY_MAX_AGE=$((10 * 86400))
 problems=()
 
 for service in db redis backend scheduler frontend caddy; do
@@ -34,10 +35,20 @@ if ! timeout 15 openssl s_client -connect 127.0.0.1:443 -servername "$domain" </
 	problems+=("sertifikat: $CERT_DAYS kundan kam qoldi yoki o'qib bo'lmadi")
 fi
 
-if [[ -n $(env_get BACKUP_REPOSITORY) ]]; then
+repository=$(env_get BACKUP_REPOSITORY)
+if [[ -n $repository ]]; then
 	stamp=$STATE_DIR/last-backup
 	if [[ ! -f $stamp ]] || (($(date +%s) - $(stat -c %Y "$stamp") > BACKUP_MAX_AGE)); then
 		problems+=("oxirgi muvaffaqiyatli zaxira 26 soatdan eski")
+	fi
+fi
+# Zaxira faqat server diskida bo'lsa — yagona tashqi nusxa administrator kompyuterida
+# (backup-copy.ps1 nusxadan keyin .env egasining uy papkasida belgi qoldiradi)
+if [[ $repository == /* ]]; then
+	owner_home=$(getent passwd "$(stat -c %U "$ENV_FILE")" | cut -d: -f6)
+	stamp=$owner_home/.yaqin-pc-copy
+	if [[ ! -f $stamp ]] || (($(date +%s) - $(stat -c %Y "$stamp") > PC_COPY_MAX_AGE)); then
+		problems+=("kompyuterga zaxira nusxasi 10 kundan beri olinmagan (backup-copy.ps1)")
 	fi
 fi
 

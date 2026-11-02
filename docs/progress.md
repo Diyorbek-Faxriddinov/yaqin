@@ -61,7 +61,9 @@ Oxirgi yangilanish: 2026-11-01
   - `restore-test.sh` — vaqtinchalik konteynerga tiklab solishtiradi;
   - `healthcheck.sh` — konteynerlar, disk, sertifikat, zaxira yoshi → Telegram;
   - `install.sh` — restic, parol, repozitoriy, systemd taymerlari.
-- **CI** ([backup.yml](../.github/workflows/backup.yml)): to'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
+- **S3 Toshkentda hozircha yo'q.** Servercore'da uz-2 uchun bucket yaratib bo'lmaydi; narxi 1 GB uchun oyiga 415 so'm. Chet eldagi S3 qonunga ko'ra mos emas (ADR-0005). Shuning uchun **vaqtinchalik yechim**: zaxira server diskida, shifrlangan nusxasi administrator kompyuterida (`scripts/local/backup-copy.ps1`, rclone + SSH, parolsiz). S3 ishga tushgach, unga ko'chiriladi.
+- **Telegram ogohlantirishlari:** chat ID `.env` ga yozildi, sinov xabari yuborildi.
+- **CI** ([backup.yml](../.github/workflows/backup.yml)): ikki rejimda (S3 va lokal papka). To'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
 
 ## 5.4 natijalari — birinchi joylash
 

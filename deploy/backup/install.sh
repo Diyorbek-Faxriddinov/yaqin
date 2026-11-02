@@ -6,7 +6,9 @@
 # - restic (Ubuntu repozitoriysidan — xavfsizlik yangilanishlari bilan keladi);
 # - .env ga zaxira kalitlari qo'shiladi; BACKUP_PASSWORD bo'sh bo'lsa — yaratiladi
 #   (⚠ administrator uni parol menejeriga saqlaydi: yo'qolsa, zaxiralarni ochib bo'lmaydi);
-# - restic repozitoriysi S3'da bo'lmasa — yaratiladi;
+# - restic repozitoriysi bo'lmasa — yaratiladi. Lokal papka (BACKUP_REPOSITORY=/var/backups/restic —
+#   S3 Toshkentda hali yo'q, 5.5) .env egasining guruhiga o'qishga ochiladi: kompyuterdagi nusxa
+#   (scripts/local/backup-copy.ps1) uni SSH orqali, parolsiz va shifrlangan holda ko'chiradi;
 # - systemd taymerlari: yaqin-backup (har kuni 03:00), yaqin-healthcheck (har 5 daqiqada),
 #   yaqin-restore-test (har oyning 1-kuni 05:00).
 set -euo pipefail
@@ -34,7 +36,17 @@ restic_env
 if restic cat config >/dev/null 2>&1; then
 	echo "bor: $RESTIC_REPOSITORY"
 else
+	[[ $RESTIC_REPOSITORY != /* ]] || install -d -m 750 "$RESTIC_REPOSITORY"
 	restic init
+fi
+if [[ $RESTIC_REPOSITORY == /* ]]; then
+	# Guruh faqat o'qiydi. restic config fayli guruhga ochiq bo'lsa, yangi fayllarni ham shunday
+	# yaratadi; setgid — yangi papka va fayllar shu guruhda qoladi
+	group=$(stat -c %G "$ENV_FILE")
+	chgrp -R "$group" "$RESTIC_REPOSITORY"
+	chmod -R g+rX,g-w,o-rwx "$RESTIC_REPOSITORY"
+	find "$RESTIC_REPOSITORY" -type d -exec chmod g+s {} +
+	echo "o'qish huquqi: $group guruhi"
 fi
 
 echo "==> systemd"

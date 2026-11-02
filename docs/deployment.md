@@ -53,6 +53,7 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 | [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                                |
 | [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                                    |
 | [.github/workflows/release.yml](../.github/workflows/release.yml)           | Production image'lari → smoke test → `ghcr.io` (qo'lda ishga tushiriladi) |
+| [scripts/local/backup-copy.ps1](../scripts/local/backup-copy.ps1)           | Zaxira nusxasini kompyuterga ko'chirish (`D:\yaqin-zaxira`)               |
 | [deploy/backup/](../deploy/backup/)                                         | Zaxira, tiklash sinovi, monitoring (5.5)                                  |
 | [.github/workflows/backup.yml](../.github/workflows/backup.yml)             | Zaxira → tiklash sikli (S3 o'rnida `rclone serve s3`)                     |
 | [.github/workflows/server-setup.yml](../.github/workflows/server-setup.yml) | `server-setup.sh` ni systemd'li Ubuntu 24.04 konteynerida sinash          |
@@ -183,5 +184,14 @@ Skriptlar — [deploy/backup/](../deploy/backup/), root sifatida systemd taymerl
 
 - **Zaxirada nima bor:** baza va yuklangan rasmlar. `.env` (maxfiy kalitlar) zaxiraga kirmaydi — u administratorning parol menejerida. Sertifikatlar ham kirmaydi, Caddy qayta oladi.
 - **`BACKUP_PASSWORD`** zaxiralarni ochadigan yagona kalit. Yo'qolsa, zaxiralar foydasiz — parol menejerida saqlanadi.
+- **Hozircha zaxira server diskida** (`BACKUP_REPOSITORY=/var/backups/restic`): 2026-11-02 holatiga Servercore'da Toshkent (uz-2) uchun S3 bucket yaratib bo'lmaydi ("You can't create buckets in the uz-2 location right now"). Chet eldagi S3 to'g'ri kelmaydi — zaxirada shaxsiy maʼlumot bor (ADR-0005). Serverdan tashqaridagi nusxa administrator kompyuterida:
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\local\backup-copy.ps1
+  ```
+
+  Nusxa haftada 1–2 marta olinadi. `rclone` SSH orqali faqat yangi fayllarni shifrlanganicha ko'chiradi, parol kompyuterda saqlanmaydi. Serverda o'chirilgan fayllar `D:\yaqin-zaxira\olib-tashlangan\<sana>` ga o'tadi. 10 kundan oshsa, server Telegram'da eslatadi. Repozitoriy `deploy` guruhiga faqat o'qish uchun ochiq.
+
+- **S3 ishga tushganda:** `restic copy` bilan tarix S3'ga ko'chiriladi, keyin `.env` da `BACKUP_REPOSITORY` va S3 kalitlari almashtiriladi.
 - **Server o'zi o'chsa** ichki monitoring ishlamaydi — buni tashqi tekshiruv (UptimeRobot, `/api/v1/health`) ushlaydi.
 - `root` taymerlari `deploy` foydalanuvchisiga tegishli skriptlarni bajaradi. Bu qo'shimcha xavf emas: `deploy` docker guruhida, ya'ni baribir root'ga teng (5.3).

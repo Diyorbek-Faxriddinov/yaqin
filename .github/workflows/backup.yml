@@ -1,7 +1,8 @@
 name: Zaxira
 
 # deploy/backup skriptlari haqiqiy serverdagidek sinaladi: compose'dagi baza (PostGIS), rasmlar
-# volume'i, restic va S3 (rclone serve s3 — Servercore S3 o'rnida). To'liq sikl: install.sh
+# volume'i, restic va ikki xil repozitoriy — S3 (rclone serve s3, Servercore S3 o'rnida) va server
+# diskidagi papka (S3 Toshkentda hali yo'q — vaqtinchalik, kompyuterga nusxa bilan). To'liq sikl: install.sh
 # (restic init, systemd taymerlari) → backup.sh → baza o'zgaradi → restore-test.sh zaxira vaqtidagi
 # holatni tiklaydi va solishtiradi → buzilgan zaxira aniqlanadi → healthcheck.sh.
 
@@ -34,6 +35,12 @@ jobs:
   backup:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        repository:
+          - s3:http://127.0.0.1:9000/yaqin-backup/yaqin
+          - /var/backups/restic
     steps:
       - uses: actions/checkout@v5
 
@@ -59,7 +66,7 @@ jobs:
           DJANGO_SECRET_KEY=$(openssl rand -hex 32)
           TOTP_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr '+/' '-_')
           REVALIDATE_SECRET=$(openssl rand -hex 24)
-          BACKUP_REPOSITORY=s3:http://127.0.0.1:9000/yaqin-backup/yaqin
+          BACKUP_REPOSITORY=${{ matrix.repository }}
           BACKUP_S3_ACCESS_KEY=ci-access
           BACKUP_S3_SECRET_KEY=ci-secret-key
           BACKUP_S3_REGION=us-east-1
@@ -99,6 +106,16 @@ jobs:
         run: |
           sudo backup/backup.sh
           sudo bash -c 'source backup/lib.sh && restic_env && restic snapshots --host yaqin'
+
+      - name: Lokal repozitoriy — .env egasi o'qiy oladi, nusxasi to'liq repozitoriy
+        if: startsWith(matrix.repository, '/')
+        run: |
+          # Kompyuterdagi nusxa (backup-copy.ps1) server bilan deploy (.env egasi) huquqida ishlaydi
+          test -z "$(find /var/backups/restic ! -readable)"
+          cp -r /var/backups/restic /tmp/pc-copy
+          password=$(sed -n 's/^BACKUP_PASSWORD=//p' .env)
+          RESTIC_PASSWORD=$password restic -r /tmp/pc-copy snapshots
+          RESTIC_PASSWORD=$password restic -r /tmp/pc-copy check --read-data
 
       - name: Buzilgan zaxira aniqlanadi
         run: |
