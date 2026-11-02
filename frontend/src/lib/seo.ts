@@ -4,7 +4,7 @@ import { routing, type AppLocale } from "@/i18n/routing";
 
 /** Saytning ommaviy manzili (canonical, sitemap, OG) — oxirida "/" siz */
 export function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 }
 
 /** Tilsiz yo'l → to'liq manzil: "/kategoriyalar", "ru" → "https://.../ru/kategoriyalar" */

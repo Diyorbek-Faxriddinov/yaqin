@@ -11,6 +11,11 @@ describe("seo", () => {
     expect(absoluteUrl("/kategoriyalar", "ru")).toBe("https://yaqin.uz/ru/kategoriyalar");
   });
 
+  it("bo'sh qiymat — standart manzil (Docker'da berilmagan build argumenti bo'sh satr)", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    expect(absoluteUrl("/", "uz")).toBe("http://localhost:3000/");
+  });
+
   it("hreflang: uz, ru va x-default", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://yaqin.uz");
     expect(languageAlternates("/haqida")).toEqual({

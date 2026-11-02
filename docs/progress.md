@@ -69,6 +69,10 @@ Oxirgi yangilanish: 2026-11-01
   - **tiklash sinovi o'tdi**, natija Telegram'ga keldi;
   - `deploy` repozitoriydagi barcha fayllarni o'qiy oladi.
 - **Kompyuter nusxasi** ishladi (`D:\yaqin-zaxira\repo`); ikkinchi marta "nothing to transfer". Healthcheck avval "zaxira va nusxa yo'q" deb ogohlantirdi, keyin "tuzaldi" deb yozdi.
+- **Productionda xarita yuklanmasdi** (administrator xabar berdi). Sabab bizneslar yo'qligida emas edi. Dockerfile berilmagan `NEXT_PUBLIC_MAP_STYLE_URL` ni bo'sh satr qiladi, `config.ts` dagi `??` esa bo'sh satrni qiymat deb oladi — MapLibre bo'sh uslub bilan xatosiz, jimgina hech narsa yuklamasdi. CSP `||` bilan to'g'ri edi, lokal testlarda o'zgaruvchi umuman berilmagani uchun xato ko'rinmagan. Admin paneldagi joylashuv tanlash xaritasi ham shu sabab ishlamasdi.
+  - Tuzatildi: `||`; `NEXT_PUBLIC_SITE_URL` ham shunday.
+  - Test qo'shildi: eski kodda yiqiladi.
+  - Smoke testga "xarita uslubi brauzer kodida" tekshiruvi qo'shildi. U hozirgi production image'da yiqilishi tekshirildi.
 - **Topilgan va tuzatilgan:** rclone serverda `md5sum` ni argumentsiz chaqirib, Windows'dagi ssh bilan kirish oqimini kutib qolardi. Hash tekshiruvi o'chirildi: restic fayllari o'zgarmaydi, butunlikni restic check tekshiradi.
 - **CI** ([backup.yml](../.github/workflows/backup.yml)): ikki rejimda (S3 va lokal papka). To'liq sikl, S3 o'rnida `rclone serve s3` (MinIO bepul Docker image'larini 2025 yilda to'xtatgan). Buzilgan zaxira (soxtalashtirilgan qatorlar soni) tiklash sinovida yiqilishi tekshiriladi.
 

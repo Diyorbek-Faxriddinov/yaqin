@@ -107,7 +107,7 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
     { label: business.name },
   ];
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const pageUrl = `${siteUrl}${getPathname({ href: `/biznes/${slug}`, locale })}`;
 
   return (

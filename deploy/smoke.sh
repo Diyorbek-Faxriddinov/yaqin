@@ -76,6 +76,11 @@ else
 	check "Indekslash ochiq — robots.txt" body_contains '^Sitemap:' "$BASE/robots.txt"
 	check "Indekslash ochiq — X-Robots-Tag yo'q" lacks_header '^x-robots-tag:' "$BASE/"
 fi
+# Xarita uslubi manzili brauzer kodiga yozilganmi: bo'sh bo'lsa, xarita xatosiz, jimgina yuklanmaydi
+# (2026-11-02: Dockerfile'dagi bo'sh build argumenti `??` dan o'tib ketgan — features/map/config.ts)
+# shellcheck disable=SC2016 # o'zgaruvchi konteyner ichida ochiladi
+check "Xarita uslubi brauzer kodida" docker compose exec -T frontend sh -c \
+	'grep -rqF "${NEXT_PUBLIC_MAP_STYLE_URL:-https://tiles.openfreemap.org/styles/liberty}" .next/static'
 check "CSP sarlavhasi" has_header '^content-security-policy:' "$BASE/"
 check "Server nomi yashirin" lacks_header '^x-powered-by:' "$BASE/"
 check "Siqish (gzip)" has_header '^content-encoding: gzip' -H 'Accept-Encoding: gzip' "$BASE/"

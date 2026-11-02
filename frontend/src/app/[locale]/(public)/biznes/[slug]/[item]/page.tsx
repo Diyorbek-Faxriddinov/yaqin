@@ -61,7 +61,7 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
 
   const t = await getTranslations("BusinessPage");
   const tNav = await getTranslations("Nav");
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const pageUrl = `${siteUrl}${getPathname({ href: `/biznes/${slug}/${itemSlug}`, locale })}`;
 
   return (
