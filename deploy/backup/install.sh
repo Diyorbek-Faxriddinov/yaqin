@@ -9,8 +9,8 @@
 # - restic repozitoriysi bo'lmasa — yaratiladi. Lokal papka (BACKUP_REPOSITORY=/var/backups/restic —
 #   S3 Toshkentda hali yo'q, 5.5) .env egasining guruhiga o'qishga ochiladi: kompyuterdagi nusxa
 #   (scripts/local/backup-copy.ps1) uni SSH orqali, parolsiz va shifrlangan holda ko'chiradi;
-# - systemd taymerlari: yaqin-backup (har kuni 03:00), yaqin-healthcheck (har 5 daqiqada),
-#   yaqin-restore-test (har oyning 1-kuni 05:00).
+# - systemd taymerlari: yaqin-backup (har kuni 03:00), yaqin-healthcheck va yaqin-requests
+#   (har 5 daqiqada), yaqin-restore-test (har oyning 1-kuni 05:00).
 set -euo pipefail
 dir=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source-path=SCRIPTDIR source=lib.sh
@@ -79,8 +79,10 @@ unit yaqin-backup "Yaqin: kunlik zaxira (baza va rasmlar → S3)" backup.sh \
 	$'OnCalendar=*-*-* 03:00:00\nRandomizedDelaySec=5min\nPersistent=true'
 unit yaqin-healthcheck "Yaqin: monitoring (konteynerlar, disk, sertifikat, zaxira)" healthcheck.sh \
 	$'OnBootSec=5min\nOnUnitActiveSec=5min'
+unit yaqin-requests "Yaqin: yangi biznes so'rovlari → Telegram" new-requests.sh \
+	$'OnBootSec=2min\nOnUnitActiveSec=5min'
 unit yaqin-restore-test "Yaqin: oylik tiklash sinovi" restore-test.sh \
 	$'OnCalendar=*-*-01 05:00:00\nPersistent=true'
 systemctl daemon-reload
-systemctl enable --now yaqin-backup.timer yaqin-healthcheck.timer yaqin-restore-test.timer
+systemctl enable --now yaqin-backup.timer yaqin-healthcheck.timer yaqin-requests.timer yaqin-restore-test.timer
 systemctl list-timers 'yaqin-*' --no-pager

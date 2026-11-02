@@ -47,7 +47,8 @@ media_summary() {
 	find "$1" -type f -printf '%s\n' | awk '{ n++; s += $1 } END { printf "%d %d\n", n, s }'
 }
 
-# Administratorga Telegram xabari (bot tokeni va ALERT_TELEGRAM_CHAT_ID bo'lmasa — faqat log)
+# Administratorlar guruhiga Telegram xabari (bot tokeni va ALERT_TELEGRAM_CHAT_ID bo'lmasa — faqat
+# log). Yuborilmasa 1 qaytaradi: holatni saqlaydigan skriptlar keyingi safar qayta urinadi
 notify() {
 	local token chat
 	echo "$1"
@@ -55,6 +56,8 @@ notify() {
 	chat=$(env_get ALERT_TELEGRAM_CHAT_ID)
 	[[ -n $token && -n $chat ]] || return 0
 	curl -fsS --max-time 15 -o /dev/null "https://api.telegram.org/bot$token/sendMessage" \
-		--data-urlencode "chat_id=$chat" --data-urlencode "text=$1" ||
+		--data-urlencode "chat_id=$chat" --data-urlencode "text=$1" || {
 		echo "Telegram xabari yuborilmadi" >&2
+		return 1
+	}
 }

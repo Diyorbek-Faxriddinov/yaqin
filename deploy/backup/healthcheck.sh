@@ -57,10 +57,11 @@ current=$(printf '%s\n' "${problems[@]}" | sed '/^$/d' | sort)
 previous=$(cat "$STATE_DIR/health-state" 2>/dev/null || true)
 if [[ $current != "$previous" ]]; then
 	if [[ -n $current ]]; then
-		notify "⚠️ Yaqin: muammo"$'\n'"• ${current//$'\n'/$'\n'• }"
+		message="⚠️ Yaqin: muammo"$'\n'"• ${current//$'\n'/$'\n'• }"
 	else
-		notify "✅ Yaqin: muammolar tuzaldi, hammasi joyida"
+		message="✅ Yaqin: muammolar tuzaldi, hammasi joyida"
 	fi
-	printf '%s' "$current" >"$STATE_DIR/health-state"
+	# Xabar yuborilmasa holat saqlanmaydi — 5 daqiqadan keyin qayta urinadi
+	notify "$message" && printf '%s' "$current" >"$STATE_DIR/health-state"
 fi
 [[ -z $current ]] && echo "Hammasi joyida" || echo "$current"

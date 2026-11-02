@@ -57,4 +57,5 @@ restic check --read-data-subset=5%
 
 tables=$(wc -l <"$work/counts.tsv")
 rows=$(awk -F'\t' '{ s += $2 } END { print s + 0 }' "$work/counts.tsv")
-notify "✅ Yaqin: tiklash sinovi o'tdi. Zaxira $snapshot: $tables jadval, $rows qator, rasmlar: ${restored_media% *} ta."
+notify "✅ Yaqin: tiklash sinovi o'tdi. Zaxira $snapshot: $tables jadval, $rows qator, rasmlar: ${restored_media% *} ta." ||
+	true # sinov o'tdi; xabar yuborilmagani sinovni yiqitmasin

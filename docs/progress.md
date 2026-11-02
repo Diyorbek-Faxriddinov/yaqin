@@ -62,7 +62,8 @@ Oxirgi yangilanish: 2026-11-01
   - `healthcheck.sh` — konteynerlar, disk, sertifikat, zaxira yoshi → Telegram;
   - `install.sh` — restic, parol, repozitoriy, systemd taymerlari.
 - **S3 Toshkentda hozircha yo'q.** Servercore'da uz-2 uchun bucket yaratib bo'lmaydi; narxi 1 GB uchun oyiga 415 so'm. Chet eldagi S3 qonunga ko'ra mos emas (ADR-0005). Shuning uchun **vaqtinchalik yechim**: zaxira server diskida, shifrlangan nusxasi administrator kompyuterida (`scripts/local/backup-copy.ps1`, rclone + SSH, parolsiz). S3 ishga tushgach, unga ko'chiriladi.
-- **Telegram ogohlantirishlari:** chat ID `.env` ga yozildi, sinov xabari keldi (administrator tasdiqladi).
+- **Telegram ogohlantirishlari:** chat ID `.env` ga yozildi, sinov xabari keldi (administrator tasdiqladi). Keyin ogohlantirishlar yopiq "Yaqin — server" guruhiga ko'chirildi: unda administratorning shaxsiy akkaunti, loyihaning `@yaqinapp_uz` akkaunti va bot bor. Biri yo'qolsa ham xabar yetadi.
+- **Yangi biznes so'rovlari → Telegram** (`new-requests.sh`, har 5 daqiqada). Xabarda faqat biznes nomi, faoliyati va tumani bo'ladi; ism va telefon faqat admin panelda qoladi. Xabar yuborilmasa, `notify` xato qaytaradi va healthcheck hamda so'rovlar skripti keyingi safar qayta urinadi.
 - **Serverda** (2026-11-02, Release'siz — compose va Caddyfile o'zgarmagan):
   - `install.sh`: restic, `BACKUP_PASSWORD`, repozitoriy, uchta taymer;
   - birinchi zaxira olindi: 24 jadval, 8627 qator, rasm hali yo'q;

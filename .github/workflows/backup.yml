@@ -87,7 +87,7 @@ jobs:
         run: |
           sudo backup/install.sh
           grep -qE '^BACKUP_PASSWORD=[0-9a-f]{64}$' .env
-          systemctl is-enabled yaqin-backup.timer yaqin-healthcheck.timer yaqin-restore-test.timer
+          systemctl is-enabled yaqin-backup.timer yaqin-healthcheck.timer yaqin-requests.timer yaqin-restore-test.timer
           # Qayta ishga tushirish xavfsiz: parol va repozitoriy o'zgarmaydi
           before=$(grep '^BACKUP_PASSWORD=' .env)
           sudo backup/install.sh
@@ -132,6 +132,44 @@ jobs:
           grep -q 'sertifikat' <<<"$out"
           # Holat o'zgarmasa — qayta xabar yo'q (faqat ro'yxat chiqadi), holat fayli saqlangan
           sudo test -s /var/lib/yaqin/health-state
+
+      - name: Yangi biznes so'rovlari — xabarda shaxsiy maʼlumot yo'q, takrorlanmaydi
+        run: |
+          # Taymer sinovdan oldin ishlab ulgurmasin; jadvallar — productiondagi ustunlar bilan
+          sudo systemctl stop yaqin-requests.timer
+          sudo rm -f /var/lib/yaqin/requests-since
+          docker compose exec -T db psql -U postgres -d yaqin -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE TABLE catalog_district (id uuid PRIMARY KEY, name_uz text);
+          INSERT INTO catalog_district VALUES ('00000000-0000-0000-0000-000000000001', 'Chilonzor');
+          CREATE TABLE businesses_businessrequest (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(), created_at timestamptz NOT NULL DEFAULT now(),
+            business_name text, activity text, district_id uuid, contact_name text, phone text, status text);
+          INSERT INTO businesses_businessrequest
+            (business_name, activity, district_id, contact_name, phone, status, created_at) VALUES
+            ('Baraka sartaroshxonasi', 'soch turmagi', '00000000-0000-0000-0000-000000000001',
+             'Aziz', '+998901234567', 'new', now() - interval '2 hours'),
+            ('Eski so''rov', '', NULL, 'Olim', '+998907654321', 'converted', now() - interval '1 hour'),
+            ('Tikuvchi Malika', '', NULL, 'Malika', '+998935556677', 'new', now() - interval '30 minutes');
+          SQL
+
+          # Birinchi marta: ko'rib chiqilmagan barcha so'rovlar, ism va telefonsiz
+          out=$(sudo backup/new-requests.sh)
+          echo "$out"
+          grep -q "yangi biznes so'rovi (2)" <<<"$out"
+          grep -q "Baraka sartaroshxonasi — soch turmagi (Chilonzor)" <<<"$out"
+          grep -q "Tikuvchi Malika" <<<"$out"
+          grep -q "Koʻrish: http://localhost/admin/sorovlar" <<<"$out"
+          if grep -qE "Eski|Aziz|Olim|\+998" <<<"$out"; then echo "Ortiqcha yoki shaxsiy maʼlumot"; exit 1; fi
+
+          # Qayta — hech narsa; yangi so'rov — faqat o'zi
+          test -z "$(sudo backup/new-requests.sh)"
+          docker compose exec -T db psql -U postgres -d yaqin -c \
+            "INSERT INTO businesses_businessrequest (business_name, activity, status) VALUES ('Usta Bobur', 'santexnik', 'new');"
+          out=$(sudo backup/new-requests.sh)
+          echo "$out"
+          grep -q "yangi biznes so'rovi (1)" <<<"$out"
+          grep -q "Usta Bobur — santexnik" <<<"$out"
+          if grep -q "Baraka" <<<"$out"; then echo "Eski so'rov qayta eʼlon qilindi"; exit 1; fi
 
       - name: Loglar
         if: failure()
