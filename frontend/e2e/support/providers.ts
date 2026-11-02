@@ -33,19 +33,27 @@ export function signTelegram(user: TelegramUser, token = E2E_TELEGRAM_BOT_TOKEN)
 
 /**
  * Tashqi kirish skriptlarini almashtiradi: testlar internetga bog'liq bo'lmasin. Telegram — sinov
- * tugmasi (bosilganda berilgan maʼlumotni vidjet callback'iga uzatadi); Google — sinov tugmasi
- * (bosilganda berilgan ID tokenni GIS callback'iga uzatadi). Maʼlumot berilmasa — bo'sh skript.
+ * tugmasi (bosilganda haqiqiy vidjetdek `data-auth-url` ga maydonlarni qo'shib o'tadi); Google —
+ * sinov tugmasi (bosilganda berilgan ID tokenni GIS callback'iga uzatadi). Maʼlumot berilmasa —
+ * bo'sh skript.
  */
 export async function stubLoginWidgets(
   page: Page,
   options: { telegram?: Record<string, unknown>; googleCredential?: string } = {},
 ) {
   const telegram = options.telegram
-    ? `const button = document.createElement("button");
+    ? `const script = document.currentScript;
+       const button = document.createElement("button");
        button.type = "button";
        button.textContent = "Telegram (sinov)";
-       button.onclick = () => window.__yaqinTelegramAuth(${JSON.stringify(options.telegram)});
-       document.currentScript.after(button);`
+       button.onclick = () => {
+         const url = new URL(script.dataset.authUrl);
+         for (const [key, value] of Object.entries(${JSON.stringify(options.telegram)})) {
+           url.searchParams.set(key, String(value));
+         }
+         location.href = url.toString();
+       };
+       script.after(button);`
     : "";
   await page.route(TELEGRAM_SCRIPT, (route) =>
     route.fulfill({ contentType: "text/javascript", body: telegram }),

@@ -30,9 +30,48 @@ type GoogleIdentity = {
 
 declare global {
   interface Window {
-    __yaqinTelegramAuth?: (user: TelegramAuth) => void;
     google?: GoogleIdentity;
   }
+}
+
+/** Telegram qaytaradigan maydonlar — backend imzoni shular bo'yicha tekshiradi (providers.py) */
+const TELEGRAM_FIELDS = [
+  "id",
+  "first_name",
+  "last_name",
+  "username",
+  "photo_url",
+  "auth_date",
+  "hash",
+] as const;
+
+/** Telegram'dan qaytgan manzildagi kirish maʼlumoti (vidjet `data-auth-url`); bo'lmasa — null */
+export function telegramAuthFromParams(params: URLSearchParams): TelegramAuth | null {
+  const id = params.get("id");
+  const authDate = params.get("auth_date");
+  const firstName = params.get("first_name");
+  const hash = params.get("hash");
+  if (!id || !/^\d+$/.test(id) || !authDate || !/^\d+$/.test(authDate) || !firstName || !hash) {
+    return null;
+  }
+  const user: TelegramAuth = {
+    id: Number(id),
+    first_name: firstName,
+    auth_date: Number(authDate),
+    hash,
+  };
+  for (const key of ["last_name", "username", "photo_url"] as const) {
+    const value = params.get(key);
+    if (value !== null) user[key] = value;
+  }
+  return user;
+}
+
+/** Manzil Telegram maydonlarisiz (qolgan parametrlar, masalan `next`, saqlanadi) */
+export function withoutTelegramParams(url: URL): string {
+  const clean = new URL(url);
+  for (const key of TELEGRAM_FIELDS) clean.searchParams.delete(key);
+  return `${clean.pathname}${clean.search}${clean.hash}`;
 }
 
 const loading = new Map<string, Promise<void>>();
@@ -58,29 +97,28 @@ export function loadScript(src: string): Promise<void> {
 
 /**
  * Telegram vidjeti o'z skripti joylashgan joyga iframe qo'yadi — shuning uchun skript har safar
- * konteyner ichiga qo'shiladi. Natija global callback orqali keladi.
+ * konteyner ichiga qo'shiladi.
+ *
+ * Natija `data-auth-url` orqali: Telegram kirgandan keyin shu manzilga imzolangan maydonlar bilan
+ * qaytaradi (`telegramAuthFromParams`). `data-onauth` ishlatilmaydi — vidjet uni `eval` bilan
+ * bajaradi, CSP'da esa `unsafe-eval` yo'q: tugma umuman chizilmasdi (productionda topilgan,
+ * `next dev` CSP'si eval'ga ruxsat bergani uchun lokal sinovda ko'rinmagan).
  */
 export function TelegramLoginButton({
   bot,
-  onAuth,
+  authUrl,
   onError,
 }: {
   bot: string;
-  onAuth: (user: TelegramAuth) => void;
+  authUrl: string;
   onError: () => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const locale = useLocale();
-  const callback = useRef(onAuth);
-  // Eng so'nggi callback — vidjet qayta yuklanmasdan (render paytida ref o'zgartirilmaydi)
-  useEffect(() => {
-    callback.current = onAuth;
-  }, [onAuth]);
 
   useEffect(() => {
     const element = container.current;
     if (!element) return;
-    window.__yaqinTelegramAuth = (user) => callback.current(user);
     const script = document.createElement("script");
     script.src = TELEGRAM_WIDGET_SRC;
     script.async = true;
@@ -88,14 +126,11 @@ export function TelegramLoginButton({
     script.dataset.size = "large";
     script.dataset.radius = "8";
     script.dataset.lang = locale;
-    script.dataset.onauth = "__yaqinTelegramAuth(user)";
+    script.dataset.authUrl = authUrl;
     script.onerror = onError;
     element.replaceChildren(script);
-    return () => {
-      element.replaceChildren();
-      delete window.__yaqinTelegramAuth;
-    };
-  }, [bot, locale, onError]);
+    return () => element.replaceChildren();
+  }, [bot, authUrl, locale, onError]);
 
   return (
     <div ref={container} className="flex min-h-10 justify-center" data-testid="telegram-login" />

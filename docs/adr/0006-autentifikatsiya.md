@@ -1,6 +1,6 @@
 # 0006. Autentifikatsiya usullari
 
-- **Holat:** Qabul qilingan
+- **Holat:** Qabul qilingan; 2026-11-02 da yangilangan (Telegram vidjeti)
 - **Sana:** 2026-10-25
 
 ## Kontekst
@@ -27,6 +27,14 @@ Yuridik shaxs yoʻq — SMS provayderlar bilan shartnoma tuzish qiyin. Oʻzbekis
 - TOTP kaliti bazada shifrlangan (Fernet); bir kodni qayta ishlatib boʻlmaydi.
 - Cheklov: IP + login juftligi (5 xato / 15 daqiqa), faqat login boʻyicha yuqoriroq chegara (20) va IP boʻyicha umumiy chegara.
 - `csrftoken` cookie mijoz va admin sessiyalari uchun umumiy: yangi sessiya ochiq turgan boshqasining tokenini oladi.
+
+### Yangilanish (2026-11-02): Telegram vidjeti — qaytish manzili orqali
+
+Birinchi joylashda (5.4) Telegram tugmasi saytda umuman chiqmadi. Sababi: vidjet `data-onauth` matnini `eval` bilan bajaradi, CSP esa `unsafe-eval` ga ruxsat bermaydi. Lokal sinovda bu ko'rinmagan, chunki `next dev` CSP'si eval'ga ruxsat beradi.
+
+- Vidjet endi `data-auth-url` bilan ishlaydi. Telegram kirgandan keyin foydalanuvchini kirish sahifasiga imzolangan maydonlar bilan qaytaradi (`?id=…&hash=…`, `next` saqlanadi).
+- Sahifa maydonlarni darhol manzildan olib tashlaydi (`history.replaceState`), keyin backendga yuboradi. Imzo va muddat avvalgidek backendda tekshiriladi.
+- `unsafe-eval` qo'shilmadi: u butun saytda XSS himoyasini zaiflashtirardi.
 
 ## Oqibatlar
 

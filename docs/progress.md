@@ -73,6 +73,8 @@ Oxirgi yangilanish: 2026-11-01
   - Servercore rasmida `git` yo'q — `server-setup.sh` ga qo'shildi.
   - Birinchi smoke test sertifikatdan oldin ishlab yiqildi. Caddy konteyneri sertifikatdan oldin "tayyor" bo'ladi, shuning uchun `deploy.sh` endi HTTPS'ni kutadi.
   - Yashirin so'rovga token nusxalanganda ko'rinmasdi (bo'sh qiymat yoki ortiqcha matn ketgan). Natijada `deploy/set-secret.sh` qo'shildi: buferdan o'qiydi va BotFather xabaridan tokenni o'zi ajratadi.
+  - **Telegram tugmasi productionda chiqmadi.** Vidjet `data-onauth` ni `eval` qiladi, CSP esa uni bloklaydi; `next dev` eval'ga ruxsat bergani uchun lokal sinovda ko'rinmagan. Endi vidjet `data-auth-url` bilan ishlaydi: Telegram imzolangan maydonlar bilan sahifaga qaytaradi, sahifa ularni manzildan olib tashlab backendga yuboradi. `unsafe-eval` qo'shilmadi. Muammo Playwright orqali haqiqiy saytda topildi (konsolda CSP xatosi, iframe yo'q). Unit testlar 244, E2E: backend bilan auth 41, demo 255.
+- **Admin:** root yaratildi, 2FA sozlandi. **Google orqali kirish** haqiqiy domenda uchta akkaunt bilan ishladi. Ikki akkauntda Google'ning o'z "Verify it's you" tekshiruvi chiqdi: bu Google akkaunt xavfsizligi, saytga bog'liq emas.
 
 ## 5.3 natijalari — server
 

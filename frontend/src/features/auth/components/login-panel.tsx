@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Send, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,7 +12,12 @@ import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
 import type { Me, TelegramAuth } from "@/lib/api/types";
 import { useHydrated } from "@/lib/use-hydrated";
 import { meQueryKey, useMe } from "../use-me";
-import { GoogleLoginButton, TelegramLoginButton } from "./provider-buttons";
+import {
+  GoogleLoginButton,
+  TelegramLoginButton,
+  telegramAuthFromParams,
+  withoutTelegramParams,
+} from "./provider-buttons";
 
 /** Backend xatosi → foydalanuvchiga tushunarli xabar */
 function loginErrorMessage(error: unknown, t: ReturnType<typeof useTranslations<"Auth">>): string {
@@ -103,6 +108,24 @@ export function LoginPanel({
   // Faqat lokal ishlab chiqishda: brauzer manzili localhost bo'lsa (server renderida — yo'q)
   const hydrated = useHydrated();
   const onLocalhost = hydrated && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  // Telegram kirgandan keyin shu sahifaga qaytaradi (joriy parametrlar, masalan `next`, bilan)
+  const telegramAuthUrl = hydrated
+    ? `${window.location.origin}${withoutTelegramParams(new URL(window.location.href))}`
+    : null;
+
+  // Telegram'dan qaytish: imzolangan maydonlar manzilda — darhol olib tashlanadi (tarixda va
+  // keyingi havolalarda qolmasin), keyin backendga yuboriladi. Bir marta (StrictMode'da ham)
+  const loginWithTelegram = telegramLogin.mutate;
+  const telegramReturnHandled = useRef(false);
+  useEffect(() => {
+    if (telegramReturnHandled.current) return;
+    const url = new URL(window.location.href);
+    const user = telegramAuthFromParams(url.searchParams);
+    if (!user) return;
+    telegramReturnHandled.current = true;
+    window.history.replaceState(window.history.state, "", withoutTelegramParams(url));
+    loginWithTelegram(user);
+  }, [loginWithTelegram]);
 
   return (
     <div className="space-y-6">
@@ -114,11 +137,15 @@ export function LoginPanel({
       <div className="space-y-3" aria-busy={pending}>
         {telegramBot && (
           <>
-            <TelegramLoginButton
-              bot={telegramBot}
-              onAuth={(user) => telegramLogin.mutate(user)}
-              onError={onWidgetError}
-            />
+            {telegramAuthUrl ? (
+              <TelegramLoginButton
+                bot={telegramBot}
+                authUrl={telegramAuthUrl}
+                onError={onWidgetError}
+              />
+            ) : (
+              <div className="min-h-10" />
+            )}
             {/* Telegram vidjeti faqat botga bog'langan domenda ishlaydi ("Bot domain invalid") */}
             {onLocalhost && (
               <p className="text-center text-xs text-muted-foreground">{t("telegramLocalhost")}</p>
