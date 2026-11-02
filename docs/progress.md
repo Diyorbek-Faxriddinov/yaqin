@@ -60,7 +60,19 @@ Oxirgi yangilanish: 2026-11-01
 - **[deploy/deploy.sh](../deploy/deploy.sh)**: `./deploy.sh <commit>` — repo shu commit'ga, image'lar, migratsiyalar, to'plam, kesh, smoke test.
 - **Indekslash kaliti** (`SITE_INDEXING`, Caddy): `open` bo'lmaguncha `X-Robots-Tag: noindex` va yopiq `robots.txt`. Ikkala holat lokal Caddy 2.11.7 bilan va CI'da sinaladi; smoke test holatga qarab tekshiradi.
 - **Sertifikat uchun email olib tashlandi** (`ACME_EMAIL`): Let's Encrypt 2025 yildan muddat haqida xat yubormaydi, shaxsiy emailni serverga yozishga hojat yo'q.
-- **DNS.** Domen reyestrda Eskiz nameserver'lariga bog'langan, lekin Eskiz'da zona yaratilmagan edi: so'rovlarga `REFUSED`.
+- **DNS.** Domen reyestrda Eskiz nameserver'lariga bog'langan, lekin Eskiz'da zona yaratilmagan edi: so'rovlarga `REFUSED`. Zona yaratildi: `yaqinapp.uz` va `www` → server. Eskiz qo'shgan pochta yozuvlari (MX, `mail`, `ftp`, `webmail`) o'chirildi. Pochta yuborilmaydi, shuning uchun SPF `-all` va DMARC `p=reject`: domen nomidan soxta xat yuborib bo'lmaydi.
+- **Tashqi xizmatlar.** Production Telegram boti `@yaqin_xizmat_bot`, domeni `yaqinapp.uz`; token serverda `getMe` bilan tekshirildi. Google OAuth: origin `https://yaqinapp.uz`, ilova "In production" holatida, logo yuklanmadi (logo Google tekshiruvini talab qiladi).
+- **Release** `6e715f150b29` yashil, image'lar ochiq: tokensiz yuklanadi.
+- **Birinchi joylash** (2026-11-02):
+  - `.env` serverda yaratildi, maxfiy qiymatlar ekranga chiqmadi;
+  - Let's Encrypt sertifikati olindi (`yaqinapp.uz`, `www`);
+  - smoke test haqiqiy domenda **22/22**;
+  - tashqaridan: `http` → `https`, `www` → asosiy domen (301), `X-Robots-Tag: noindex`, `robots.txt` → `Disallow: /`;
+  - bazada 12 ta kategoriya, 12 ta tuman, biznes yo'q.
+- **Topilgan va tuzatilgan:**
+  - Servercore rasmida `git` yo'q — `server-setup.sh` ga qo'shildi.
+  - Birinchi smoke test sertifikatdan oldin ishlab yiqildi. Caddy konteyneri sertifikatdan oldin "tayyor" bo'ladi, shuning uchun `deploy.sh` endi HTTPS'ni kutadi.
+  - Yashirin so'rovga token nusxalanganda ko'rinmasdi (bo'sh qiymat yoki ortiqcha matn ketgan). Natijada `deploy/set-secret.sh` qo'shildi: buferdan o'qiydi va BotFather xabaridan tokenni o'zi ajratadi.
 
 ## 5.3 natijalari — server
 

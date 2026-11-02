@@ -48,6 +48,7 @@ Tashqariga faqat 80/443 ochiq. Baza, Redis va ilovalar portlari faqat ichki Dock
 | [deploy/smoke.sh](../deploy/smoke.sh)                                       | Ishga tushgan to'plamni tekshirish (CI va serverda)                       |
 | [deploy/revalidate.sh](../deploy/revalidate.sh)                             | Joylashdan keyin frontend keshini yangilash                               |
 | [deploy/deploy.sh](../deploy/deploy.sh)                                     | Serverda joylash va yangilash: `./deploy.sh <commit>`                     |
+| [deploy/set-secret.sh](../deploy/set-secret.sh)                             | `.env` ga maxfiy qiymat yozish (ekranga va tarixga chiqmaydi)             |
 | [deploy/compose.ci.yaml](../deploy/compose.ci.yaml)                         | Faqat CI: frontend build'i uchun backend porti                            |
 | [deploy/server-setup.sh](../deploy/server-setup.sh)                         | Yangi serverni tayyorlash (5.3), bir marta                                |
 | [.github/workflows/docker.yml](../.github/workflows/docker.yml)             | Image'lar + butun to'plam + smoke test                                    |
@@ -133,14 +134,21 @@ for key in POSTGRES_PASSWORD DATABASE_PASSWORD DJANGO_SECRET_KEY REVALIDATE_SECR
   sed -i "s|^$key=.*|$key=$(openssl rand -hex 32)|" .env
 done
 sed -i "s|^TOTP_ENCRYPTION_KEY=.*|TOTP_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr '+/' '-_')|" .env
-nano .env    # TELEGRAM_BOT_TOKEN va GOOGLE_CLIENT_ID — administrator o'zi yozadi
-./deploy.sh <commit>
+sed -i "s|^GOOGLE_CLIENT_ID=.*|GOOGLE_CLIENT_ID=<client ID>|" .env   # maxfiy emas
 ```
 
-Keyin administrator o'z kompyuteridan (parol interaktiv so'raladi, ekranga va tarixga chiqmaydi):
+Bot tokenini administrator o'z kompyuteridan yozadi. Avval tokenni BotFather'dan nusxalaydi (xabar to'liq nusxalansa ham bo'ladi), keyin PowerShell'da:
 
-```bash
-ssh -t yaqin 'cd yaqin/deploy && docker compose run --rm backend python manage.py createroot --username root --display-name "Bosh administrator"'
+```powershell
+Get-Clipboard | ssh yaqin yaqin/deploy/set-secret.sh TELEGRAM_BOT_TOKEN
+```
+
+Keyin `./deploy.sh <commit>`. Birinchi marta sertifikat bir necha soniyada olinadi; skript smoke testdan oldin HTTPS'ni kutadi.
+
+Root administratorni ham administrator o'zi yaratadi (parol interaktiv so'raladi, ekranga va tarixga chiqmaydi). PowerShell 5.1 ichki qo'shtirnoqlarni buzadi, shuning uchun tashqi qo'shtirnoq — `"`, ichki — `'`:
+
+```powershell
+ssh -t yaqin "cd yaqin/deploy && docker compose run --rm backend python manage.py createroot --username root --display-name 'Bosh administrator'"
 ```
 
 **`.env` zaxirasi.** Administrator o'z terminalida `ssh yaqin cat yaqin/deploy/.env` bilan ko'radi va parol menejeriga saqlaydi (chatga yoki boshqa joyga emas). `TOTP_ENCRYPTION_KEY` yo'qolsa, barcha administratorlar 2FA'ni qaytadan sozlaydi. `POSTGRES_PASSWORD` va `DATABASE_PASSWORD` baza birinchi ishga tushganda yoziladi; keyin `.env` da o'zgartirish yetmaydi.

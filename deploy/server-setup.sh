@@ -49,7 +49,7 @@ apt_get() { apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--f
 log "Tizim yangilanmoqda"
 apt-get update
 apt_get full-upgrade
-apt_get install ca-certificates curl gnupg tzdata ufw fail2ban python3-systemd unattended-upgrades
+apt_get install ca-certificates curl git gnupg tzdata ufw fail2ban python3-systemd unattended-upgrades
 
 log "Vaqt zonasi: $TIMEZONE"
 ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime

@@ -47,7 +47,15 @@ main() {
 	./revalidate.sh
 
 	echo "==> Smoke test"
-	BASE=$(sed -n 's/^SITE_URL=//p' .env) ./smoke.sh
+	local base
+	base=$(sed -n 's/^SITE_URL=//p' .env)
+	# Caddy konteyneri sertifikatdan oldin "tayyor" bo'ladi: birinchi joylashda sertifikat bir necha
+	# soniyadan keyin keladi (2026-11-02 da smoke shu sabab yiqilgan). Ko'pi bilan 2 daqiqa kutiladi
+	for _ in $(seq 60); do
+		curl -sf -o /dev/null --max-time 5 "$base/api/v1/health" && break
+		sleep 2
+	done
+	BASE=$base ./smoke.sh
 
 	# Bir haftadan eski, ishlatilmayotgan image'lar (kerak bo'lsa ghcr.io'dan qayta yuklanadi)
 	docker image prune -af --filter until=168h >/dev/null
