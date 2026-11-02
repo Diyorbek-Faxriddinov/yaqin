@@ -54,7 +54,7 @@ Oxirgi yangilanish: 2026-11-01
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ⏳    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
 
-## 5.4 natijalari — birinchi joylash (jarayonda)
+## 5.4 natijalari — birinchi joylash
 
 - **Release workflow** ([release.yml](../.github/workflows/release.yml)): production image'lari smoke testdan keyin `ghcr.io` ga joylanadi, qo'lda ishga tushiriladi.
 - **[deploy/deploy.sh](../deploy/deploy.sh)**: `./deploy.sh <commit>` — repo shu commit'ga, image'lar, migratsiyalar, to'plam, kesh, smoke test.
@@ -75,6 +75,8 @@ Oxirgi yangilanish: 2026-11-01
   - Yashirin so'rovga token nusxalanganda ko'rinmasdi (bo'sh qiymat yoki ortiqcha matn ketgan). Natijada `deploy/set-secret.sh` qo'shildi: buferdan o'qiydi va BotFather xabaridan tokenni o'zi ajratadi.
   - **Telegram tugmasi productionda chiqmadi.** Vidjet `data-onauth` ni `eval` qiladi, CSP esa uni bloklaydi; `next dev` eval'ga ruxsat bergani uchun lokal sinovda ko'rinmagan. Endi vidjet `data-auth-url` bilan ishlaydi: Telegram imzolangan maydonlar bilan sahifaga qaytaradi, sahifa ularni manzildan olib tashlab backendga yuboradi. `unsafe-eval` qo'shilmadi. Muammo Playwright orqali haqiqiy saytda topildi (konsolda CSP xatosi, iframe yo'q). Unit testlar 244, E2E: backend bilan auth 41, demo 255.
 - **Admin:** root yaratildi, 2FA sozlandi. **Google orqali kirish** haqiqiy domenda uchta akkaunt bilan ishladi. Ikki akkauntda Google'ning o'z "Verify it's you" tekshiruvi chiqdi: bu Google akkaunt xavfsizligi, saytga bog'liq emas.
+- **Tuzatish joylandi** (`b1fdf43`): Release → `./deploy.sh` — bu yangilash yo'lining birinchi haqiqiy ishlatilishi, smoke 22/22. **Telegram orqali kirish** haqiqiy domenda telefonda ishladi.
+- **Hali yo'q (5.5):** zaxira nusxalar va tiklash sinovi, monitoring. Haqiqiy bizneslar undan keyin kiritiladi.
 
 ## 5.3 natijalari — server
 
