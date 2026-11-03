@@ -193,6 +193,11 @@ export function MapView({
     return () => {
       map.remove();
       mapRef.current = null;
+      // Next.js orqaga qaytishda sahifani keshdan tiklaydi: holat saqlanadi, effekt esa qayta
+      // ishlab yangi xarita yaratadi. `loaded` qolib ketsa, yangi xarita uslubi yuklanmasdan
+      // setFilter chaqiriladi — "Style is not done loading" va xato sahifasi (productionda topilgan)
+      setLoaded(false);
+      setFailed(false);
     };
     // Xarita faqat bir marta yaratiladi; keyingi o'zgarishlar alohida effektlarda
     // eslint-disable-next-line react-hooks/exhaustive-deps
