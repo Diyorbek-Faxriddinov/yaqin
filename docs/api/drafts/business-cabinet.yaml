@@ -1,0 +1,936 @@
+openapi: 3.1.0
+info:
+  title: Yaqin API — biznes kabineti (loyiha, 6.1)
+  version: 0.2.0-draft
+  description: |
+    ADR-0015 ning API shartnomasi — **loyiha**. 6.2 da backend bilan birga asosiy
+    `docs/api/openapi.yaml` ga ko'chiriladi va bu fayl o'chiriladi. Alohida turishining sababi:
+    backend testlari kontraktdagi har bir operatsiya sinalganini tekshiradi (`tests/conftest.py`),
+    amalga oshirilmagan endpoint esa CI'ni yiqitardi.
+
+    Asosiy fayldagi sxemalarga `../openapi.yaml#/...` orqali havola qilinadi — maydon qoidalari
+    (uzunlik, format) admin API bilan bir xil bo'lsin.
+
+    **Asosiy faylga qo'shiladigan o'zgarishlar** (bu yerda ko'rsatilmagan):
+    - `AdminPermission` enum'iga: `business.owners` (egalarni taklif qilish va olib tashlash),
+      `change.review` (egalar takliflarini ko'rib chiqish).
+    - `AuditTargetType` enum'iga: `membership`, `change`.
+    - `POST /businesses/{slug}/reviews`: biznes egasi o'z biznesiga sharh yoza olmaydi —
+      `403 own_business`.
+    - Tag: `cabinet` — "Biznes kabineti — egalar o'z biznesini ko'radi va o'zgarish taklif qiladi
+      (ADR-0015)".
+
+    **Umumiy qoidalar:**
+    - Kabinet endpoint'lari mijoz sessiyasi bilan (`sessionCookie`, Telegram yoki Google orqali kirish).
+    - Foydalanuvchi a'zo bo'lmagan biznes — `404` (biznes mavjudligi oshkor qilinmaydi).
+    - Egalar ko'rmaydi: so'rov qoldirganlarning telefonlari, sharh mualliflari haqida qo'shimcha
+      maʼlumot, rozilik qaydi, boshqa bizneslar.
+    - Egalar o'zgartira olmaydi: e'lon qilish/yashirish holati, slug, rozilik, biznesni o'chirish.
+
+servers:
+  - url: /api/v1
+
+tags:
+  - name: cabinet
+    description: Biznes kabineti (ADR-0015)
+  - name: admin
+    description: Admin panel — egalar va takliflar
+
+paths:
+  # ---------------------------------------------------------------- Kabinet (egalar)
+
+  /cabinet/invites/accept:
+    post:
+      tags: [cabinet]
+      operationId: acceptOwnerInvite
+      summary: Taklif havolasini qabul qilish — egalik
+      description: |
+        Havola: `https://yaqinapp.uz/kabinet/qoshilish#<token>` — token URL fragmentida (`#`), shuning
+        uchun server loglariga va `Referer` sarlavhasiga tushmaydi; sahifa uni shu so'rov bilan yuboradi.
+        Token bir martalik, 7 kun amal qiladi, backend faqat SHA-256 xeshini saqlaydi.
+        Noto'g'ri, muddati o'tgan, ishlatilgan yoki bekor qilingan — bir xil `404`.
+        Foydalanuvchi allaqachon shu biznes egasi — `200` (takroriy bosish xato emas, taklif sarflanmaydi).
+        Biznesda egalar soni chegarada (3) — `409 owner_limit`. IP va foydalanuvchi bo'yicha cheklanadi.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, pattern: "^[A-Za-z0-9_-]{32,64}$" }
+      responses:
+        "200":
+          description: Endi shu biznes egasisiz
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnedBusiness" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+        "429":
+          $ref: "../openapi.yaml#/components/responses/TooManyRequests"
+
+  /cabinet/businesses:
+    get:
+      tags: [cabinet]
+      operationId: listOwnedBusinesses
+      summary: Mening bizneslarim
+      description: Bo'sh ro'yxat — foydalanuvchi hech qaysi biznes egasi emas (menyuda "Kabinet" ko'rinmaydi).
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "../openapi.yaml#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Bizneslar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OwnedBusiness" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+
+  /cabinet/businesses/{businessId}:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    get:
+      tags: [cabinet]
+      operationId: getOwnedBusiness
+      summary: Biznes maʼlumotlari (joriy, e'lon qilingan holatda)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "../openapi.yaml#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Biznes
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerBusiness" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /cabinet/businesses/{businessId}/membership:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    delete:
+      tags: [cabinet]
+      operationId: leaveOwnedBusiness
+      summary: Egalikdan chiqish
+      description: Kutilayotgan takliflar `withdrawn` bo'ladi. Biznesning o'zi o'zgarmaydi. Audit jurnaliga yoziladi.
+      security: [{ sessionCookie: [] }]
+      responses:
+        "204":
+          description: Chiqildi
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /cabinet/businesses/{businessId}/stats:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    get:
+      tags: [cabinet]
+      operationId: getOwnedBusinessStats
+      summary: Ko'rishlar va bosishlar (admin statistikasi bilan bir xil, shaxsiy maʼlumotsiz)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - $ref: "../openapi.yaml#/components/parameters/StatsDays"
+      responses:
+        "200":
+          description: Statistika
+          content:
+            application/json:
+              schema:
+                { $ref: "../openapi.yaml#/components/schemas/StatsSeries" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /cabinet/businesses/{businessId}/uploads:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    post:
+      tags: [cabinet]
+      operationId: uploadChangePhoto
+      summary: Taklif uchun rasm yuklash (saytda ko'rinmaydi)
+      description: |
+        Qoidalar admin yuklashi bilan bir xil: JPEG, PNG yoki WebP, ko'pi bilan 5 MB, qayta kodlanadi,
+        EXIF (jumladan GPS) olib tashlanadi. Rasm **ochiq papkaga tushmaydi** — faqat
+        `previewUrl` orqali, sessiya bilan ko'riladi. Taklifga 24 soat ichida qo'shilmasa, o'chiriladi.
+        Biznes bo'yicha kutilayotgan rasmlar soni cheklanadi (40).
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        "201":
+          description: Yuklandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PendingUpload" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+        "413":
+          description: Fayl juda katta
+          content:
+            application/json:
+              schema: { $ref: "../openapi.yaml#/components/schemas/Error" }
+        "429":
+          $ref: "../openapi.yaml#/components/responses/TooManyRequests"
+
+  /cabinet/businesses/{businessId}/uploads/{uploadId}:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/UploadId"
+    get:
+      tags: [cabinet]
+      operationId: getChangePhoto
+      summary: Yuklangan (hali tasdiqlanmagan) rasm
+      description: "`Cache-Control: private, no-store`."
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Rasm (WebP)
+          content:
+            image/webp:
+              schema: { type: string, format: binary }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /cabinet/businesses/{businessId}/changes:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    get:
+      tags: [cabinet]
+      operationId: listOwnChanges
+      summary: Mening takliflarim (eng yangisi birinchi, oxirgi 50 ta)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Takliflar
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OwnerChange" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+    post:
+      tags: [cabinet]
+      operationId: proposeChange
+      summary: O'zgarish taklif qilish (moderator tasdig'idan keyin saytga chiqadi)
+      description: |
+        Maydonlar admin API qoidalari bilan tekshiriladi (`400`, `fields` da xatolar). Shu nishon
+        (profil, bitta mahsulot yoki biznes rasmlari) uchun kutilayotgan oldingi taklif `superseded`
+        bo'ladi — moderator faqat oxirgisini ko'radi. Biznes bo'yicha kutilayotgan takliflar soni
+        cheklangan (20) — `409 too_many_pending`; foydalanuvchi bo'yicha kuniga 30 ta — `429`.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeInput" }
+      responses:
+        "201":
+          description: Yuborildi, moderator ko'rib chiqadi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerChange" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+        "429":
+          $ref: "../openapi.yaml#/components/responses/TooManyRequests"
+
+  /cabinet/businesses/{businessId}/changes/{changeId}/withdraw:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/ChangeId"
+    post:
+      tags: [cabinet]
+      operationId: withdrawChange
+      summary: Taklifni qaytarib olish (faqat kutilayotgan)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Qaytarib olindi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerChange" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+
+  # ---------------------------------------------------------------- Admin: egalar
+
+  /admin/businesses/{businessId}/owners:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminGetBusinessOwners
+      summary: Biznes egalari va faol taklif havolasi — ruxsat business.view
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Egalar
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BusinessOwners" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/owner-invite:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+    post:
+      tags: [admin]
+      operationId: adminCreateOwnerInvite
+      summary: Egaga taklif havolasi — ruxsat business.owners (eskisi bekor bo'ladi)
+      description: |
+        Havola (va QR uchun shu manzil) faqat shu javobda bir marta qaytadi. Biznes e'lon qilinmagan
+        bo'lsa ham bo'ladi (ega maʼlumotlarni e'londan oldin tekshirishi mumkin). Egalar soni
+        chegarada (3) — `409 owner_limit`. Audit jurnaliga yoziladi.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "201":
+          description: Havola
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OwnerInviteCreated" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+    delete:
+      tags: [admin]
+      operationId: adminRevokeOwnerInvite
+      summary: Taklif havolasini bekor qilish — ruxsat business.owners
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: Bekor qilindi
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /admin/businesses/{businessId}/owners/{membershipId}:
+    parameters:
+      - $ref: "../openapi.yaml#/components/parameters/BusinessId"
+      - $ref: "#/components/parameters/MembershipId"
+    delete:
+      tags: [admin]
+      operationId: adminRemoveBusinessOwner
+      summary: Egalikni bekor qilish — ruxsat business.owners
+      description: Egasining kutilayotgan takliflari `withdrawn` bo'ladi. Audit jurnaliga yoziladi.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "204":
+          description: Bekor qilindi
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  # ---------------------------------------------------------------- Admin: takliflar
+
+  /admin/changes:
+    get:
+      tags: [admin]
+      operationId: adminListChanges
+      summary: Egalar takliflari — ruxsat change.review
+      description: "`pending` — eng eskisi birinchi (navbat), qolganlari — eng yangisi birinchi."
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ChangeStatus" }
+        - name: businessId
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: "../openapi.yaml#/components/parameters/Page"
+        - $ref: "../openapi.yaml#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Takliflar sahifasi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminChangePage" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+
+  /admin/changes/{changeId}:
+    parameters:
+      - $ref: "#/components/parameters/ChangeId"
+    get:
+      tags: [admin]
+      operationId: adminGetChange
+      summary: Taklif — "oldin / hozir / taklif" solishtiruvi bilan — ruxsat change.review
+      security: [{ adminSessionCookie: [] }]
+      parameters:
+        - $ref: "../openapi.yaml#/components/parameters/Lang"
+      responses:
+        "200":
+          description: Taklif
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminChange" }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+  /admin/changes/{changeId}/approve:
+    parameters:
+      - $ref: "#/components/parameters/ChangeId"
+    post:
+      tags: [admin]
+      operationId: adminApproveChange
+      summary: Tasdiqlash — o'zgarish saytga chiqadi — ruxsat change.review
+      description: |
+        Bitta tranzaksiyada: maydonlar admin API qoidalari bilan qayta tekshiriladi (taklifdan keyin
+        kategoriya yoki xususiyatlar o'zgargan bo'lishi mumkin — `400`), faqat taklifdagi maydonlar
+        joriy maʼlumot ustiga yoziladi, yangi rasmlar ochiq papkaga ko'chiriladi, audit jurnaliga
+        "moderator → egasi taklifi" yoziladi, keshlar yangilanadi. Ziddiyat (`conflict: true`) tasdiqni
+        to'xtatmaydi — moderator solishtiruvni ko'rib qaror qiladi. Kutilmayotgan taklif — `409`.
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Tasdiqlandi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminChange" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+
+  /admin/changes/{changeId}/reject:
+    parameters:
+      - $ref: "#/components/parameters/ChangeId"
+    post:
+      tags: [admin]
+      operationId: adminRejectChange
+      summary: Rad etish — sabab egaga ko'rinadi — ruxsat change.review
+      description: Yangi rasmlar o'chiriladi. Kutilmayotgan taklif — `409`.
+      security: [{ adminSessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 3, maxLength: 200 }
+      responses:
+        "200":
+          description: Rad etildi
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminChange" }
+        "400":
+          $ref: "../openapi.yaml#/components/responses/BadRequest"
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+        "409":
+          $ref: "../openapi.yaml#/components/responses/Conflict"
+
+  /admin/changes/{changeId}/uploads/{uploadId}:
+    parameters:
+      - $ref: "#/components/parameters/ChangeId"
+      - $ref: "#/components/parameters/UploadId"
+    get:
+      tags: [admin]
+      operationId: adminGetChangePhoto
+      summary: Taklifdagi yangi rasm — ruxsat change.review
+      description: "`Cache-Control: private, no-store`."
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Rasm (WebP)
+          content:
+            image/webp:
+              schema: { type: string, format: binary }
+        "401":
+          $ref: "../openapi.yaml#/components/responses/Unauthorized"
+        "403":
+          $ref: "../openapi.yaml#/components/responses/Forbidden"
+        "404":
+          $ref: "../openapi.yaml#/components/responses/NotFound"
+
+components:
+  parameters:
+    ChangeId:
+      name: changeId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UploadId:
+      name: uploadId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    MembershipId:
+      name: membershipId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    ChangeKind:
+      type: string
+      description: |
+        Taklif nishoni: biznes profili, bitta mahsulot/xizmat (yaratish, o'zgartirish, o'chirish)
+        yoki biznes rasmlari (to'liq tartiblangan ro'yxat).
+      enum: [profile, item.create, item.update, item.delete, photos]
+
+    ChangeStatus:
+      type: string
+      description: |
+        `superseded` — shu nishon uchun keyinroq yangi taklif yuborilgan; `withdrawn` — egasi qaytarib
+        oldi yoki egalik bekor qilindi.
+      enum: [pending, approved, rejected, withdrawn, superseded]
+
+    OwnerProfileInput:
+      type: object
+      description: |
+        Faqat yuborilgan maydonlar taklif qilinadi (kamida bittasi). Qoidalar — `AdminBusinessUpdate`
+        bilan bir xil. **Muhim maydonlar** (`name`, `categorySlug`, `districtSlug`, `address`,
+        `location`) moderatorga alohida belgi bilan ko'rsatiladi.
+      minProperties: 1
+      properties:
+        name:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/name",
+          }
+        description:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/description",
+          }
+        categorySlug:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/categorySlug",
+          }
+        districtSlug:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/districtSlug",
+          }
+        address:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/address",
+          }
+        location:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/location",
+          }
+        phones:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/phones",
+          }
+        telegram:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/telegram",
+          }
+        instagram:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/instagram",
+          }
+        website:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/website",
+          }
+        amenities:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/amenities",
+          }
+        schedule:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusinessUpdate/properties/schedule",
+          }
+
+    PhotoRef:
+      description: Mavjud rasm (`photoId`) yoki taklif uchun yuklangan yangi rasm (`uploadId`)
+      oneOf:
+        - type: object
+          required: [photoId]
+          additionalProperties: false
+          properties:
+            photoId: { type: string, format: uuid }
+            alt: { type: [string, "null"], maxLength: 200 }
+        - type: object
+          required: [uploadId]
+          additionalProperties: false
+          properties:
+            uploadId: { type: string, format: uuid }
+            alt: { type: [string, "null"], maxLength: 200 }
+
+    ChangeInput:
+      oneOf:
+        - type: object
+          required: [kind, profile]
+          properties:
+            kind: { const: profile }
+            profile: { $ref: "#/components/schemas/OwnerProfileInput" }
+        - type: object
+          required: [kind, item, photos]
+          properties:
+            kind: { const: item.create }
+            item: { $ref: "../openapi.yaml#/components/schemas/ItemInput" }
+            photos:
+              type: array
+              maxItems: 5
+              items: { $ref: "#/components/schemas/PhotoRef" }
+        - type: object
+          required: [kind, itemId, item, photos]
+          properties:
+            kind: { const: item.update }
+            itemId: { type: string, format: uuid }
+            item: { $ref: "../openapi.yaml#/components/schemas/ItemInput" }
+            photos:
+              type: array
+              maxItems: 5
+              description: Yakuniy tartiblangan ro'yxat — ro'yxatda yo'q mavjud rasm o'chiriladi
+              items: { $ref: "#/components/schemas/PhotoRef" }
+        - type: object
+          required: [kind, itemId]
+          properties:
+            kind: { const: item.delete }
+            itemId: { type: string, format: uuid }
+        - type: object
+          required: [kind, photos]
+          properties:
+            kind: { const: photos }
+            photos:
+              type: array
+              maxItems: 12
+              description: Biznes rasmlarining yakuniy tartiblangan ro'yxati (birinchisi — asosiy)
+              items: { $ref: "#/components/schemas/PhotoRef" }
+      discriminator:
+        propertyName: kind
+
+    OwnedBusiness:
+      type: object
+      required:
+        [
+          id,
+          slug,
+          name,
+          status,
+          category,
+          district,
+          cover,
+          pendingChanges,
+          ownerSince,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        status: { $ref: "../openapi.yaml#/components/schemas/BusinessStatus" }
+        category: { $ref: "../openapi.yaml#/components/schemas/CategoryRef" }
+        district: { $ref: "../openapi.yaml#/components/schemas/DistrictRef" }
+        cover:
+          oneOf:
+            - $ref: "../openapi.yaml#/components/schemas/Image"
+            - type: "null"
+        pendingChanges: { type: integer, minimum: 0 }
+        ownerSince: { type: string, format: date-time }
+
+    OwnerBusiness:
+      type: object
+      description: Joriy (tasdiqlangan) maʼlumot — tahrirlash formalari shundan to'ldiriladi
+      required:
+        - id
+        - slug
+        - name
+        - description
+        - category
+        - district
+        - address
+        - location
+        - phones
+        - telegram
+        - instagram
+        - website
+        - amenities
+        - schedule
+        - status
+        - photos
+        - items
+        - updatedAt
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        category: { $ref: "../openapi.yaml#/components/schemas/CategoryRef" }
+        district: { $ref: "../openapi.yaml#/components/schemas/DistrictRef" }
+        address:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusiness/properties/address",
+          }
+        location:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusiness/properties/location",
+          }
+        phones:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusiness/properties/phones",
+          }
+        telegram: { type: [string, "null"] }
+        instagram: { type: [string, "null"] }
+        website: { type: [string, "null"], format: uri }
+        amenities:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusiness/properties/amenities",
+          }
+        schedule:
+          {
+            $ref: "../openapi.yaml#/components/schemas/AdminBusiness/properties/schedule",
+          }
+        status: { $ref: "../openapi.yaml#/components/schemas/BusinessStatus" }
+        photos:
+          type: array
+          items: { $ref: "../openapi.yaml#/components/schemas/AdminPhoto" }
+        items:
+          type: array
+          items: { $ref: "../openapi.yaml#/components/schemas/AdminItem" }
+        updatedAt: { type: string, format: date-time }
+
+    PendingUpload:
+      type: object
+      required: [id, previewUrl, width, height, expiresAt]
+      properties:
+        id: { type: string, format: uuid }
+        previewUrl:
+          type: string
+          format: uri-reference
+          description: "`/api/v1/cabinet/businesses/{businessId}/uploads/{uploadId}` — sessiya bilan"
+        width: { type: integer }
+        height: { type: integer }
+        expiresAt:
+          type: string
+          format: date-time
+          description: Shu vaqtgacha taklifga qo'shilmasa, o'chiriladi
+
+    OwnerChange:
+      type: object
+      required:
+        [
+          id,
+          kind,
+          status,
+          itemId,
+          fields,
+          createdAt,
+          reviewedAt,
+          rejectionReason,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/ChangeKind" }
+        status: { $ref: "#/components/schemas/ChangeStatus" }
+        itemId: { type: [string, "null"], format: uuid }
+        fields:
+          type: array
+          description: O'zgartirilgan maydonlar kalitlari (`ChangeField.field`) — interfeysda nomi tarjimadan
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        reviewedAt: { type: [string, "null"], format: date-time }
+        rejectionReason: { type: [string, "null"] }
+
+    ChangeField:
+      type: object
+      description: |
+        Bitta maydon solishtiruvi. Qiymatlar maydon turiga qarab (matn, son, obyekt, ro'yxat; rasmlar —
+        `Image` ro'yxati, yangi rasmlar admin `previewUrl` bilan). `before` — taklif yuborilgan paytdagi
+        qiymat, `current` — hozirgi, `after` — taklif. `conflict` — `before` va `current` farq qiladi
+        (taklifdan keyin moderator yoki boshqa ega o'zgartirgan).
+      required: [field, important, conflict, before, current, after]
+      properties:
+        field:
+          type: string
+          description: "Masalan: `name`, `schedule`, `phones`, `item.price`, `item.attributes`, `photos`"
+        important:
+          type: boolean
+          description: Nom, kategoriya, tuman, manzil yoki xaritadagi joy
+        conflict: { type: boolean }
+        before: {}
+        current: {}
+        after: {}
+
+    AdminChangeListItem:
+      type: object
+      required:
+        [
+          id,
+          kind,
+          status,
+          business,
+          author,
+          itemName,
+          important,
+          conflict,
+          createdAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/ChangeKind" }
+        status: { $ref: "#/components/schemas/ChangeStatus" }
+        business:
+          { $ref: "../openapi.yaml#/components/schemas/AdminBusinessRef" }
+        author: { $ref: "../openapi.yaml#/components/schemas/UserRef" }
+        itemName: { type: [string, "null"] }
+        important: { type: boolean }
+        conflict: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    AdminChange:
+      allOf:
+        - $ref: "#/components/schemas/AdminChangeListItem"
+        - type: object
+          required: [fields, reviewedAt, reviewedBy, rejectionReason]
+          properties:
+            fields:
+              type: array
+              items: { $ref: "#/components/schemas/ChangeField" }
+            reviewedAt: { type: [string, "null"], format: date-time }
+            reviewedBy:
+              type: [string, "null"]
+              description: Moderatorning ko'rinadigan ismi
+            rejectionReason: { type: [string, "null"] }
+
+    AdminChangePage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AdminChangeListItem" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+
+    BusinessOwner:
+      type: object
+      required: [membershipId, user, provider, since, invitedBy]
+      properties:
+        membershipId: { type: string, format: uuid }
+        user: { $ref: "../openapi.yaml#/components/schemas/UserRef" }
+        provider:
+          type: string
+          enum: [telegram, google]
+        since: { type: string, format: date-time }
+        invitedBy:
+          type: [string, "null"]
+          description: Taklif yaratgan administratorning ko'rinadigan ismi
+
+    OwnerInviteStatus:
+      type: object
+      required: [createdAt, expiresAt, createdBy]
+      properties:
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        createdBy: { type: [string, "null"] }
+
+    BusinessOwners:
+      type: object
+      required: [owners, invite, maxOwners]
+      properties:
+        owners:
+          type: array
+          items: { $ref: "#/components/schemas/BusinessOwner" }
+        invite:
+          description: Faol (ishlatilmagan, muddati o'tmagan) taklif havolasi; havolaning o'zi qaytmaydi
+          oneOf:
+            - $ref: "#/components/schemas/OwnerInviteStatus"
+            - type: "null"
+        maxOwners: { type: integer, const: 3 }
+
+    OwnerInviteCreated:
+      type: object
+      required: [url, status]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: "`https://yaqinapp.uz/kabinet/qoshilish#<token>` — faqat shu javobda"
+        status: { $ref: "#/components/schemas/OwnerInviteStatus" }

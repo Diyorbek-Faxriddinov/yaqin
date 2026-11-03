@@ -18,5 +18,6 @@ Har bir muhim qaror qisqa hujjat sifatida yoziladi: **kontekst → qaror → oqi
 | 0012 | [Sessiya, CSRF va foydalanuvchi holati](0012-sessiya-va-csrf.md)                             | Qabul qilingan              |
 | 0013 | [Brauzer xavfsizlik sarlavhalari (CSP, Permissions-Policy)](0013-xavfsizlik-sarlavhalari.md) | Qabul qilingan, yangilangan |
 | 0014 | [Doʻkon katalogi: mahsulot rasmlari, xususiyatlar, qidiruv](0014-dokon-katalogi.md)          | Qabul qilingan, yangilangan |
+| 0015 | [Biznes kabineti: egalar taklif qiladi, moderator tasdiqlaydi](0015-biznes-kabineti.md)      | Taklif                      |
 
 Shablon: [0000-shablon.md](0000-shablon.md).

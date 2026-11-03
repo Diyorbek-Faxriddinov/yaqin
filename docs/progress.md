@@ -1,17 +1,18 @@
 # Ish holati
 
-Oxirgi yangilanish: 2026-11-01
+Oxirgi yangilanish: 2026-11-04
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                           | Holat                                         |
-| ------- | --------------------------------- | --------------------------------------------- |
-| 0       | Gʻoya tahlili, arxitektura        | ✅ Tasdiqlangan                               |
-| 1       | Frontend rejasi                   | ✅ Tasdiqlangan                               |
-| 2       | Frontend ishlab chiqish           | ✅ Tasdiqlangan                               |
-| 3       | Backend                           | ✅ Tasdiqlangan ([reja](backend-plan.md))     |
-| 4       | Integratsiya va yakuniy tekshiruv | ✅ Tasdiqlangan ([reja](integration-plan.md)) |
-| 5       | Hosting va domen                  | 🔄 Jarayonda ([tuzilma](deployment.md))       |
+| Bosqich | Mazmuni                                                   | Holat                                                            |
+| ------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura                                | ✅ Tasdiqlangan                                                  |
+| 1       | Frontend rejasi                                           | ✅ Tasdiqlangan                                                  |
+| 2       | Frontend ishlab chiqish                                   | ✅ Tasdiqlangan                                                  |
+| 3       | Backend                                                   | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
+| 4       | Integratsiya va yakuniy tekshiruv                         | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
+| 5       | Hosting va domen                                          | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
+| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md)) | 🔄 Jarayonda                                                     |
 
 ## 2-bosqich qadamlari
 
@@ -44,17 +45,51 @@ Oxirgi yangilanish: 2026-11-01
 
 ## 5-bosqich qadamlari
 
-| Qadam | Mazmuni                                                                                                       | Holat |
-| ----- | ------------------------------------------------------------------------------------------------------------- | ----- |
-| 5.1   | Provayder va domen                                                                                            | ✅    |
-| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | ✅    |
-| 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | ✅    |
-| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ✅    |
-| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ✅    |
-| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ✅    |
-| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | 🔄    |
+| Qadam | Mazmuni                                                                                                       | Holat               |
+| ----- | ------------------------------------------------------------------------------------------------------------- | ------------------- |
+| 5.1   | Provayder va domen                                                                                            | ✅                  |
+| 5.2   | Production sozlamalari repoda: Dockerfile'lar, compose, Caddy, CI smoke test                                  | ✅                  |
+| 5.2a  | Standart kategoriya xususiyatlari, biznes qulayliklari, veb-sayt maydoni                                      | ✅                  |
+| 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ✅                  |
+| 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ✅                  |
+| 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ✅                  |
+| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏸️ ochiq (keyinroq) |
 
-## 5.6 natijalari — yakuniy tekshiruv (jarayonda)
+## Ochiq qolgan ishlar (administrator qarori, 2026-11-04 — keyinroq bajariladi)
+
+| Ish                                                                            | Qachon / nimaga bog'liq                                               | Manba |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ----- |
+| HSTS (1 hafta, keyin 1 yil)                                                    | Auditoriya yig'ila boshlaganda; Release bilan                         | 5.6   |
+| To'liq tiklash mashqi (vaqtinchalik ikkinchi server, bir necha ming so'm)      | Auditoriya yig'ila boshlaganda; "noldan tiklash" shungacha sinalmagan | 5.6   |
+| Qidiruv tizimlariga indekslashni ochish                                        | 20–30 ta haqiqiy biznesdan keyin                                      | 5.6   |
+| Birinchi haqiqiy bizneslar ("Sandal nonkabob" va boshqalar)                    | Administrator kiritadi                                                | 5.6   |
+| Zaxira uchun S3 Toshkent                                                       | Servercore istisno so'roviga javob; rad etilsa — UzCloud              | 5.5   |
+| Telegram tugmasi iframe nomi (a11y) saytga chiqishi                            | Keyingi Release bilan                                                 | 5.6   |
+| Telegram havola rasmidagi qo'sh bo'shliq (Inter shriftini `next/og` ga berish) | Kosmetik, keyinroq                                                    | 5.6   |
+| Servercore balansini to'ldirish                                                | ~2026-11-25                                                           | 5.3   |
+
+## 6-bosqich qadamlari — biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))
+
+| Qadam | Mazmuni                                                                                                                              | Holat |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | 🔄    |
+| 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ⏳    |
+| 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ⏳    |
+| 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ⏳    |
+| 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
+
+## 6.1 natijalari — qaror va shartnoma (jarayonda)
+
+- **[ADR-0015](adr/0015-biznes-kabineti.md):**
+  - egalar platforma xodimi emas — mijoz akkaunti (Telegram/Google) va `BusinessMembership`, alohida tor `/cabinet` API;
+  - egalik bir martalik, 7 kunlik taklif havolasi orqali (token URL fragmentida, faqat xeshi saqlanadi);
+  - har bir o'zgarish — taklif, moderator tasdig'i bilan: "oldin / hozir / taklif" solishtiruvi, ziddiyat belgisi, muhim maydonlar;
+  - taklifdagi rasmlar ochiq papkaga tushmaydi;
+  - yangi ruxsatlar `business.owners` va `change.review`.
+- **Shartnoma loyihasi** — [docs/api/drafts/business-cabinet.yaml](api/drafts/business-cabinet.yaml): 19 operatsiya, 17 sxema. OpenAPI 3.1 standartiga qarshi tekshirildi, asosiy faylga 39 ta havolaning hammasi ochiladi. Alohida faylda turishining sababi — backend testlari kontraktdagi har bir operatsiya sinalganini talab qiladi. Asosiy `openapi.yaml` ga 6.2 da, kod bilan birga ko'chiriladi.
+- **Egalarni admin paneliga rol bilan qo'shish** varianti ko'rib chiqildi va rad etildi (sabablari ADR-0015 da).
+
+## 5.6 natijalari — yakuniy tekshiruv (ochiq, keyinroq davom etadi)
 
 **Xavfsizlik auditi** (2026-11-03, productionda, hech narsa o'zgartirilmadi) — jiddiy muammo topilmadi:
 
