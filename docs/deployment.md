@@ -158,7 +158,7 @@ ssh -t yaqin "cd yaqin/deploy && docker compose run --rm backend python manage.p
 
 ### Yangilash
 
-Release → `ssh yaqin` → `cd yaqin/deploy && ./deploy.sh <commit>`. Skript repo'ni shu commit'ga o'tkazadi (compose va Caddyfile image'lar bilan mos bo'ladi), image'larni yuklaydi, migratsiya qiladi, to'plamni yangilaydi, keshni yangilaydi va smoke test o'tkazadi.
+Release → `ssh yaqin` → `cd yaqin/deploy && ./deploy.sh <commit>`. Skript repo'ni shu commit'ga o'tkazadi (compose va Caddyfile image'lar bilan mos bo'ladi), image'larni yuklaydi, migratsiya qiladi, to'plamni yangilaydi, keshni yangilaydi va smoke test o'tkazadi. `Caddyfile` o'zgargan bo'lsa, Caddy konteyneri qayta yaratiladi: fayl konteynerga bitta fayl sifatida ulangan, uni `git` almashtirganda ishlab turgan konteyner eskisini ko'raveradi.
 
 Orqaga qaytish: `./deploy.sh <oldingi commit>`. Migratsiyalar orqaga qaytmaydi, ya'ni yangi migratsiyali release'dan qaytish uchun zaxira nusxadan tiklash kerak (5.5).
 

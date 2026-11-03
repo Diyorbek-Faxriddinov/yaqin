@@ -25,6 +25,8 @@ main() {
 	}
 
 	echo "==> Repo: $tag"
+	local caddyfile_before
+	caddyfile_before=$(sha256sum Caddyfile | cut -d' ' -f1)
 	git fetch --quiet origin
 	git checkout --quiet --detach "$tag"
 
@@ -42,6 +44,13 @@ main() {
 
 	echo "==> To'plam"
 	docker compose up -d --wait --remove-orphans
+	# Caddyfile konteynerga bitta fayl sifatida ulangan: git uni yangi fayl bilan almashtiradi,
+	# ishlab turgan konteyner esa eskisini ko'raveradi (2026-11-04 da shunday bo'lgan). O'zgargan
+	# bo'lsa — konteyner qayta yaratiladi (bir-ikki soniya uzilish)
+	if [[ $(sha256sum Caddyfile | cut -d' ' -f1) != "$caddyfile_before" ]]; then
+		echo "==> Caddyfile o'zgargan — Caddy qayta yaratiladi"
+		docker compose up -d --wait --force-recreate caddy
+	fi
 
 	echo "==> Kesh"
 	./revalidate.sh

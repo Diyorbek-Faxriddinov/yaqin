@@ -73,12 +73,12 @@ Oxirgi yangilanish: 2026-11-04
 | Qadam | Mazmuni                                                                                                                              | Holat |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
 | 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | ✅    |
-| 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | 🔄    |
+| 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ✅    |
 | 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ⏳    |
 | 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ⏳    |
 | 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
 
-## 6.2 natijalari — backend (jarayonda)
+## 6.2 natijalari — backend
 
 - **Yangi ilova `apps/cabinet`:**
   - modellar: `BusinessMembership`, `OwnerInvite`, `BusinessChange`, `ChangeUpload`;
@@ -101,6 +101,8 @@ Oxirgi yangilanish: 2026-11-04
   - backend: 591 ta (+72), shartnoma qamrovi 100/100;
   - `tests/test_cabinet.py` — 25 ta: taklif havolasi, izolyatsiya (7 ta endpoint, boshqa biznes — 404), takliflar, ziddiyat, almashtirish, cheklovlar, rasmlar, tozalash, o'z biznesiga sharh;
   - frontend unit: 249 ta.
+- **Joylandi** (`53b91d016695`, 2026-11-04): CI 5/5 yashil, migratsiyalar (`staff.0003`, `cabinet.0001`) qo'llandi. Xarita tuzatishi production'da tekshirildi: Playwright bilan telefon va kompyuterda 11 qadamli orqaga/oldinga yo'l xatosiz o'tdi.
+- **Joylashda topilgan:** smoke test "tasdiqlanmagan rasmlar yopiq" productionda yiqildi, CI'da esa o'tgan. Sabab: `Caddyfile` konteynerga bitta fayl sifatida ulangan, `git checkout` uni yangi fayl bilan almashtiradi, ishlab turgan Caddy esa eskisini ko'raveradi. O'sha paytda serverda tasdiqlanmagan rasm yo'q edi (0 ta), ya'ni hech narsa oshkor bo'lmagan. Caddy qayta yaratildi, smoke test 24/24 o'tdi. `deploy.sh` endi `Caddyfile` o'zgarsa Caddy'ni o'zi qayta yaratadi.
 - **Topilgan va tuzatilgan:** mahsulotni o'chirish taklifi tasdiqlanganda xotiradagi taklif o'chirilgan mahsulotga ishorani qayta yozardi (FK xatosi). Test ushladi.
 
 ## Production xatosi: orqaga qaytishda "Nimadir xato ketdi" (2026-11-04)
