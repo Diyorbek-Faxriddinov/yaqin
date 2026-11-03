@@ -922,6 +922,10 @@
           "name": "Eʼlon qilish va yashirish",
           "hint": "Biznes saytda koʻrinishini boshqarish"
         },
+        "business_owners": {
+          "name": "Biznes egalari",
+          "hint": "Egaga taklif havolasi, egalikni bekor qilish"
+        },
         "category_manage": {
           "name": "Kategoriyalar va atributlar",
           "hint": "Yoʻnalishlar, ichki kategoriyalar, xususiyatlar"
@@ -933,6 +937,10 @@
         "complaint_manage": {
           "name": "Shikoyatlar",
           "hint": "Koʻrib chiqish va javob berish"
+        },
+        "change_review": {
+          "name": "Egalar takliflari",
+          "hint": "Egalar yuborgan oʻzgarishlarni tasdiqlash va rad etish"
         },
         "user_view": {
           "name": "Foydalanuvchilarni koʻrish",
@@ -1048,6 +1056,8 @@
         "role": "Rollar",
         "settings": "Sozlamalar",
         "report": "Hisobotlar",
+        "membership": "Egalik",
+        "change": "Takliflar",
         "auth": "Kirishlar"
       },
       "count": "{count, plural, other {# ta yozuv}}",

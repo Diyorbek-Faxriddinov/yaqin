@@ -6,8 +6,14 @@ import type { AdminPermission } from "@/lib/api/types";
 
 /** Ruxsatlar mazmun bo'yicha guruhlangan — tanlashda tushunarli bo'lishi uchun */
 export const PERMISSION_GROUPS: Array<{ key: string; permissions: AdminPermission[] }> = [
-  { key: "businesses", permissions: ["business.view", "business.edit", "business.publish"] },
-  { key: "content", permissions: ["category.manage", "review.moderate", "complaint.manage"] },
+  {
+    key: "businesses",
+    permissions: ["business.view", "business.edit", "business.publish", "business.owners"],
+  },
+  {
+    key: "content",
+    permissions: ["category.manage", "review.moderate", "complaint.manage", "change.review"],
+  },
   { key: "users", permissions: ["user.view", "user.manage"] },
   { key: "system", permissions: ["stats.view", "audit.view", "settings.manage", "staff.manage"] },
 ];

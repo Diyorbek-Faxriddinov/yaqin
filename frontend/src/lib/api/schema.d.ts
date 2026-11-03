@@ -170,6 +170,7 @@ export interface paths {
          * Sharh qoldirish
          * @description Bitta foydalanuvchi bitta biznesga bitta sharh (aks holda 409). Sharh moderatsiyadan
          *     so'ng chiqadi (`status: pending`). Rate limiting backendda.
+         *     Biznes egasi o'z biznesiga sharh yoza olmaydi — `403 own_business` (ADR-0015).
          */
         post: operations["createReview"];
         delete?: never;
@@ -1304,6 +1305,382 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cabinet/invites/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Taklif havolasini qabul qilish — egalik
+         * @description Havola: `https://yaqinapp.uz/kabinet/qoshilish#<token>` — token URL fragmentida (`#`), shuning
+         *     uchun server loglariga va `Referer` sarlavhasiga tushmaydi; sahifa uni shu so'rov bilan yuboradi.
+         *     Token bir martalik, 7 kun amal qiladi, backend faqat SHA-256 xeshini saqlaydi.
+         *     Noto'g'ri, muddati o'tgan, ishlatilgan yoki bekor qilingan — bir xil `404`.
+         *     Foydalanuvchi allaqachon shu biznes egasi — `200` (takroriy bosish xato emas, taklif sarflanmaydi).
+         *     Biznesda egalar soni chegarada (3) — `409 owner_limit`. IP va foydalanuvchi bo'yicha cheklanadi.
+         */
+        post: operations["acceptOwnerInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mening bizneslarim
+         * @description Bo'sh ro'yxat — foydalanuvchi hech qaysi biznes egasi emas (menyuda "Kabinet" ko'rinmaydi).
+         */
+        get: operations["listOwnedBusinesses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Biznes maʼlumotlari (joriy, e'lon qilingan holatda) */
+        get: operations["getOwnedBusiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/membership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Egalikdan chiqish
+         * @description Kutilayotgan takliflar `withdrawn` bo'ladi. Biznesning o'zi o'zgarmaydi. Audit jurnaliga yoziladi.
+         */
+        delete: operations["leaveOwnedBusiness"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Ko'rishlar va bosishlar (admin statistikasi bilan bir xil, shaxsiy maʼlumotsiz) */
+        get: operations["getOwnedBusinessStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Taklif uchun rasm yuklash (saytda ko'rinmaydi)
+         * @description Qoidalar admin yuklashi bilan bir xil: JPEG, PNG yoki WebP, ko'pi bilan 5 MB, qayta kodlanadi,
+         *     EXIF (jumladan GPS) olib tashlanadi. Rasm **ochiq papkaga tushmaydi** — faqat
+         *     `previewUrl` orqali, sessiya bilan ko'riladi. Taklifga 24 soat ichida qo'shilmasa, o'chiriladi.
+         *     Biznes bo'yicha kutilayotgan rasmlar soni cheklanadi (40).
+         */
+        post: operations["uploadChangePhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/uploads/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                uploadId: components["parameters"]["UploadId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Yuklangan (hali tasdiqlanmagan) rasm
+         * @description `Cache-Control: private, no-store`.
+         */
+        get: operations["getChangePhoto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Mening takliflarim (eng yangisi birinchi, oxirgi 50 ta) */
+        get: operations["listOwnChanges"];
+        put?: never;
+        /**
+         * O'zgarish taklif qilish (moderator tasdig'idan keyin saytga chiqadi)
+         * @description Maydonlar admin API qoidalari bilan tekshiriladi (`400`, `fields` da xatolar). Shu nishon
+         *     (profil, bitta mahsulot yoki biznes rasmlari) uchun kutilayotgan oldingi taklif `superseded`
+         *     bo'ladi — moderator faqat oxirgisini ko'radi. Biznes bo'yicha kutilayotgan takliflar soni
+         *     cheklangan (20) — `409 too_many_pending`; foydalanuvchi bo'yicha kuniga 30 ta — `429`.
+         */
+        post: operations["proposeChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cabinet/businesses/{businessId}/changes/{changeId}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Taklifni qaytarib olish (faqat kutilayotgan) */
+        post: operations["withdrawChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/owners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Biznes egalari va faol taklif havolasi — ruxsat business.view */
+        get: operations["adminGetBusinessOwners"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/owner-invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Egaga taklif havolasi — ruxsat business.owners (eskisi bekor bo'ladi)
+         * @description Havola (va QR uchun shu manzil) faqat shu javobda bir marta qaytadi. Biznes e'lon qilinmagan
+         *     bo'lsa ham bo'ladi (ega maʼlumotlarni e'londan oldin tekshirishi mumkin). Egalar soni
+         *     chegarada (3) — `409 owner_limit`. Audit jurnaliga yoziladi.
+         */
+        post: operations["adminCreateOwnerInvite"];
+        /** Taklif havolasini bekor qilish — ruxsat business.owners */
+        delete: operations["adminRevokeOwnerInvite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/owners/{membershipId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                membershipId: components["parameters"]["MembershipId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Egalikni bekor qilish — ruxsat business.owners
+         * @description Egasining kutilayotgan takliflari `withdrawn` bo'ladi. Audit jurnaliga yoziladi.
+         */
+        delete: operations["adminRemoveBusinessOwner"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Egalar takliflari — ruxsat change.review
+         * @description `pending` — eng eskisi birinchi (navbat), qolganlari — eng yangisi birinchi.
+         */
+        get: operations["adminListChanges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/changes/{changeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        /** Taklif — "oldin / hozir / taklif" solishtiruvi bilan — ruxsat change.review */
+        get: operations["adminGetChange"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/changes/{changeId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tasdiqlash — o'zgarish saytga chiqadi — ruxsat change.review
+         * @description Bitta tranzaksiyada: maydonlar admin API qoidalari bilan qayta tekshiriladi (taklifdan keyin
+         *     kategoriya yoki xususiyatlar o'zgargan bo'lishi mumkin — `400`), faqat taklifdagi maydonlar
+         *     joriy maʼlumot ustiga yoziladi, yangi rasmlar ochiq papkaga ko'chiriladi, audit jurnaliga
+         *     "moderator → egasi taklifi" yoziladi, keshlar yangilanadi. Ziddiyat (`conflict: true`) tasdiqni
+         *     to'xtatmaydi — moderator solishtiruvni ko'rib qaror qiladi. Kutilmayotgan taklif — `409`.
+         */
+        post: operations["adminApproveChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/changes/{changeId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rad etish — sabab egaga ko'rinadi — ruxsat change.review
+         * @description Yangi rasmlar o'chiriladi. Kutilmayotgan taklif — `409`.
+         */
+        post: operations["adminRejectChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/changes/{changeId}/uploads/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+                uploadId: components["parameters"]["UploadId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Taklifdagi yangi rasm — ruxsat change.review
+         * @description `Cache-Control: private, no-store`.
+         */
+        get: operations["adminGetChangePhoto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1622,7 +1999,7 @@ export interface components {
          * @description Atomar ruxsat (ADR-0009). Root barcha ruxsatlarga ega.
          * @enum {string}
          */
-        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "user.manage" | "staff.manage" | "audit.view" | "settings.manage" | "stats.view";
+        AdminPermission: "business.view" | "business.edit" | "business.publish" | "category.manage" | "review.moderate" | "complaint.manage" | "user.view" | "user.manage" | "staff.manage" | "audit.view" | "settings.manage" | "stats.view" | "business.owners" | "change.review";
         AdminMe: {
             /** Format: uuid */
             id: string;
@@ -2006,7 +2383,7 @@ export interface components {
             permissions: components["schemas"]["AdminPermission"][];
         };
         /** @enum {string} */
-        AuditTargetType: "auth" | "business" | "item" | "photo" | "review" | "complaint" | "category" | "request" | "user" | "admin" | "role" | "settings" | "report";
+        AuditTargetType: "auth" | "business" | "item" | "photo" | "review" | "complaint" | "category" | "request" | "user" | "admin" | "role" | "settings" | "report" | "membership" | "change";
         AuditEntry: {
             /** Format: uuid */
             id: string;
@@ -2125,6 +2502,219 @@ export interface components {
             /** @description QR kod — data:image/svg+xml;base64,... (img src sifatida) */
             qrDataUri: string;
         };
+        /**
+         * @description Taklif nishoni: biznes profili, bitta mahsulot/xizmat (yaratish, o'zgartirish, o'chirish)
+         *     yoki biznes rasmlari (to'liq tartiblangan ro'yxat).
+         * @enum {string}
+         */
+        ChangeKind: "profile" | "item.create" | "item.update" | "item.delete" | "photos";
+        /**
+         * @description `superseded` — shu nishon uchun keyinroq yangi taklif yuborilgan; `withdrawn` — egasi qaytarib
+         *     oldi yoki egalik bekor qilindi.
+         * @enum {string}
+         */
+        ChangeStatus: "pending" | "approved" | "rejected" | "withdrawn" | "superseded";
+        /**
+         * @description Faqat yuborilgan maydonlar taklif qilinadi (kamida bittasi). Qoidalar — `AdminBusinessUpdate`
+         *     bilan bir xil. **Muhim maydonlar** (`name`, `categorySlug`, `districtSlug`, `address`,
+         *     `location`) moderatorga alohida belgi bilan ko'rsatiladi.
+         */
+        OwnerProfileInput: {
+            name?: components["schemas"]["AdminBusinessUpdate"]["name"];
+            description?: components["schemas"]["AdminBusinessUpdate"]["description"];
+            categorySlug?: components["schemas"]["AdminBusinessUpdate"]["categorySlug"];
+            districtSlug?: components["schemas"]["AdminBusinessUpdate"]["districtSlug"];
+            address?: components["schemas"]["AdminBusinessUpdate"]["address"];
+            location?: components["schemas"]["AdminBusinessUpdate"]["location"];
+            phones?: components["schemas"]["AdminBusinessUpdate"]["phones"];
+            telegram?: components["schemas"]["AdminBusinessUpdate"]["telegram"];
+            instagram?: components["schemas"]["AdminBusinessUpdate"]["instagram"];
+            website?: components["schemas"]["AdminBusinessUpdate"]["website"];
+            amenities?: components["schemas"]["AdminBusinessUpdate"]["amenities"];
+            schedule?: components["schemas"]["AdminBusinessUpdate"]["schedule"];
+        };
+        /** @description Mavjud rasm (`photoId`) yoki taklif uchun yuklangan yangi rasm (`uploadId`) */
+        PhotoRef: {
+            /** Format: uuid */
+            photoId: string;
+            alt?: string | null;
+        } | {
+            /** Format: uuid */
+            uploadId: string;
+            alt?: string | null;
+        };
+        ChangeInput: {
+            /** @constant */
+            kind: "profile";
+            profile: components["schemas"]["OwnerProfileInput"];
+        } | {
+            /** @constant */
+            kind: "item.create";
+            item: components["schemas"]["ItemInput"];
+            photos: components["schemas"]["PhotoRef"][];
+        } | {
+            /** @constant */
+            kind: "item.update";
+            /** Format: uuid */
+            itemId: string;
+            item: components["schemas"]["ItemInput"];
+            /** @description Yakuniy tartiblangan ro'yxat — ro'yxatda yo'q mavjud rasm o'chiriladi */
+            photos: components["schemas"]["PhotoRef"][];
+        } | {
+            /** @constant */
+            kind: "item.delete";
+            /** Format: uuid */
+            itemId: string;
+        } | {
+            /** @constant */
+            kind: "photos";
+            /** @description Biznes rasmlarining yakuniy tartiblangan ro'yxati (birinchisi — asosiy) */
+            photos: components["schemas"]["PhotoRef"][];
+        };
+        OwnedBusiness: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            status: components["schemas"]["BusinessStatus"];
+            category: components["schemas"]["CategoryRef"];
+            district: components["schemas"]["DistrictRef"];
+            cover: components["schemas"]["Image"] | null;
+            pendingChanges: number;
+            /** Format: date-time */
+            ownerSince: string;
+        };
+        /** @description Joriy (tasdiqlangan) maʼlumot — tahrirlash formalari shundan to'ldiriladi */
+        OwnerBusiness: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            description: string | null;
+            category: components["schemas"]["CategoryRef"];
+            district: components["schemas"]["DistrictRef"];
+            address: components["schemas"]["AdminBusiness"]["address"];
+            location: components["schemas"]["AdminBusiness"]["location"];
+            phones: components["schemas"]["AdminBusiness"]["phones"];
+            telegram: string | null;
+            instagram: string | null;
+            /** Format: uri */
+            website: string | null;
+            amenities: components["schemas"]["AdminBusiness"]["amenities"];
+            schedule: components["schemas"]["AdminBusiness"]["schedule"];
+            status: components["schemas"]["BusinessStatus"];
+            photos: components["schemas"]["AdminPhoto"][];
+            items: components["schemas"]["AdminItem"][];
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PendingUpload: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uri-reference
+             * @description `/api/v1/cabinet/businesses/{businessId}/uploads/{uploadId}` — sessiya bilan
+             */
+            previewUrl: string;
+            width: number;
+            height: number;
+            /**
+             * Format: date-time
+             * @description Shu vaqtgacha taklifga qo'shilmasa, o'chiriladi
+             */
+            expiresAt: string;
+        };
+        OwnerChange: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["ChangeKind"];
+            status: components["schemas"]["ChangeStatus"];
+            /** Format: uuid */
+            itemId: string | null;
+            /** @description O'zgartirilgan maydonlar kalitlari (`ChangeField.field`) — interfeysda nomi tarjimadan */
+            fields: string[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            reviewedAt: string | null;
+            rejectionReason: string | null;
+        };
+        /**
+         * @description Bitta maydon solishtiruvi. Qiymatlar maydon turiga qarab (matn, son, obyekt, ro'yxat; rasmlar —
+         *     `Image` ro'yxati, yangi rasmlar admin `previewUrl` bilan). `before` — taklif yuborilgan paytdagi
+         *     qiymat, `current` — hozirgi, `after` — taklif. `conflict` — `before` va `current` farq qiladi
+         *     (taklifdan keyin moderator yoki boshqa ega o'zgartirgan).
+         */
+        ChangeField: {
+            /** @description Masalan: `name`, `schedule`, `phones`, `item.price`, `item.attributes`, `photos` */
+            field: string;
+            /** @description Nom, kategoriya, tuman, manzil yoki xaritadagi joy */
+            important: boolean;
+            conflict: boolean;
+            before: unknown;
+            current: unknown;
+            after: unknown;
+        };
+        AdminChangeListItem: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["ChangeKind"];
+            status: components["schemas"]["ChangeStatus"];
+            business: components["schemas"]["AdminBusinessRef"];
+            author: components["schemas"]["UserRef"];
+            itemName: string | null;
+            important: boolean;
+            conflict: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminChange: components["schemas"]["AdminChangeListItem"] & {
+            fields: components["schemas"]["ChangeField"][];
+            /** Format: date-time */
+            reviewedAt: string | null;
+            /** @description Moderatorning ko'rinadigan ismi */
+            reviewedBy: string | null;
+            rejectionReason: string | null;
+        };
+        AdminChangePage: {
+            items: components["schemas"]["AdminChangeListItem"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        BusinessOwner: {
+            /** Format: uuid */
+            membershipId: string;
+            user: components["schemas"]["UserRef"];
+            /** @enum {string} */
+            provider: "telegram" | "google";
+            /** Format: date-time */
+            since: string;
+            /** @description Taklif yaratgan administratorning ko'rinadigan ismi */
+            invitedBy: string | null;
+        };
+        OwnerInviteStatus: {
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            createdBy: string | null;
+        };
+        BusinessOwners: {
+            owners: components["schemas"]["BusinessOwner"][];
+            /** @description Faol (ishlatilmagan, muddati o'tmagan) taklif havolasi; havolaning o'zi qaytmaydi */
+            invite: components["schemas"]["OwnerInviteStatus"] | null;
+            /** @constant */
+            maxOwners: 3;
+        };
+        OwnerInviteCreated: {
+            /**
+             * Format: uri
+             * @description `https://yaqinapp.uz/kabinet/qoshilish#<token>` — faqat shu javobda
+             */
+            url: string;
+            status: components["schemas"]["OwnerInviteStatus"];
+        };
     };
     responses: {
         /** @description Topilmadi */
@@ -2203,6 +2793,9 @@ export interface components {
         Slug: string;
         Page: number;
         PageSize: number;
+        ChangeId: string;
+        UploadId: string;
+        MembershipId: string;
     };
     requestBodies: never;
     headers: never;
@@ -4401,6 +4994,529 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             403: components["responses"]["Forbidden"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    acceptOwnerInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Endi shu biznes egasisiz */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnedBusiness"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listOwnedBusinesses: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bizneslar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnedBusiness"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getOwnedBusiness: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biznes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerBusiness"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    leaveOwnedBusiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Chiqildi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getOwnedBusinessStats: {
+        parameters: {
+            query?: {
+                /** @description Davr (kun) — oxirgi N kun, bugun bilan */
+                days?: components["parameters"]["StatsDays"];
+            };
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statistika */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsSeries"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    uploadChangePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Yuklandi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingUpload"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            /** @description Fayl juda katta */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    getChangePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                uploadId: components["parameters"]["UploadId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rasm (WebP) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listOwnChanges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Takliflar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerChange"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    proposeChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeInput"];
+            };
+        };
+        responses: {
+            /** @description Yuborildi, moderator ko'rib chiqadi */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerChange"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    withdrawChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Qaytarib olindi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerChange"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminGetBusinessOwners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Egalar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessOwners"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminCreateOwnerInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Havola */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnerInviteCreated"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRevokeOwnerInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bekor qilindi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminRemoveBusinessOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+                membershipId: components["parameters"]["MembershipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bekor qilindi */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListChanges: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ChangeStatus"];
+                businessId?: string;
+                page?: components["parameters"]["Page"];
+                pageSize?: components["parameters"]["PageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Takliflar sahifasi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChangePage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    adminGetChange: {
+        parameters: {
+            query?: {
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Taklif */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChange"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminApproveChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tasdiqlandi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChange"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminRejectChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Rad etildi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChange"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    adminGetChangePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                changeId: components["parameters"]["ChangeId"];
+                uploadId: components["parameters"]["UploadId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rasm (WebP) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

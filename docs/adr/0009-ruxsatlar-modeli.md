@@ -1,6 +1,6 @@
 # 0009. Ruxsatlar modeli (RBAC)
 
-- **Holat:** Qabul qilingan (amalga oshirish — 3-bosqich)
+- **Holat:** Qabul qilingan (amalga oshirish — 3-bosqich); 2026-11-04 da yangilangan (biznes aʼzoligi)
 - **Sana:** 2026-10-25
 
 ## Kontekst
@@ -31,3 +31,9 @@ Qoidalar:
 
 - Frontend menyuda faqat ruxsat etilgan boʻlimlarni koʻrsatadi, lekin bu faqat qulaylik — himoya backendda.
 - Biznes kabineti keyin qoʻshilganda model oʻzgarmaydi.
+
+## Yangilanish (2026-11-04): biznes aʼzoligi amalda — ADR-0015
+
+- `BusinessMembership` amalga oshirildi (`apps/cabinet`), hozircha bitta rol — **ega**; biznesda koʻpi bilan 3 ta. Ega — mijoz akkaunti, platforma xodimi emas.
+- Kabinet uchun alohida API (`/cabinet/...`): aʼzo boʻlmagan biznes — `404`. 6-qoida boʻyicha har bir kabinet endpoint'iga "boshqa biznesni koʻrib/oʻzgartirib boʻlmaydi" testi bor (`tests/test_cabinet.py`).
+- Yangi platforma ruxsatlari: `business.owners` (egalarni taklif qilish va olib tashlash), `change.review` (egalar takliflarini koʻrib chiqish). Tizim rollariga qoʻshilmadi — Root kerakli administratorga beradi.

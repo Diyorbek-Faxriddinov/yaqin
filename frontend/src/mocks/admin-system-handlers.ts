@@ -66,6 +66,8 @@ const AUDIT_TARGETS = new Set<AuditTargetType>([
   "role",
   "settings",
   "report",
+  "membership",
+  "change",
 ]);
 const TELEGRAM = /^[A-Za-z0-9_]{5,32}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -11,13 +11,13 @@ Har bir muhim qaror qisqa hujjat sifatida yoziladi: **kontekst → qaror → oqi
 | 0005 | [Hosting va maʼlumotlar lokalizatsiyasi](0005-hosting-va-lokalizatsiya.md)                   | Qabul qilingan, yangilangan |
 | 0006 | [Autentifikatsiya usullari](0006-autentifikatsiya.md)                                        | Qabul qilingan, yangilangan |
 | 0007 | [Boshqariladigan biznes modeli](0007-boshqariladigan-biznes.md)                              | Qabul qilingan, yangilangan |
-| 0008 | [MVP doirasi](0008-mvp-doirasi.md)                                                           | Qabul qilingan              |
-| 0009 | [Ruxsatlar modeli](0009-ruxsatlar-modeli.md)                                                 | Qabul qilingan              |
+| 0008 | [MVP doirasi](0008-mvp-doirasi.md)                                                           | Qabul qilingan, yangilangan |
+| 0009 | [Ruxsatlar modeli](0009-ruxsatlar-modeli.md)                                                 | Qabul qilingan, yangilangan |
 | 0010 | [Maʼlumot va matn kelishuvlari](0010-malumot-kelishuvlari.md)                                | Qabul qilingan              |
 | 0011 | [Mock qatlam: jarayon ichidagi MSW](0011-mock-qatlam.md)                                     | Qabul qilingan, yangilangan |
 | 0012 | [Sessiya, CSRF va foydalanuvchi holati](0012-sessiya-va-csrf.md)                             | Qabul qilingan              |
 | 0013 | [Brauzer xavfsizlik sarlavhalari (CSP, Permissions-Policy)](0013-xavfsizlik-sarlavhalari.md) | Qabul qilingan, yangilangan |
 | 0014 | [Doʻkon katalogi: mahsulot rasmlari, xususiyatlar, qidiruv](0014-dokon-katalogi.md)          | Qabul qilingan, yangilangan |
-| 0015 | [Biznes kabineti: egalar taklif qiladi, moderator tasdiqlaydi](0015-biznes-kabineti.md)      | Taklif                      |
+| 0015 | [Biznes kabineti: egalar taklif qiladi, moderator tasdiqlaydi](0015-biznes-kabineti.md)      | Qabul qilingan              |
 
 Shablon: [0000-shablon.md](0000-shablon.md).

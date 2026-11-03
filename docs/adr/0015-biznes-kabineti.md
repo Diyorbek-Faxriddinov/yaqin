@@ -1,6 +1,6 @@
 # 0015. Biznes kabineti: egalar oʻzgarish taklif qiladi, moderator tasdiqlaydi
 
-- **Holat:** Taklif (6.1 — koʻrib chiqilmoqda)
+- **Holat:** Qabul qilingan (2026-11-04; backend — 6.2)
 - **Sana:** 2026-11-04
 
 ## Kontekst

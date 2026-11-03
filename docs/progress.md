@@ -72,13 +72,46 @@ Oxirgi yangilanish: 2026-11-04
 
 | Qadam | Mazmuni                                                                                                                              | Holat |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
-| 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | 🔄    |
-| 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ⏳    |
+| 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | ✅    |
+| 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | 🔄    |
 | 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ⏳    |
 | 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ⏳    |
 | 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
 
-## 6.1 natijalari — qaror va shartnoma (jarayonda)
+## 6.2 natijalari — backend (jarayonda)
+
+- **Yangi ilova `apps/cabinet`:**
+  - modellar: `BusinessMembership`, `OwnerInvite`, `BusinessChange`, `ChangeUpload`;
+  - 19 ta yangi endpoint (kabinet — 10, admin — 9);
+  - `services.py` — taklifni tekshirish, solishtirish ("oldin / hozir / taklif", ziddiyat), tasdiqlash va rad etish.
+- **Admin bilan bir xil qoidalar:** taklif yuborilganda `apply_update` / `apply_item` nusxada chaqiriladi, tasdiqda esa haqiqiy yozuvda (tasdiq paytida qayta tekshiriladi).
+- **Rasmlar:**
+  - taklifdagi rasmlar `media/pending/` ga tasodifiy nom bilan yoziladi;
+  - Caddy bu papkani tashqi va ichki portda yopadi (lokal Caddy 2.11.7 bilan sinaldi: `pending` — 404, oddiy rasm — 200);
+  - smoke testga tekshiruv qo'shildi;
+  - tasdiqda ochiq papkaga ko'chiriladi; rad etilganda, qaytarib olinganda yoki almashtirilganda o'chiriladi;
+  - 24 soatda taklifga qo'shilmagan rasm `cleanup` bilan fayli bilan birga o'chiriladi.
+- **Yangi ruxsatlar va sozlamalar:**
+  - ruxsatlar `business.owners`, `change.review`; audit turlari `membership`, `change`;
+  - cheklovlar: taklif havolasi 10/daq, takliflar 30/kun, rasmlar 60/soat;
+  - ega o'z biznesiga sharh yoza olmaydi (`403 own_business`).
+- **Shartnoma** loyihadan asosiy `openapi.yaml` ga ko'chirildi (100 operatsiya), loyiha fayli o'chirildi.
+- **Frontend:** API tiplari qayta yaratildi; rol tahrirlashdagi ruxsatlar ro'yxatiga va audit filtriga yangi qiymatlar qo'shildi (uz/ru); mock ruxsatlar ro'yxati yangilandi.
+- **Testlar:**
+  - backend: 591 ta (+72), shartnoma qamrovi 100/100;
+  - `tests/test_cabinet.py` — 25 ta: taklif havolasi, izolyatsiya (7 ta endpoint, boshqa biznes — 404), takliflar, ziddiyat, almashtirish, cheklovlar, rasmlar, tozalash, o'z biznesiga sharh;
+  - frontend unit: 249 ta.
+- **Topilgan va tuzatilgan:** mahsulotni o'chirish taklifi tasdiqlanganda xotiradagi taklif o'chirilgan mahsulotga ishorani qayta yozardi (FK xatosi). Test ushladi.
+
+## Production xatosi: orqaga qaytishda "Nimadir xato ketdi" (2026-11-04)
+
+- **Belgi:** biznes → mahsulot → orqaga → xato sahifasi; "Qayta urinish" bosilsa ochiladi.
+- **Topish:** Playwright bilan production'da takrorlandi (bosh sahifa → biznes → mahsulot → orqaga/oldinga). Avval ochilgan biznes sahifasiga qaytganda MapLibre `Error: Style is not done loading` beradi (`setFilter`).
+- **Sabab:** Next.js 16 orqaga qaytishda sahifani keshdan tiklaydi — React holati (`loaded = true`) saqlanadi, effektlar esa qayta ishlab yangi xarita yaratadi. Tanlangan nuqta effekti yangi xarita uslubi yuklanmasdan `setFilter` ni chaqirardi.
+- **Tuzatish:** `map-view.tsx` effekt tozalashida `loaded` va `failed` qayta tiklanadi.
+- **Test:** `map-view.test.tsx` — MapLibre soxta nusxasi va React `<Activity>` bilan keshdan tiklash takrorlanadi; eski kodda aynan shu xato bilan yiqiladi.
+
+## 6.1 natijalari — qaror va shartnoma
 
 - **[ADR-0015](adr/0015-biznes-kabineti.md):**
   - egalar platforma xodimi emas — mijoz akkaunti (Telegram/Google) va `BusinessMembership`, alohida tor `/cabinet` API;

@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from apps.accounts.authentication import CustomerSessionAuthentication, IsCustomer, customer
 from apps.businesses import public
 from apps.businesses.models import Business
+from apps.cabinet.models import BusinessMembership
 from apps.community.models import Complaint, Favorite, Review
 from apps.community.services import add_to_rating, remove_from_rating
 from apps.core.api import ApiError, lang_of, not_found
@@ -97,6 +98,9 @@ def create_review(request: Request, slug: str) -> Response:
     business = Business.objects.filter(slug=slug, status=Business.Status.PUBLISHED).first()
     if business is None:
         raise not_found()
+    # Manfaatlar to'qnashuvi: ega o'z biznesini baholamaydi (ADR-0015)
+    if BusinessMembership.objects.filter(user=customer(request), business=business).exists():
+        raise ApiError(403, "own_business", "Oʻz biznesingizga sharh qoldira olmaysiz")
     data = ReviewInput(data=request.data)
     data.is_valid(raise_exception=True)
     # Oldindan moderatsiya o'chirilgan bo'lsa — darhol chop etiladi (keyin rad etish mumkin)

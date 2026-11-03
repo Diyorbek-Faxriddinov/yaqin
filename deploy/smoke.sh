@@ -102,7 +102,10 @@ check "Rasm — optimizator (next/image)" has_status 200 \
 	"$BASE/_next/image?url=%2Fapi%2Fv1%2Fmedia%2Fsmoke%2Ftest.webp&w=64&q=75"
 check "Rasm — papkadan chiqib bo'lmaydi" bash -c \
 	"[ \"\$(curl -s -o /dev/null -w '%{http_code}' --path-as-is '$BASE/api/v1/media/../../etc/passwd')\" != 200 ]"
-in_backend rm -rf media/smoke
+# Egalar takliflaridagi (tasdiqlanmagan) rasmlar tashqaridan ochilmaydi — ADR-0015
+in_backend sh -c 'mkdir -p media/pending && cp media/smoke/test.webp media/pending/smoke-test.webp'
+check "Tasdiqlanmagan rasmlar yopiq" has_status 404 "$BASE/api/v1/media/pending/smoke-test.webp"
+in_backend rm -rf media/smoke media/pending/smoke-test.webp
 
 # Backend → frontend kesh yangilash webhook'i (ichki tarmoq)
 check "Kesh yangilash webhook'i (ichki)" in_backend python -c "

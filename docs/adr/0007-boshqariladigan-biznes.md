@@ -1,6 +1,6 @@
 # 0007. Boshqariladigan biznes modeli
 
-- **Holat:** Qabul qilingan; 2026-10-31 da yangilangan (biznesni oʻchirish)
+- **Holat:** Qabul qilingan; 2026-10-31 (biznesni oʻchirish) va 2026-11-04 (biznes kabineti) da yangilangan
 - **Sana:** 2026-10-25
 
 ## Kontekst
@@ -35,3 +35,7 @@ Telefondagi sinovda (4.5) admin xato kiritilgan qoralamani oʻchira olmasligi an
 Qaror: bir marta eʼlon qilingan biznes **oʻchirilmaydi, yashiriladi** — unga sharhlar, statistika, hisobot havolasi va tashqi havolalar (qidiruv tizimlari, ulashilgan manzillar) bogʻlangan. Faqat hech qachon eʼlon qilinmagan qoralama oʻchiriladi: ruxsat `business.edit` (yaratish bilan bir xil), audit jurnaliga yoziladi, rasmlar va narxlar ham oʻchadi; soʻrovdan yaratilgan boʻlsa — soʻrov yana ishga qaytadi (`contacted`). Kontrakt: `DELETE /admin/businesses/{id}` (eʼlon qilingan — 409), `AdminBusiness.publishedAt`.
 
 Egasi maʼlumotlarini butunlay oʻchirishni soʻrasa (eʼlon qilingan biznes) — hozircha yashiriladi va qoʻlda koʻrib chiqiladi; kerak boʻlsa alohida qaror yoziladi.
+
+## Yangilanish (2026-11-04): biznes kabineti — ADR-0015
+
+"Keyingi bosqich" [ADR-0015](0015-biznes-kabineti.md) bilan amalga oshirilmoqda (6-bosqich), bitta farq bilan: ega **parol oʻrnatmaydi** — Telegram yoki Google orqali kiradi (mijoz akkaunti). Taklif havolasi bir martalik, 7 kunlik. Biznes "platforma boshqaruvida" qoladi: egalar faqat oʻzgarish taklif qiladi, saytga moderator tasdigʻidan keyin chiqadi. Hisobot havolasi saqlanadi.

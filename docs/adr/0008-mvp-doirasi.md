@@ -1,6 +1,6 @@
 # 0008. MVP doirasi
 
-- **Holat:** Qabul qilingan
+- **Holat:** Qabul qilingan; 2026-11-04 da yangilangan (biznes kabineti)
 - **Sana:** 2026-10-25
 
 ## Kontekst
@@ -37,3 +37,7 @@ Hisobchi va kuryer rollari ruxsatlar modelida boshidan boʻladi, interfeysi tegi
 
 - 3 oy ichida ishga tushirish va maʼlumot yigʻishga vaqt qoladi.
 - Keyingi imkoniyatlar qoʻshilganda arxitekturani qayta qurish kerak emas.
+
+## Yangilanish (2026-11-04): biznes kabineti
+
+"Biznes kabineti, egalikni oʻtkazish" MVP'dan keyingi birinchi imkoniyat sifatida qoʻshilmoqda — [ADR-0015](0015-biznes-kabineti.md) (6-bosqich). Sabab: sayt ishga tushgach, maʼlumot yigʻish (jamoa — bitta odam) oʻsishning eng tor joyi boʻlib chiqdi. Egalar faqat taklif qiladi, moderator tasdiqlaydi — maʼlumot ishonchliligi saqlanadi. Jadvaldagi boshqa bandlar oʻz kuchida.

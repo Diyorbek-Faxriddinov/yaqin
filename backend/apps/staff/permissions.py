@@ -16,6 +16,9 @@ class Permission(models.TextChoices):
     AUDIT_VIEW = "audit.view"
     SETTINGS_MANAGE = "settings.manage"
     STATS_VIEW = "stats.view"
+    # Biznes kabineti (ADR-0015)
+    BUSINESS_OWNERS = "business.owners"
+    CHANGE_REVIEW = "change.review"
 
 
 ALL_PERMISSIONS: tuple[str, ...] = tuple(Permission.values)

@@ -21,6 +21,8 @@ const FILTERS = [
   "role",
   "settings",
   "report",
+  "membership",
+  "change",
   "auth",
 ] as const;
 type Filter = (typeof FILTERS)[number];

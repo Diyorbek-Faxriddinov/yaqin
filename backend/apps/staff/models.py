@@ -151,6 +151,8 @@ class AuditEntry(UUIDModel):
         ROLE = "role"
         SETTINGS = "settings"
         REPORT = "report"
+        MEMBERSHIP = "membership"
+        CHANGE = "change"
 
     at = models.DateTimeField(auto_now_add=True, db_index=True)
     admin = models.ForeignKey(

@@ -168,6 +168,8 @@ export const ALL_PERMISSIONS: AdminPermission[] = [
   "audit.view",
   "settings.manage",
   "stats.view",
+  "business.owners",
+  "change.review",
 ];
 
 const ROLE_IDS = {

@@ -48,6 +48,10 @@
 
 	# Yuklangan rasmlar — diskdan to'g'ridan-to'g'ri. Fayl nomi rasm ID'si, mazmuni o'zgarmaydi
 	handle_path /api/v1/media/* {
+		# Egalar takliflaridagi rasmlar tasdiqlanmaguncha ochiq emas — faqat API orqali, sessiya
+		# bilan (ADR-0015)
+		@pending path /pending/*
+		respond @pending 404
 		root * /srv/media
 		header Cache-Control "public, max-age=31536000, immutable"
 		header X-Content-Type-Options nosniff
@@ -70,6 +74,8 @@
 
 # Ichki fayl serveri: Next.js rasm optimizatori uchun (MEDIA_INTERNAL_URL). Tashqariga ochilmagan
 http://:8081 {
+	@pending path /pending/*
+	respond @pending 404
 	root * /srv/media
 	file_server
 }

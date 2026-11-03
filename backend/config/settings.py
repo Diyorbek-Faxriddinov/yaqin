@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.community",
     "apps.stats",
     "apps.staff",
+    "apps.cabinet",
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,10 @@ THROTTLE_RATES: dict[str, str] = {
     "admin_auth": "30/min",
     # Hisobot havolasi — tokenni tanlab topishga qarshi (to'g'ri havola egasi uchun yetarli)
     "reports": "30/min",
+    # Biznes kabineti (ADR-0015): taklif havolasini tanlab topishga qarshi; takliflar va rasmlar
+    "owner_invites": "10/min",
+    "owner_changes": "30/day",
+    "owner_uploads": "60/hour",
 }
 
 REST_FRAMEWORK = {
