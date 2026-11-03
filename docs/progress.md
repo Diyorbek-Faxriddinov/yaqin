@@ -82,6 +82,10 @@ Oxirgi yangilanish: 2026-11-01
 - Kirish: Telegram iframe'ida nom yo'q edi — tuzatildi (`title`, test bilan). "Third-party cookies" ogohlantirishini Telegram'ning o'z oynasi chiqaradi (`stel_ssid`) — unga ta'sir qilib bo'lmaydi.
 - **Telefonda (Galaxy A52, administrator):** hammasi tez ishlaydi, xarita ham — uslub o'zgartirilmaydi (arzon telefonlardan shikoyat kelsa — yengilroq uslub). Sinov so'rovi bir daqiqa ichida guruhga yetdi va "rad etilgan" deb belgilandi.
 - **"Biror narsa buzilsa" qo'llanmasi** — [deployment.md](deployment.md#biror-narsa-buzilsa): sayt ochilmasa, disk to'lsa, zaxira o'tmasa, sertifikat, serverni noldan tiklash (oxirgisi hali sinab ko'rilmagan).
+- **Administrator qarori (2026-11-03): keyinga qoldirildi** — auditoriya yig'ila boshlaganda:
+  - **HSTS** — 1 hafta, keyin 1 yil; Release bilan, Telegram iframe nomi ham shu Release'da chiqadi;
+  - **to'liq tiklash mashqi** — vaqtinchalik ikkinchi server, bir necha ming so'm; "noldan tiklash" tartibi shungacha sinalmagan;
+  - **indekslashni ochish** — 20–30 ta haqiqiy biznesdan keyin.
 - **Ochiq qoldi (keyingi ishlar ro'yxatiga):** Telegram havola rasmida (`opengraph-image`) so'zlar orasida ba'zan qo'sh bo'shliq. Sabab — `next/og` ning standart shrifti (ruscha matnda ham bor, apostrofga bog'liq emas). To'g'ri yechim — Inter shrift faylini rasmga berish (standalone build'ga kiritish bilan); kosmetik, keyinroq.
 
 ## 5.5 natijalari — zaxira va monitoring
