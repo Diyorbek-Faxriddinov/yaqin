@@ -52,7 +52,34 @@ Oxirgi yangilanish: 2026-11-01
 | 5.3   | Server: SSH kalit, firewall, avtomatik yangilanishlar, Docker                                                 | ✅    |
 | 5.4   | Birinchi joylash: maxfiy kalitlar, migratsiyalar, root, DNS, Telegram/Google, indekslash yopiq (ochish — 5.6) | ✅    |
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | ✅    |
-| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
+| 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | 🔄    |
+
+## 5.6 natijalari — yakuniy tekshiruv (jarayonda)
+
+**Xavfsizlik auditi** (2026-11-03, productionda, hech narsa o'zgartirilmadi) — jiddiy muammo topilmadi:
+
+- **Portlar (tashqaridan, 16 ta tekshirildi):** faqat 22, 80, 443 ochiq. Baza, Redis, ilovalar va Caddy ichki portlari (2019, 8081) yopiq.
+- **TLS:** 1.0 va 1.1 rad etiladi, faqat 1.2 va 1.3 qabul qilinadi; sertifikat zanjiri to'g'ri (Let's Encrypt).
+- **Sarlavhalar:** CSP, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`; server nomi oshkor qilinmaydi; admin sahifasi brauzer keshida saqlanmaydi.
+- **Cookie'lar:** `Secure`, `HttpOnly`, `SameSite` bayroqlari bor (`SESSION_COOKIES_SECURE=True`). Django'ning o'z `SESSION_COOKIE_SECURE` sozlamasi `False`, lekin ishlatilmaydi — ilova o'z sessiya va CSRF mexanizmiga ega.
+- **Maxfiy yo'llar:** `.env`, `.git`, sxema va hujjat yo'llari 404 qaytaradi; admin API kirishsiz 401; papkadan chiqish urinishi 404.
+- **Admin login cheklovi:** sinov logini bilan 5 xatodan keyin `429 too_many_attempts`.
+- **Server:** avtomatik yangilanishlar har kuni ishlaydi. SSH'ga botlar urinyapti (24 soatda 275 ta) — hammasi rad etilgan, fail2ban 23 IP'ni bloklagan.
+- **Qolgan xavf (ataylab):** CSP'da `script-src 'unsafe-inline'` — Next.js inline skriptlari uchun. Nonce sahifalarni keshdan chiqarib, dinamik qilib qo'yardi.
+
+**Tezlik (Lighthouse 13.5, telefon rejimi):**
+
+| Sahifa          | Tezlik | Qulaylik | Amaliyot | SEO | LCP   | TBT      |
+| --------------- | ------ | -------- | -------- | --- | ----- | -------- |
+| Bosh sahifa     | 86     | 100      | 100      | 66  | 3,0 s | 370 ms   |
+| Kategoriya      | 79     | 100      | 100      | 66  | 3,0 s | 530 ms   |
+| Xarita          | 40     | 100      | 100      | 66  | 6,7 s | 3 390 ms |
+| Biznes qo'shish | 82     | 100      | 100      | 66  | 3,1 s | 480 ms   |
+| Kirish          | 80     | 96       | 77       | 63  | 3,0 s | 550 ms   |
+
+- SEO 66 — faqat `noindex` (indekslash ataylab yopiq).
+- Xarita: asosiy yukni MapLibre beradi (WebGL chizish va uslub qatlamlari; protsessor 4 marta sekinlashtirilgan taqlidda). Variantlar — yengilroq uslub yoki xaritani keyinroq ishga tushirish; qaror administratorning telefonidagi sinovdan keyin.
+- Kirish: Telegram iframe'ida nom yo'q edi — tuzatildi (`title`, test bilan). "Third-party cookies" ogohlantirishini Telegram'ning o'z oynasi chiqaradi (`stel_ssid`) — unga ta'sir qilib bo'lmaydi.
 
 ## 5.5 natijalari — zaxira va monitoring
 

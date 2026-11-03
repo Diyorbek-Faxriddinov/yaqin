@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { TelegramAuth } from "@/lib/api/types";
 
 /**
@@ -115,6 +115,8 @@ export function TelegramLoginButton({
 }) {
   const container = useRef<HTMLDivElement>(null);
   const locale = useLocale();
+  const t = useTranslations("Auth");
+  const frameTitle = t("telegram");
 
   useEffect(() => {
     const element = container.current;
@@ -128,9 +130,18 @@ export function TelegramLoginButton({
     script.dataset.lang = locale;
     script.dataset.authUrl = authUrl;
     script.onerror = onError;
+    // Vidjet iframe'iga nom bermaydi — ekran o'quvchilar uchun o'zimiz qo'yamiz (Lighthouse frame-title)
+    const observer = new MutationObserver(() => {
+      const frame = element.querySelector("iframe");
+      if (frame && !frame.title) frame.title = frameTitle;
+    });
+    observer.observe(element, { childList: true, subtree: true });
     element.replaceChildren(script);
-    return () => element.replaceChildren();
-  }, [bot, authUrl, locale, onError]);
+    return () => {
+      observer.disconnect();
+      element.replaceChildren();
+    };
+  }, [bot, authUrl, locale, onError, frameTitle]);
 
   return (
     <div ref={container} className="flex min-h-10 justify-center" data-testid="telegram-login" />

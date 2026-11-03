@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -12,7 +12,7 @@ import {
 } from "./provider-buttons";
 
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <NextIntlClientProvider locale="uz" messages={{}}>
+  <NextIntlClientProvider locale="uz" messages={{ Auth: { telegram: "Telegram orqali kirish" } }}>
     {children}
   </NextIntlClientProvider>
 );
@@ -42,6 +42,21 @@ describe("TelegramLoginButton", () => {
 
     unmount();
     expect(container.querySelector("script")).toBeNull();
+  });
+
+  it("vidjet qo'ygan iframe'ga nom beradi (ekran o'quvchilar uchun)", async () => {
+    const { container } = render(
+      <TelegramLoginButton
+        bot="yaqin_bot"
+        authUrl="https://yaqinapp.uz/kirish"
+        onError={vi.fn()}
+      />,
+      { wrapper },
+    );
+    // Haqiqiy vidjet skripti yuklangach o'zi qo'yadigan iframe (nomsiz)
+    const frame = document.createElement("iframe");
+    container.querySelector('[data-testid="telegram-login"]')?.append(frame);
+    await waitFor(() => expect(frame.title).toBe("Telegram orqali kirish"));
   });
 });
 
