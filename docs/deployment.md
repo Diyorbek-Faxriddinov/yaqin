@@ -196,3 +196,43 @@ Skriptlar — [deploy/backup/](../deploy/backup/), root sifatida systemd taymerl
 - **S3 ishga tushganda:** `restic copy` bilan tarix S3'ga ko'chiriladi, keyin `.env` da `BACKUP_REPOSITORY` va S3 kalitlari almashtiriladi.
 - **Server o'zi o'chsa** ichki monitoring ishlamaydi — buni tashqi tekshiruv (UptimeRobot, `/api/v1/health`) ushlaydi.
 - `root` taymerlari `deploy` foydalanuvchisiga tegishli skriptlarni bajaradi. Bu qo'shimcha xavf emas: `deploy` docker guruhida, ya'ni baribir root'ga teng (5.3).
+
+## Biror narsa buzilsa
+
+Barcha buyruqlar serverda, `ssh yaqin` → `cd yaqin/deploy` dan keyin. Ogohlantirishlar "Yaqin — server" Telegram guruhiga va (sayt butunlay ochilmasa) UptimeRobot orqali emailga keladi.
+
+### Sayt ochilmayapti
+
+1. Serverga kirib bo'ladimi (`ssh yaqin`)? Bo'lmasa — Servercore paneli: server holati (`ACTIVE`?), **Console** (root paroli parol menejerida), kerak bo'lsa qayta yuklash. Konteynerlar o'zi turadi (`restart: unless-stopped`).
+2. Kirsa: `docker compose ps` — qaysi konteyner `unhealthy` yoki to'xtagan.
+3. Sabab: `docker compose logs --tail 100 <xizmat>` (backend, frontend, caddy, db).
+4. Qayta ishga tushirish: `docker compose up -d --wait`, keyin `BASE=https://yaqinapp.uz ./smoke.sh`.
+5. Oxirgi joylashdan keyin buzilgan bo'lsa — oldingi versiyaga qaytish: `./deploy.sh <oldingi commit>` (GitHub → Actions → Release tarixida). Yangi migratsiya bo'lgan bo'lsa, migratsiya orqaga qaytmaydi — avval zaxiradan tiklash kerakligini o'ylab ko'ring.
+
+### Disk to'lmoqda (ogohlantirish: 85%)
+
+1. Nima egallagan: `df -h /`, `docker system df`, `sudo du -sh /var/backups/* /var/lib/docker/volumes/*`.
+2. Eski image'lar: `docker image prune -af --filter until=168h`.
+3. Tizim jurnallari: `sudo journalctl --vacuum-size=200M`.
+4. Rasmlar ko'paygan bo'lsa — Servercore panelida diskni kattalashtirish (tarmoq disk, server to'xtamaydi; kichraytirib bo'lmaydi), keyin serverda fayl tizimini kengaytirish.
+
+### Zaxira o'tmadi (ogohlantirish yoki "zaxira 26 soatdan eski")
+
+1. Sabab: `sudo journalctl -u yaqin-backup -n 50`.
+2. Qo'lda: `sudo backup/backup.sh`.
+3. restic qulfi qolib ketgan bo'lsa (`repository is already locked`): `sudo bash -c 'source backup/lib.sh && restic_env && restic unlock'`.
+4. O'tgandan keyin healthcheck 5 daqiqada "tuzaldi" deb yozadi.
+
+### Sertifikat muammosi
+
+`docker compose logs caddy | grep -i -E "error|certificate"`. Ko'pincha sabab — DNS (`yaqinapp.uz` va `www` boshqa IP'ga ko'rsatyapti) yoki 80/443 portlar yopilgan. Tuzatgandan keyin: `docker compose restart caddy`.
+
+### Server butunlay yo'qoldi — noldan tiklash
+
+⚠️ Bu tartib hali to'liq sinab ko'rilmagan. U ixtiyoriy tiklash mashqida tekshiriladi (5.6); oylik `restore-test.sh` faqat bazani vaqtinchalik konteynerga tiklaydi.
+
+1. Servercore'da xuddi shunday server (5.3 parametrlari), floating IP shu serverga ulanadi — DNS o'zgarmaydi.
+2. `server-setup.sh` (5.3), keyin "Birinchi joylash" — lekin `.env` qiymatlari **parol menejeridagi nusxadan** (yangi kalitlar yaratilmaydi, ayniqsa `TOTP_ENCRYPTION_KEY`).
+3. Zaxira repozitoriysini serverga qaytarish: kompyuterdagi `D:\yaqin-zaxira\repo` ni serverning `/var/backups/restic` ga ko'chirish (`scp -r`), `sudo backup/install.sh`.
+4. Faqat bazani ishga tushirish (`docker compose up -d --wait db`), keyin zaxiradan tiklash: `restic restore latest --host yaqin --target /var/tmp/tiklash`, baza — `pg_restore -U postgres -d yaqin --clean --if-exists --no-owner --role=yaqin`, rasmlar — `yaqin_media` volume'iga ko'chirish.
+5. `./deploy.sh <oxirgi commit>`, smoke test, telefonda tekshirish.
