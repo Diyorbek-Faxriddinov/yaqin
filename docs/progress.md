@@ -54,7 +54,7 @@ Oxirgi yangilanish: 2026-11-01
 | 5.5   | Zaxira (shifrlangan, S3 Toshkent, tiklash sinovi) va monitoring                                               | 🔄    |
 | 5.6   | Yakuniy tekshiruv, HSTS, birinchi bizneslar                                                                   | ⏳    |
 
-## 5.5 natijalari — zaxira va monitoring (jarayonda)
+## 5.5 natijalari — zaxira va monitoring
 
 - **[deploy/backup/](../deploy/backup/)**:
   - `backup.sh` — `pg_dump`, qatorlar soni, rasmlar → restic → S3;
@@ -69,6 +69,9 @@ Oxirgi yangilanish: 2026-11-01
   - birinchi zaxira olindi: 24 jadval, 8627 qator, rasm hali yo'q;
   - **tiklash sinovi o'tdi**, natija Telegram'ga keldi;
   - `deploy` repozitoriydagi barcha fayllarni o'qiy oladi.
+- **Tungi avtomatik zaxira** (2026-11-03 03:02): taymer o'zi ishladi, 2 soniyada tugadi (`Result=success`), snapshot `a4d452ea`. Saqlash qoidasi qo'llandi. Tunda ogohlantirish bo'lmadi; server 1 kundan ortiq qayta yuklanmasdan ishlayapti.
+- **Tashqi monitoring (UptimeRobot):** `/api/v1/health` har 5 daqiqada tekshiriladi. Sinov monitori (404) "Down" holatini aniqladi va email ogohlantirishi keldi (administrator tasdiqladi). Akkauntda 2FA yoqilgan.
+- **Zaxira paroli** administrator parol menejerida saqlangan. Uning to'g'riligi kompyuter nusxasini shu parol bilan ochib tekshirildi.
 - **Kompyuter nusxasi** ishladi (`D:\yaqin-zaxira\repo`); ikkinchi marta "nothing to transfer". Healthcheck avval "zaxira va nusxa yo'q" deb ogohlantirdi, keyin "tuzaldi" deb yozdi.
 - **Productionda xarita yuklanmasdi** (administrator xabar berdi). Sabab bizneslar yo'qligida emas edi. Dockerfile berilmagan `NEXT_PUBLIC_MAP_STYLE_URL` ni bo'sh satr qiladi, `config.ts` dagi `??` esa bo'sh satrni qiymat deb oladi — MapLibre bo'sh uslub bilan xatosiz, jimgina hech narsa yuklamasdi. CSP `||` bilan to'g'ri edi, lokal testlarda o'zgaruvchi umuman berilmagani uchun xato ko'rinmagan. Admin paneldagi joylashuv tanlash xaritasi ham shu sabab ishlamasdi.
   - Tuzatildi: `||`; `NEXT_PUBLIC_SITE_URL` ham shunday.
