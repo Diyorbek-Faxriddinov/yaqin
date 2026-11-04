@@ -1528,7 +1528,8 @@
       "invalid": "Havola notoʻgʻri, muddati oʻtgan yoki allaqachon ishlatilgan. Administratordan yangisini soʻrang.",
       "ownerLimit": "Bu biznesda egalar soni chegarada (3 ta). Administrator bilan bogʻlaning.",
       "error": "Qabul qilib boʻlmadi — qayta urinib koʻring",
-      "done": "Endi siz «{name}» egasisiz"
+      "done": "Endi siz «{name}» egasisiz",
+      "terms": "Qabul qilib, <terms>foydalanish shartlari</terms>ga rozilik bildirasiz: biznes egasi yoki uning vakilisiz va kiritgan maʼlumotlaringiz uchun javob berasiz."
     }
   }
 }

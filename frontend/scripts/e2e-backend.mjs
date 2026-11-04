@@ -51,7 +51,15 @@ run(python, ["manage.py", "e2e_prepare"], { cwd: "../backend", env: backendEnv, 
 // 2. Build (vaqtinchalik backend bilan)
 const backend = spawn(
   python,
-  ["-m", "waitress", `--listen=127.0.0.1:${BACKEND_PORT}`, "config.wsgi:application"],
+  // 16 oqim — playwright.config.ts bilan bir xil: 4 ta standart oqimni parallel prerender bo'g'ib,
+  // build vaqti-vaqti bilan backend_timeout bilan yiqilardi
+  [
+    "-m",
+    "waitress",
+    `--listen=127.0.0.1:${BACKEND_PORT}`,
+    "--threads=16",
+    "config.wsgi:application",
+  ],
   { cwd: "../backend", env: backendEnv, stdio: "ignore" },
 );
 try {

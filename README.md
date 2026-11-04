@@ -33,7 +33,7 @@
 - Admin paneldagi formalar: asosiy maʼlumot, joylashuv, rasmlar, ish vaqti, aloqa, katalog — "Saqlash" oʻrniga "Tasdiqlashga yuborish"; oʻzgarish moderator tasdiqlagach saytga chiqadi
 - "Takliflarim" (holati, rad etish sababi, qaytarib olish) va statistika
 - Admin panelda: "Takliflar" navbati — har bir maydon uchun "hozir saytda / taklif" (ziddiyatda — "taklif paytida" ham), tasdiqlash yoki sabab bilan rad etish; biznes sahifasida "Egalar" — havola va QR, egalikni bekor qilish
-- Hali yoʻq (6.5): yangi taklif haqida Telegram xabari, shartlar va maxfiylik matnlari
+- Yangi taklif haqida xodimlar Telegram guruhiga xabar (biznes nomi va taklif turi, shaxsiy maʼlumotsiz)
 
 MVP doirasi: [ADR-0008](docs/adr/0008-mvp-doirasi.md).
 

@@ -78,6 +78,16 @@ Oxirgi yangilanish: 2026-11-04
 | 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ✅    |
 | 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
 
+## 6.5 natijalari — bildirishnoma, hujjatlar, joylash
+
+- **Telegram:** `deploy/backup/new-changes.sh` (`yaqin-changes.timer`, har 5 daqiqada) — "Yaqin — server" guruhiga biznes nomi, taklif turi va "muhim" belgisi. Egasi yozgan matn, mahsulot nomi va shaxsiy maʼlumot yuborilmaydi; xabar ketmasa, keyingi safar qayta urinadi.
+- **Hujjatlar:** "Foydalanish shartlari"ga 3-bo'lim "Biznes egasi kabineti" (ega javobgarligi, moderator taklifni o'zgartirmaydi, egalik bekor qilinishi), "Maxfiylik siyosati"ga egalik, takliflar tarixi, rasmlar, Telegram xabari va sessionStorage (uz/ru). Taklifni qabul qilish sahifasida shartlarga havola. ⚠ Matnlar hali huquqshunos tekshiruvidan o'tmagan (sahifada belgilangan).
+- **Topilgan va tuzatilgan:** akkaunt o'chirilganda kutilayotgan takliflar muallifsiz qolib ketardi va moderator ularni tasdiqlashi mumkin edi. Endi `end_memberships` ularni qaytaradi, egalik tugagani audit jurnaliga yoziladi (backend va mock testlari bilan).
+- **Admin ustasi E2E testi — sababi topildi:** 6.3–6.4 da yiqilgan test osilish emas ekan. Trace bilan o'lchandi: yangi serverda birinchi `/_next/image` optimizatsiyasi 8 ta parallel ishchi ostida 18–19 s, keyingilari 50–300 ms. Test 30 s ichida `load` hodisasini kutardi. Test vaqti uzaytirildi (`test.slow()`); 90 s bilan 29/29 o'tdi.
+
+- **E2E build:** `e2e-backend.mjs` dagi vaqtinchalik backend 4 oqim bilan ishlardi va build vaqti-vaqti bilan `backend_timeout` bilan yiqilardi; endi 16 oqim (Playwright sozlamasi bilan bir xil).
+- **Testlar:** backend 592 ta, shartnoma qamrovi 100/100; frontend unit 270 ta; demo E2E — 267 o'tdi, 3 yiqildi (yangi tekshiruvdagi selektor xatosi, tuzatildi, kabinet testlari 9/9); backend E2E — 285 o'tdi, 0 yiqildi.
+
 ## 6.4 natijalari — admin: takliflar va egalar
 
 - **"Takliflar" bo'limi** (`/admin/takliflar`, ruxsat `change.review`; navigatsiyada va bosh paneldagi navbatlarda):
@@ -98,7 +108,7 @@ Oxirgi yangilanish: 2026-11-04
   - backend: 591 ta, shartnoma qamrovi 100/100 (`mine`, QR va ikkinchi ega tekshiruvi qo'shildi);
   - frontend unit: 269 ta (+8 admin takliflari mock testlari);
   - E2E `e2e/admin-changes.spec.ts` (3 ekran × 2): admin havola yaratadi (QR bilan) → ega alohida brauzerda qo'shilib taklif yuboradi → admin solishtiradi va tasdiqlaydi → ommaviy sahifada va "Takliflarim"da; rad etish sababi egaga ko'rinadi; egalikni bekor qilish;
-  - demo E2E — 270 o'tdi, 0 yiqildi (QR qo'shilgach tegishli 42 test qayta o'tdi); backend E2E — 284 o'tdi, 1 yiqildi: o'sha admin ustasi testi (6.3 da o'zgarishlarsiz ham yiqilishi tasdiqlangan, ochiq masala).
+  - demo E2E — 270 o'tdi, 0 yiqildi (QR qo'shilgach tegishli 42 test qayta o'tdi); backend E2E — 284 o'tdi, 1 yiqildi: o'sha admin ustasi testi (6.3 da o'zgarishlarsiz ham yiqilishi tasdiqlangan; sababi 6.5 da topildi).
 
 ## 6.3 natijalari — kabinet interfeysi va mock qatlam
 
@@ -116,7 +126,7 @@ Oxirgi yangilanish: 2026-11-04
   - unit: 261 ta (+12): mock handler'lar (havola bir martalik, 401/404, egalar chegarasi, almashtirish, validatsiya, rasm ko'rinishi, qaytarib olish, mahsulot takliflari), proxy, rasm ro'yxati;
   - E2E `e2e/cabinet.spec.ts` (3 ekran × 3): havola → profil taklifi → takliflarim → qaytarib olish (axe bilan); kirilmagan holda havola; rasm va mahsulot takliflari.
 - **Topilgan va tuzatilgan:** sevimlilar E2E testida poyga — tugma optimistik yangilanadi, test esa so'rov tugashini kutmay sahifadan ketardi (yuklama ostida ro'yxat bo'sh chiqardi). Endi javob kutiladi.
-- **Natijalar:** demo E2E — 263 o'tdi, 1 yiqildi (sevimlilar poygasi, tuzatildi; qayta yugurishda o'tdi); backend E2E — 278 o'tdi (9 ta kabinet testi bilan), 1 yiqildi: admin ustasi testi (yangi e'lon qilingan biznes sahifasi 30 s test vaqtiga sig'maydi). Xuddi shu xato o'zgarishlarsiz (oldingi commit) ham takrorlandi — 6.3 ga bog'liq emas, ochiq masala sifatida qoldi.
+- **Natijalar:** demo E2E — 263 o'tdi, 1 yiqildi (sevimlilar poygasi, tuzatildi; qayta yugurishda o'tdi); backend E2E — 278 o'tdi (9 ta kabinet testi bilan), 1 yiqildi: admin ustasi testi (yangi e'lon qilingan biznes sahifasi 30 s test vaqtiga sig'maydi). Xuddi shu xato o'zgarishlarsiz (oldingi commit) ham takrorlandi — 6.3 ga bog'liq emas (sababi 6.5 da topildi).
 - **Cheklov (6.4 da tuzatildi):** bir biznesda bir nechta ega bo'lsa, "Qaytarib olish" tugmasi boshqa eganing taklifida ham ko'rinardi — endi `OwnerChange.mine`.
 
 ## 6.2 natijalari — backend

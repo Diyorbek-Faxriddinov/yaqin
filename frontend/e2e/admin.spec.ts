@@ -66,6 +66,9 @@ test.describe("Biznes qo'shish ustasi", () => {
   });
 
   test("7 qadam → e'lon qilish → ommaviy saytda ko'rinadi", async ({ page }, testInfo) => {
+    // Yangi serverda birinchi rasm optimizatsiyasi parallel yuklamada 20 s gacha oladi (keyingilari
+    // 50–300 ms); `load` shuni kutadi. Trace bilan o'lchangan — osilish emas, sovuq start
+    test.slow();
     const suffix = `${testInfo.project.name}${Date.now() % 100000}`;
     // Testlar umumiy demo holatda parallel ishlaydi: e'lon qilinadigan biznes boshqa testlar
     // aniq hisoblarini tekshiradigan kategoriya/tumanlarga (go'zallik, Chilonzor...) tushmasin

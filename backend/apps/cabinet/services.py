@@ -29,7 +29,7 @@ from apps.businesses.admin_views import (
 from apps.businesses.models import Business, BusinessPhoto, Item, ItemPhoto
 from apps.businesses.photos import ProcessedPhoto
 from apps.businesses.slugs import unique_business_slug, unique_item_slug
-from apps.cabinet.models import BusinessChange, ChangeUpload
+from apps.cabinet.models import BusinessChange, BusinessMembership, ChangeUpload
 from apps.core.api import ApiError, invalid, money
 from apps.staff.audit import audit
 from apps.staff.models import AdminUser, AuditEntry
@@ -350,6 +350,22 @@ def withdraw_pending(business: Business, user: User) -> None:
         business=business, author=user, status=Status.PENDING
     ):
         _close(change, Status.WITHDRAWN)
+
+
+def end_memberships(user: User) -> None:
+    """Akkaunt o'chirilganda: kutilayotgan takliflar qaytariladi (muallifsiz taklif tasdiqlanib
+    ketmasin), egalik tugagani audit jurnaliga yoziladi. Tranzaksiya ichida chaqiriladi."""
+    for change in BusinessChange.objects.filter(author=user, status=Status.PENDING):
+        _close(change, Status.WITHDRAWN)
+    for membership in BusinessMembership.objects.filter(user=user).select_related("business"):
+        audit(
+            None,
+            "membership.leave",
+            AuditEntry.TargetType.MEMBERSHIP,
+            membership.id,
+            f"{membership.business.name}: akkaunt oʻchirildi (foydalanuvchi {user.id})",
+        )
+        membership.delete()
 
 
 def withdraw(change: BusinessChange) -> None:

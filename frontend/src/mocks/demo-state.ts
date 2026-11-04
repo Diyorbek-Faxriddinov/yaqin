@@ -439,10 +439,16 @@ export function deleteDemoUser(userId: string) {
   demoState.reviews = demoState.reviews
     .filter((r) => r.userId !== userId || r.status === "published")
     .map((r) => (r.userId === userId ? { ...r, userId: DELETED_USER_ID } : r));
-  // Egalik tugaydi; takliflar muallifsiz qoladi (backend: CASCADE va SET_NULL)
+  // Egalik tugaydi, kutilayotgan takliflar qaytariladi (backend `end_memberships`); tarix muallifsiz
   demoState.memberships = demoState.memberships.filter((m) => m.userId !== userId);
   for (const change of demoState.changes) {
-    if (change.authorId === userId) change.authorId = DELETED_USER_ID;
+    if (change.authorId !== userId) continue;
+    change.authorId = DELETED_USER_ID;
+    if (change.status !== "pending") continue;
+    change.status = "withdrawn";
+    for (const [id, upload] of demoState.uploads) {
+      if (upload.changeId === change.id) demoState.uploads.delete(id);
+    }
   }
 }
 

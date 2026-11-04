@@ -63,6 +63,17 @@ describe("admin: egalar", () => {
     expect((await call(`/cabinet/businesses/${business.id}`, ownerSession)).status).toBe(404);
   });
 
+  it("akkaunt o'chirilsa: egalik tugaydi, kutilayotgan taklif qaytariladi va tasdiqlanmaydi", async () => {
+    const change = await propose({ kind: "profile", profile: { description: "Yangi" } });
+    expect((await call("/me", ownerSession, { method: "DELETE" })).status).toBe(204);
+    expect((await detail(change.id)).status).toBe("withdrawn");
+    expect((await post(`/admin/changes/${change.id}/approve`, admin)).status).toBe(409);
+    const list = (await (
+      await call(`/admin/businesses/${business.id}/owners`, admin)
+    ).json()) as BusinessOwners;
+    expect(list.owners).toEqual([]);
+  });
+
   it("havolani bekor qilish; faol havola yo'q — 404; moderatorga ruxsat yo'q", async () => {
     expect((await post(`/admin/businesses/${business.id}/owner-invite`, admin)).status).toBe(201);
     const path = `/admin/businesses/${business.id}/owner-invite`;

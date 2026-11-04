@@ -577,6 +577,25 @@ def test_leaving_and_removal_withdraw_pending() -> None:
     assert second.call("GET", f"/cabinet/businesses/{business.id}").status_code == 404
 
 
+def test_account_deletion_ends_ownership_and_withdraws_pending() -> None:
+    business = published()
+    owner = owner_of(business)
+    change = propose(owner, business, {"kind": "profile", "profile": {"description": "A"}}).json()
+    upload = owner.upload(business).json()
+    photos = propose(owner, business, {"kind": "photos", "photos": [{"uploadId": upload["id"]}]})
+
+    assert owner.call("DELETE", "/me").status_code == 204
+
+    assert not BusinessMembership.objects.filter(business=business).exists()
+    closed = BusinessChange.objects.filter(id__in=[change["id"], photos.json()["id"]])
+    assert {c.status for c in closed} == {"withdrawn"}
+    assert {c.author for c in closed} == {None}
+    assert not ChangeUpload.objects.filter(id=upload["id"]).exists()
+    # Moderator muallifsiz taklifni tasdiqlab yubora olmaydi
+    reviewer = admin("change.review")
+    assert reviewer.call("POST", f"/admin/changes/{change['id']}/approve").status_code == 409
+
+
 def test_owner_cannot_review_own_business() -> None:
     business = published()
     owner = owner_of(business)

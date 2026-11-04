@@ -46,6 +46,9 @@ test.describe("Biznes egasi kabineti", () => {
     await expect(
       page.getByRole("heading", { name: "Biznes egasi sifatida qoʻshilish" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("main").getByRole("link", { name: "foydalanish shartlari" }),
+    ).toHaveAttribute("href", "/shartlar#kabinet");
     // Token manzildan darhol o'chiriladi (tarixda va ekran rasmlarida qolmaydi)
     await expect.poll(() => new URL(page.url()).hash).toBe("");
     await page.getByRole("button", { name: "Taklifni qabul qilish" }).click();

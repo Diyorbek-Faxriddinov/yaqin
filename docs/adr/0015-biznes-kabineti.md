@@ -71,7 +71,7 @@ ADR-0007 bu bosqichni oldindan koʻzda tutgan ("bir martalik taklif havolasi orq
 - "Foydalanish shartlari": ega kiritgan maʼlumot uchun javobgar; moderator taklifni tahrirsiz rad etishi yoki tasdiqlashi mumkin.
 - "Maxfiylik siyosati": egalik (qaysi akkaunt qaysi biznes egasi) va takliflar tarixi saqlanishi.
 
-API shartnomasi — [docs/api/drafts/business-cabinet.yaml](../api/drafts/business-cabinet.yaml) (loyiha). 6.2 da backend bilan birga asosiy `openapi.yaml` ga koʻchiriladi: backend testlari kontraktdagi har bir operatsiya sinalganini tekshiradi, amalga oshirilmagan endpoint esa CI'ni yiqitardi.
+API shartnomasi — asosiy [docs/api/openapi.yaml](../api/openapi.yaml) (`cabinet` tegi); 6.2 da loyiha faylidan koʻchirildi.
 
 ## Yangilanish (2026-11-04) — interfeys (6.3–6.4)
 
@@ -79,6 +79,12 @@ API shartnomasi — [docs/api/drafts/business-cabinet.yaml](../api/drafts/busine
 - `OwnerInviteCreated.qrDataUri` — havolaning QR kodi backendda (`qrcode`, SVG) yaratiladi, TOTP sozlashdagi bilan bir xil usulda; frontend'ga QR kutubxonasi qoʻshilmadi.
 - `BusinessOwner.provider` ga `demo` qoʻshildi — demo kirish (faqat DEBUG va E2E) bilan ulangan ega shartnomani buzmasligi uchun.
 - Kabinet formalari admin bo'limlarini qayta ishlatadi (`OwnerModeProvider`); admin tomoni — "Takliflar" navbati va taklif sahifasi ("taklif paytida / hozir saytda / taklif", ziddiyatda uchala ustun), biznes tahririda "Egalar" tabi.
+
+## Yangilanish (2026-11-04) — bildirishnoma va hujjatlar (6.5)
+
+- Yangi taklif xabari — `deploy/backup/new-changes.sh` (`yaqin-changes.timer`, har 5 daqiqada): biznes nomi, taklif turi, "muhim" belgisi. Egasi yozgan matn va mahsulot nomi yuborilmaydi.
+- **Akkaunt oʻchirilganda ham egalik tugaydi:** `end_memberships` kutilayotgan takliflarni qaytaradi va audit jurnaliga yozadi. Oldin taklif muallifsiz qolib, moderator uni tasdiqlashi mumkin edi.
+- "Foydalanish shartlari" (3-boʻlim) va "Maxfiylik siyosati" yangilandi; taklifni qabul qilish sahifasida shartlarga havola bor. Matnlar hali huquqshunos tekshiruvidan oʻtmagan (sahifada belgilangan).
 
 ## Koʻrib chiqilgan muqobillar
 

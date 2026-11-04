@@ -16,7 +16,7 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-const UPDATED = "2026-10-26";
+const UPDATED = "2026-11-04";
 
 const terms: Record<AppLocale, LegalDocument> = {
   uz: {
@@ -36,14 +36,30 @@ const terms: Record<AppLocale, LegalDocument> = {
         id: "malumotlar",
         heading: "2. Bizneslar haqidagi maʼlumotlar",
         body: [
-          "Biznes maʼlumotlarini platforma jamoasi egasining roziligi bilan joyida toʻplaydi va kiritadi. Narx, ish vaqti va boshqa maʼlumotlar oʻzgarishi mumkin — ular maʼlumot uchun beriladi va kafolatlanmaydi.",
+          "Biznes maʼlumotlarini platforma jamoasi egasining roziligi bilan joyida toʻplaydi va kiritadi yoki biznes egasi kabinet orqali taklif qiladi. Narx, ish vaqti va boshqa maʼlumotlar oʻzgarishi mumkin — ular maʼlumot uchun beriladi va kafolatlanmaydi.",
           "Notoʻgʻri maʼlumot koʻrsangiz, biznes sahifasidagi “Maʼlumot notoʻgʻrimi? Xabar bering” tugmasidan foydalaning.",
           "Biznes egasi oʻz biznesi haqidagi maʼlumotni istalgan vaqtda oʻzgartirish yoki saytdan olib tashlashni soʻrashi mumkin.",
         ],
       },
       {
+        id: "kabinet",
+        heading: "3. Biznes egasi kabineti",
+        body: [
+          "Kabinet biznes egasi yoki u vakolat bergan shaxs uchun. Unga administrator bergan bir martalik havola orqali ulanasiz. Havolani boshqalarga bermang: uni ochgan akkaunt biznes egasi boʻlib qoladi.",
+          {
+            list: [
+              "Kiritgan maʼlumot, matn va rasmlaringiz uchun oʻzingiz javobgarsiz: ular toʻgʻri boʻlishi, boshqalarning huquqlarini buzmasligi va biznesga tegishli boʻlishi kerak.",
+              "Har bir oʻzgarish taklif sifatida yuboriladi va moderator tasdiqlagandan keyin saytga chiqadi. Moderator taklifni oʻzgartirmaydi: uni butunligicha tasdiqlaydi yoki sababini koʻrsatib rad etadi.",
+              "Tasdiqlangan maʼlumotni platforma saytda koʻrsatadi; keyinchalik u yangilanishi yoki jamoa tomonidan tuzatilishi mumkin.",
+              "Oʻz biznesingizga sharh yoza olmaysiz va sharhlarni oʻchira olmaysiz. Biznesni eʼlon qilish yoki yashirish jamoa qoʻlida.",
+            ],
+          },
+          "Egalikdan istalgan vaqtda chiqishingiz mumkin. Qoidalar buzilsa yoki egalik tasdiqlanmasa, platforma egalikni bekor qilishi mumkin; ikkala holatda koʻrib chiqilmagan takliflaringiz bekor boʻladi.",
+        ],
+      },
+      {
         id: "sharhlar",
-        heading: "3. Sharhlar qoidalari",
+        heading: "4. Sharhlar qoidalari",
         body: [
           "Sharh oʻzingizning haqiqiy tajribangizga asoslangan boʻlishi kerak. Quyidagilar taqiqlanadi:",
           {
@@ -60,7 +76,7 @@ const terms: Record<AppLocale, LegalDocument> = {
       },
       {
         id: "akkaunt",
-        heading: "4. Akkaunt",
+        heading: "5. Akkaunt",
         body: [
           "Boshqa shaxs nomidan kirish yoki bir nechta akkaunt orqali baholarni sunʼiy oshirish taqiqlanadi. Qoidalarni buzgan akkaunt bloklanishi mumkin.",
           "Akkauntingizni profil sahifasida istalgan vaqtda oʻchirishingiz mumkin.",
@@ -68,14 +84,14 @@ const terms: Record<AppLocale, LegalDocument> = {
       },
       {
         id: "javobgarlik",
-        heading: "5. Javobgarlik",
+        heading: "6. Javobgarlik",
         body: [
           "Sayt “boricha” taqdim etiladi. Platforma bizneslar koʻrsatadigan xizmat va mahsulotlar sifati, narxi va bajarilishi uchun javobgar emas — bu masalalar mijoz va biznes oʻrtasida hal qilinadi.",
         ],
       },
       {
         id: "ozgarishlar",
-        heading: "6. Oʻzgarishlar va qoʻllaniladigan huquq",
+        heading: "7. Oʻzgarishlar va qoʻllaniladigan huquq",
         body: [
           "Shartlar yangilanishi mumkin; yangilangan sana sahifa boshida koʻrsatiladi. Shartlarga Oʻzbekiston Respublikasi qonunchiligi qoʻllaniladi.",
         ],
@@ -99,14 +115,30 @@ const terms: Record<AppLocale, LegalDocument> = {
         id: "malumotlar",
         heading: "2. Информация о бизнесах",
         body: [
-          "Информацию о бизнесах собирает и вносит команда платформы на месте, с согласия владельца. Цены, часы работы и другие данные могут меняться — они носят справочный характер и не гарантируются.",
+          "Информацию о бизнесах собирает и вносит команда платформы на месте, с согласия владельца, либо предлагает сам владелец через кабинет. Цены, часы работы и другие данные могут меняться — они носят справочный характер и не гарантируются.",
           "Если вы заметили ошибку, воспользуйтесь кнопкой «Неверные данные? Сообщите нам» на странице бизнеса.",
           "Владелец бизнеса может в любой момент попросить изменить информацию или убрать бизнес с сайта.",
         ],
       },
       {
+        id: "kabinet",
+        heading: "3. Кабинет владельца бизнеса",
+        body: [
+          "Кабинет предназначен для владельца бизнеса или уполномоченного им лица. Подключение — по одноразовой ссылке от администратора. Не передавайте ссылку другим: аккаунт, открывший её, становится владельцем бизнеса.",
+          {
+            list: [
+              "Вы отвечаете за внесённые данные, тексты и фото: они должны быть верными, не нарушать права других лиц и относиться к бизнесу.",
+              "Каждое изменение отправляется как предложение и появляется на сайте после одобрения модератором. Модератор не редактирует предложение: он одобряет его целиком или отклоняет с указанием причины.",
+              "Одобренные данные платформа показывает на сайте; позже они могут обновляться или исправляться командой.",
+              "Нельзя писать отзывы о своём бизнесе и удалять отзывы. Публикацией и скрытием бизнеса управляет команда.",
+            ],
+          },
+          "Вы можете отказаться от владения в любой момент. При нарушении правил или если владение не подтвердилось, платформа может отменить его; в обоих случаях ваши непроверенные предложения отменяются.",
+        ],
+      },
+      {
         id: "sharhlar",
-        heading: "3. Правила отзывов",
+        heading: "4. Правила отзывов",
         body: [
           "Отзыв должен основываться на вашем реальном опыте. Запрещены:",
           {
@@ -123,7 +155,7 @@ const terms: Record<AppLocale, LegalDocument> = {
       },
       {
         id: "akkaunt",
-        heading: "4. Аккаунт",
+        heading: "5. Аккаунт",
         body: [
           "Запрещено входить от имени другого человека или накручивать оценки через несколько аккаунтов. Аккаунт, нарушающий правила, может быть заблокирован.",
           "Вы можете удалить аккаунт в любой момент на странице профиля.",
@@ -131,14 +163,14 @@ const terms: Record<AppLocale, LegalDocument> = {
       },
       {
         id: "javobgarlik",
-        heading: "5. Ответственность",
+        heading: "6. Ответственность",
         body: [
           "Сайт предоставляется «как есть». Платформа не отвечает за качество, цену и исполнение услуг и товаров бизнесов — такие вопросы решаются между клиентом и бизнесом.",
         ],
       },
       {
         id: "ozgarishlar",
-        heading: "6. Изменения и применимое право",
+        heading: "7. Изменения и применимое право",
         body: [
           "Условия могут обновляться; дата обновления указана в начале страницы. К условиям применяется законодательство Республики Узбекистан.",
         ],
@@ -169,6 +201,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
               "Akkaunt: Telegram yoki Google orqali kirganingizda — hisob identifikatori, ismingiz va (boʻlsa) rasm havolasi. Parolingiz bizga kelmaydi.",
               "Siz qoldirgan kontent: sharhlar va baholar, notoʻgʻri maʼlumot haqidagi xabarlar, sevimlilar roʻyxati.",
               "“Biznesingizni qoʻshing” formasi: ismingiz, telefon raqamingiz va biznes haqidagi maʼlumot — faqat siz bilan bogʻlanish uchun.",
+              "Biznes egalari: qaysi akkaunt qaysi biznes egasi ekani va qachondan, yuborgan takliflaringiz (oʻzgarishlar va rasmlar) hamda ularning holati. Taklif rasmlaridan joylashuv maʼlumoti (EXIF) olib tashlanadi; tasdiqlanmaguncha ularni faqat biznes egalari va moderatorlar koʻradi.",
               "Joylashuv: faqat ruxsatingiz bilan, taxminan 110 metr aniqlikda brauzeringizda (cookie) saqlanadi. U yaqin bizneslarni saralash uchun soʻrov bilan yuboriladi, serverda saqlanmaydi.",
               "Statistika: biznes sahifasi necha marta koʻrilgani va tugmalar necha marta bosilgani — sizga bogʻlanmagan holda, faqat son sifatida.",
             ],
@@ -191,6 +224,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
             list: [
               "Xarita plitkalari OpenFreeMap serverlaridan yuklanadi — ular IP manzilingizni koʻradi.",
               "Telegram va Google orqali kirishda ularning maxfiylik siyosati amal qiladi.",
+              "Xodimlarga yangi taklif haqida Telegram orqali xabar boradi: faqat biznes nomi va taklif turi; ismingiz va taklif matni yuborilmaydi.",
             ],
           },
         ],
@@ -200,6 +234,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
         heading: "4. Qayerda va qancha saqlanadi",
         body: [
           "Maʼlumotlar Oʻzbekistondagi serverlarda saqlanadi. Akkaunt maʼlumotlari akkaunt oʻchirilguncha, “Biznesingizni qoʻshing” formasi maʼlumotlari soʻrov yopilgandan keyin 12 oy ichida oʻchiriladi.",
+          "Egalik yozuvi egalik tugaganda yoki akkaunt oʻchirilganda oʻchiriladi. Takliflar tarixi biznes maʼlumotlari qanday oʻzgarganini tekshirish uchun saqlanadi: akkaunt oʻchirilganda taklif akkauntdan ajratiladi, koʻrib chiqilmagan takliflar bekor qilinadi. Tasdiqlanmagan rasmlar rad etilganda yoki bekor qilinganda oʻchiriladi. Xodimlar amallari jurnalida (audit) egalik boshlangani va tugagani ichki identifikator bilan qoladi.",
         ],
       },
       {
@@ -222,6 +257,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
               "yaqin_loc — taxminiy joylashuvingiz (faqat ruxsat bersangiz).",
             ],
           },
+          "Biznes egasi taklif havolasini ochganda, u kirish tugaguncha brauzer sessiyasida (sessionStorage) vaqtincha saqlanadi va qabul qilingach oʻchiriladi.",
         ],
       },
     ],
@@ -247,6 +283,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
               "Аккаунт: при входе через Telegram или Google — идентификатор аккаунта, имя и (если есть) ссылка на фото. Ваш пароль к нам не попадает.",
               "Ваш контент: отзывы и оценки, сообщения о неверной информации, список избранного.",
               "Форма «Добавить свой бизнес»: имя, номер телефона и сведения о бизнесе — только чтобы связаться с вами.",
+              "Владельцы бизнесов: какой аккаунт владеет каким бизнесом и с какого времени, отправленные предложения (изменения и фото) и их статус. Из фото предложений удаляются данные о местоположении (EXIF); до одобрения их видят только владельцы бизнеса и модераторы.",
               "Местоположение: только с вашего разрешения, с точностью около 110 метров, хранится в браузере (cookie). Отправляется с запросом для сортировки ближайших бизнесов и не сохраняется на сервере.",
               "Статистика: сколько раз просмотрена страница бизнеса и нажаты кнопки — без привязки к вам, только числа.",
             ],
@@ -269,6 +306,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
             list: [
               "Тайлы карты загружаются с серверов OpenFreeMap — они видят ваш IP-адрес.",
               "При входе через Telegram и Google действуют их политики конфиденциальности.",
+              "Сотрудники получают уведомление о новом предложении через Telegram: только название бизнеса и тип предложения; ваше имя и текст предложения не передаются.",
             ],
           },
         ],
@@ -278,6 +316,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
         heading: "4. Где и сколько хранятся",
         body: [
           "Данные хранятся на серверах в Узбекистане. Данные аккаунта — до удаления аккаунта; данные формы «Добавить свой бизнес» удаляются в течение 12 месяцев после закрытия заявки.",
+          "Запись о владении удаляется, когда владение прекращается или аккаунт удалён. История предложений хранится, чтобы можно было проверить, как менялись данные бизнеса: при удалении аккаунта предложения отвязываются от него, а непроверенные отменяются. Неодобренные фото удаляются при отклонении или отмене. В журнале действий сотрудников (аудит) начало и окончание владения остаются с внутренним идентификатором.",
         ],
       },
       {
@@ -300,6 +339,7 @@ const privacy: Record<AppLocale, LegalDocument> = {
               "yaqin_loc — примерное местоположение (только с вашего разрешения).",
             ],
           },
+          "Когда владелец открывает ссылку-приглашение, она временно хранится в сессии браузера (sessionStorage) до завершения входа и удаляется после подтверждения.",
         ],
       },
     ],

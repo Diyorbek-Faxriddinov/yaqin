@@ -181,6 +181,7 @@ Skriptlar — [deploy/backup/](../deploy/backup/), root sifatida systemd taymerl
 | `restore-test.sh` | Har oyning 1-kuni 05:00 | Eng so'nggi zaxira vaqtinchalik konteynerga tiklanadi va zaxira vaqtidagi qatorlar soni, rasmlar soni va hajmi bilan solishtiriladi; repozitoriyning 5 foizi o'qib tekshiriladi. Natija — Telegram'ga |
 | `healthcheck.sh`  | Har 5 daqiqada          | Konteynerlar, disk (85%), sertifikat (14 kun), oxirgi zaxira (26 soat). Holat o'zgarganda Telegram'ga bir marta xabar                                                                                 |
 | `new-requests.sh` | Har 5 daqiqada          | Yangi "Biznesingizni qo'shing" so'rovlari: biznes nomi, faoliyati va tumani hamda admin panel havolasi. Ism va telefon Telegram'ga yuborilmaydi                                                       |
+| `new-changes.sh`  | Har 5 daqiqada          | Biznes egalarining yangi takliflari: biznes nomi, taklif turi, "muhim" belgisi va admin panel havolasi. Egasi yozgan matn, ismi va aloqa maʼlumotlari Telegram'ga yuborilmaydi                       |
 | `install.sh`      | Bir marta               | restic, `BACKUP_PASSWORD`, repozitoriy (`restic init`), taymerlar. Qayta ishga tushirish xavfsiz                                                                                                      |
 
 - **Zaxirada nima bor:** baza va yuklangan rasmlar. `.env` (maxfiy kalitlar) zaxiraga kirmaydi — u administratorning parol menejerida. Sertifikatlar ham kirmaydi, Caddy qayta oladi.

@@ -119,6 +119,17 @@ export function AcceptInvite() {
             </Alert>
           )}
           {failure !== "invalid" && (
+            <p className="text-sm text-muted-foreground">
+              {t.rich("terms", {
+                terms: (chunks) => (
+                  <Link href="/shartlar#kabinet" className="underline underline-offset-4">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
+          )}
+          {failure !== "invalid" && (
             <Button size="lg" onClick={submit} disabled={accept.isPending}>
               {accept.isPending && <Loader2 aria-hidden="true" className="animate-spin" />}
               {t("button")}

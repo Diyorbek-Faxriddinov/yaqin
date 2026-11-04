@@ -28,6 +28,7 @@ from apps.accounts.sessions import (
     find_session,
     set_session_cookies,
 )
+from apps.cabinet.services import end_memberships
 from apps.community.models import Review
 from apps.core.api import ApiError, not_found
 from apps.staff.sessions import admin_csrf_token
@@ -132,10 +133,12 @@ class MeView(APIView):
     def delete(self, request: Request) -> Response:
         """Kontrakt: shaxsiy maʼlumotlar o'chiriladi, chop etilgan sharhlar muallifsiz qoladi
         (FK SET NULL); moderatsiyadagi va rad etilgan sharhlar, shikoyat va sevimlilar o'chadi.
+        Biznes egaligi tugaydi, kutilayotgan takliflar qaytariladi (ADR-0015).
         """
         user = customer(request)
         with transaction.atomic():
             Review.objects.filter(user=user).exclude(status=Review.Status.PUBLISHED).delete()
+            end_memberships(user)
             end_all_sessions(user)
             user.delete()
         response = Response(status=204)
