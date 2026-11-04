@@ -19,6 +19,7 @@ import { CatalogSection } from "./sections/catalog-section";
 import { ContactsSection } from "./sections/contacts-section";
 import { HoursSection } from "./sections/hours-section";
 import { LocationSection } from "./sections/location-section";
+import { OwnersSection } from "./sections/owners-section";
 import { PhotosSection } from "./sections/photos-section";
 import { StatsSection } from "./sections/stats-section";
 import { StatusSection } from "./sections/status-section";
@@ -106,6 +107,9 @@ export function BusinessEditor({ id, initialTab }: { id: string; initialTab: Tab
         </TabsContent>
         <TabsContent value="stats" className="pt-4">
           <StatsSection business={business} />
+        </TabsContent>
+        <TabsContent value="owners" className="pt-4">
+          <OwnersSection business={business} />
         </TabsContent>
       </Tabs>
     </div>

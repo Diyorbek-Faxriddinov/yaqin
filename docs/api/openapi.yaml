@@ -4368,6 +4368,7 @@ components:
       required:
         [
           id,
+          mine,
           kind,
           status,
           itemId,
@@ -4378,6 +4379,9 @@ components:
         ]
       properties:
         id: { type: string, format: uuid }
+        mine:
+          type: boolean
+          description: Taklifni shu foydalanuvchi yuborgan (qaytarib olish faqat o'z taklifida)
         kind: { $ref: "#/components/schemas/ChangeKind" }
         status: { $ref: "#/components/schemas/ChangeStatus" }
         itemId: { type: [string, "null"], format: uuid }
@@ -4468,7 +4472,8 @@ components:
         user: { $ref: "#/components/schemas/UserRef" }
         provider:
           type: string
-          enum: [telegram, google]
+          description: "`demo` — faqat ishlab chiqish va E2E (DEBUG)"
+          enum: [telegram, google, demo]
         since: { type: string, format: date-time }
         invitedBy:
           type: [string, "null"]
@@ -4498,10 +4503,15 @@ components:
 
     OwnerInviteCreated:
       type: object
-      required: [url, status]
+      required: [url, qrDataUri, status]
       properties:
         url:
           type: string
           format: uri
           description: "`https://yaqinapp.uz/kabinet/qoshilish#<token>` — faqat shu javobda"
+        qrDataUri:
+          type: string
+          description: |
+            Shu havolaning QR kodi — `data:image/svg+xml;base64,...` (img src sifatida). Admin do'konda
+            telefon ekranini ko'rsatadi, ega skanerlaydi.
         status: { $ref: "#/components/schemas/OwnerInviteStatus" }

@@ -129,6 +129,6 @@ scripts/
 - Ommaviy maʼlumotni o'zgartiradigan amal frontend keshini yangilaydi: `apps.core.revalidate.revalidate(*teglar)` (tranzaksiyadan keyin).
 - Kirishsiz va suiisteʼmolga ochiq endpointlar — `ScopedRateThrottle` (stavkalar `settings.REST_FRAMEWORK`).
 - Pul — tiyinda butun son, vaqt — ISO 8601, ish vaqti — Asia/Tashkent (ADR-0010).
-- Biznes kabineti (ADR-0015): ega biznesni o'zgartirmaydi — `BusinessChange` (taklif) yaratiladi, moderator tasdiqlaganda `apps/cabinet/services.approve` admin API qoidalari (`apply_update`, `apply_item`) bilan qo'llaydi. Kabinet view'lari biznesni faqat `owned(request, business_id)` orqali oladi (a'zo bo'lmasa — 404). Taklifdagi rasmlar `MEDIA_ROOT/pending/` da — Caddy uni yopadi, ko'rish faqat API orqali.
+- Biznes kabineti (ADR-0015): ega biznesni o'zgartirmaydi — `BusinessChange` (taklif) yaratiladi, moderator tasdiqlaganda `apps/cabinet/services.approve` admin API qoidalari (`apply_update`, `apply_item`) bilan qo'llaydi. Kabinet view'lari biznesni faqat `owned(request, business_id)` orqali oladi (a'zo bo'lmasa — 404). Taklifdagi rasmlar `MEDIA_ROOT/pending/` da — Caddy uni yopadi, ko'rish faqat API orqali. Taklif havolasining QR kodi `apps/staff/totp.qr_data_uri` bilan (SVG).
 - Bogʻliqliklar — aniq versiyalar, kamida 2 hafta oldin chiqqan (xavfsizlik tuzatishlari bundan mustasno).
 - Maxfiy qiymatlar faqat muhit oʻzgaruvchilarida; `.env` Git'ga tushmaydi.

@@ -25,6 +25,7 @@ from apps.cabinet.models import (
 )
 from apps.cabinet.views import private_image
 from apps.core.api import ApiError, invalid, not_found, page_payload
+from apps.staff import totp
 from apps.staff.audit import audit
 from apps.staff.authentication import AdminView, current_admin
 from apps.staff.models import AuditEntry
@@ -98,8 +99,9 @@ class AdminOwnerInviteView(AdminView):
                 f"Ega taklifi: {business.name}",
             )
         site = settings.ALLOWED_ORIGINS[0].rstrip("/")
+        url = f"{site}/kabinet/qoshilish#{token}"
         return Response(
-            {"url": f"{site}/kabinet/qoshilish#{token}", "status": invite_status(invite)},
+            {"url": url, "qrDataUri": totp.qr_data_uri(url), "status": invite_status(invite)},
             status=201,
         )
 

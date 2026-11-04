@@ -75,7 +75,7 @@ function cookie(
   return `${name}=${value}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Strict${httpOnly ? "; HttpOnly" : ""}${secure}`;
 }
 
-function uniqueSlug(base: string, exceptId?: string): string {
+export function uniqueSlug(base: string, exceptId?: string): string {
   let slug = base;
   for (let n = 2; demoState.businesses.some((b) => b.slug === slug && b.id !== exceptId); n++) {
     slug = `${base}-${n}`;

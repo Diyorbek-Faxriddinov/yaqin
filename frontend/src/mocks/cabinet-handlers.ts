@@ -24,12 +24,15 @@ import { applyProfileFields, categoryRef, parseItem, toAdminItem } from "./admin
 import {
   demoState,
   findBusinessRecord,
+  findCategory,
   itemsOf,
   photosOf,
   type DemoBusinessRecord,
   type StoredChange,
   type StoredMembership,
 } from "./demo-state";
+import type { DemoItem } from "./fixtures/items";
+import { definitionsOf, inputValues } from "./item-attributes";
 import { authenticate } from "./me-handlers";
 import { statsSeries, parseDays } from "./stats";
 
@@ -40,7 +43,7 @@ import { statsSeries, parseDays } from "./stats";
  * ⚠ Demo: yuklangan rasm o'lchami o'lchanmaydi (namunaviy 1200×900), xotirada saqlanadi.
  */
 
-const MAX_OWNERS = 3;
+export const MAX_OWNERS = 3;
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const UPLOAD_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_PENDING_CHANGES = 20;
@@ -50,6 +53,13 @@ const MAX_ITEM_PHOTOS = 5;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const TOKEN = /^[A-Za-z0-9_-]{32,64}$/;
+
+// ⚠ Demo: QR kodning o'rnida belgi (havolani kodlamaydi). Backend — haqiqiy QR (qrcode, SVG)
+const DEMO_INVITE_QR =
+  "data:image/svg+xml;base64," +
+  btoa(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#fff"/><rect x="6" y="6" width="108" height="108" fill="none" stroke="#000" stroke-width="4" stroke-dasharray="8 6"/><text x="60" y="56" font-family="sans-serif" font-size="16" text-anchor="middle">DEMO</text><text x="60" y="76" font-family="sans-serif" font-size="11" text-anchor="middle">QR emas</text></svg>',
+  );
 
 const PROFILE_FIELDS = [
   "name",
@@ -65,8 +75,8 @@ const PROFILE_FIELDS = [
   "amenities",
   "schedule",
 ] as const;
-const IMPORTANT = new Set(["name", "categorySlug", "districtSlug", "address", "location"]);
-const ITEM_FIELDS = [
+export const IMPORTANT = new Set(["name", "categorySlug", "districtSlug", "address", "location"]);
+export const ITEM_FIELDS = [
   "kind",
   "name",
   "group",
@@ -83,7 +93,7 @@ async function sha256(value: string): Promise<string> {
 }
 
 /** Kalitlar tartibidan qat'i nazar solishtirish */
-function stable(value: unknown): string {
+export function stable(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
   if (value && typeof value === "object") {
     return `{${Object.keys(value)
@@ -93,9 +103,9 @@ function stable(value: unknown): string {
   }
   return JSON.stringify(value ?? null);
 }
-const same = (a: unknown, b: unknown) => stable(a) === stable(b);
+export const same = (a: unknown, b: unknown) => stable(a) === stable(b);
 
-function membershipOf(userId: string, businessId: string): StoredMembership | undefined {
+export function membershipOf(userId: string, businessId: string): StoredMembership | undefined {
   return demoState.memberships.find((m) => m.userId === userId && m.businessId === businessId);
 }
 
@@ -105,7 +115,7 @@ function owned(userId: string, businessId: string): DemoBusinessRecord | null {
   return record && membershipOf(userId, businessId) ? record : null;
 }
 
-function pendingOf(businessId: string): StoredChange[] {
+export function pendingOf(businessId: string): StoredChange[] {
   return demoState.changes.filter((c) => c.businessId === businessId && c.status === "pending");
 }
 
@@ -149,9 +159,10 @@ function toOwnerBusiness(record: DemoBusinessRecord, lang: Lang): OwnerBusiness 
   };
 }
 
-function toOwnerChange(change: StoredChange): OwnerChange {
+function toOwnerChange(change: StoredChange, userId: string): OwnerChange {
   return {
     id: change.id,
+    mine: change.authorId === userId,
     kind: change.kind,
     status: change.status,
     itemId: change.itemId,
@@ -170,7 +181,30 @@ export function closeChange(change: StoredChange, status: StoredChange["status"]
   }
 }
 
-function photoRefs(photos: AdminPhoto[]) {
+/**
+ * Mahsulot qiymatlari admin API kirish shaklida (backend `item_values`) — solishtiruv uchun.
+ * Xususiyatlar saqlangan shakldan kirish shakliga (`key` + xom qiymat) o'giriladi.
+ */
+export function itemValues(
+  item: Pick<DemoItem, (typeof ITEM_FIELDS)[number]>,
+  record: DemoBusinessRecord,
+): Record<string, unknown> {
+  return {
+    kind: item.kind,
+    name: item.name,
+    group: item.group,
+    description: item.description,
+    price: item.price,
+    durationMinutes: item.durationMinutes,
+    attributes: inputValues(
+      item.attributes,
+      definitionsOf(findCategory(record.categorySlug)?.attributes ?? []),
+    ),
+    isAvailable: item.isAvailable,
+  };
+}
+
+export function photoRefs(photos: AdminPhoto[]) {
   return photos.map((p) => ({ photoId: p.id, alt: p.alt ?? null }));
 }
 
@@ -263,7 +297,7 @@ function draftChange(
         target: `item:${existing.id}`,
         itemId: existing.id,
         payload: {},
-        before: { item: existing, photos: photoRefs(existing.photos) },
+        before: { item: itemValues(existing, record), photos: photoRefs(existing.photos) },
         fields: ["item"],
         important: false,
       };
@@ -289,7 +323,9 @@ function draftChange(
       target,
       itemId: existing?.id ?? null,
       payload: { item: parsed.item, photos: refs },
-      before: existing ? { item: existing, photos: photoRefs(existing.photos) } : {},
+      before: existing
+        ? { item: itemValues(existing, record), photos: photoRefs(existing.photos) }
+        : {},
       fields,
       important: false,
     };
@@ -338,11 +374,18 @@ export const cabinetHandlers = [
         ...demoState.ownerInvites.filter((i) => i.businessId !== record.id),
         invite,
       ];
-      audit(auth.admin, "owner.invite", "business", record.id, "Egalik taklif havolasi yaratildi");
+      audit(
+        auth.admin,
+        "owner.invite",
+        "membership",
+        record.id,
+        "Egalik taklif havolasi yaratildi",
+      );
       const origin = new URL(request.url).origin;
       return HttpResponse.json(
         {
           url: `${origin}/kabinet/qoshilish#${token}`,
+          qrDataUri: DEMO_INVITE_QR,
           status: {
             createdAt: invite.createdAt,
             expiresAt: invite.expiresAt,
@@ -361,11 +404,14 @@ export const cabinetHandlers = [
       if ("response" in auth) return auth.response;
       const businessId = String(params.businessId);
       if (!findBusinessRecord(businessId)) return error(404, "not_found", "Topilmadi");
+      // Faol havola yo'q — 404 (backend bilan bir xil)
+      if (!demoState.ownerInvites.some((i) => i.businessId === businessId))
+        return error(404, "not_found", "Topilmadi");
       demoState.ownerInvites = demoState.ownerInvites.filter((i) => i.businessId !== businessId);
       audit(
         auth.admin,
         "owner.invite.revoke",
-        "business",
+        "membership",
         businessId,
         "Taklif havolasi bekor qilindi",
       );
@@ -392,13 +438,15 @@ export const cabinetHandlers = [
       return HttpResponse.json(toOwnedBusiness(record, userId, langOf(request)));
     if (demoState.memberships.filter((m) => m.businessId === record.id).length >= MAX_OWNERS)
       return error(409, "owner_limit", `Biznesda koʻpi bilan ${MAX_OWNERS} ta ega`);
-    demoState.memberships.push({
+    const membership = {
       id: crypto.randomUUID(),
       userId,
       businessId: record.id,
       invitedBy: invite.createdBy,
       createdAt: new Date().toISOString(),
-    });
+    };
+    demoState.memberships.push(membership);
+    audit(null, "membership.accept", "membership", membership.id, `${record.name}: yangi ega`);
     demoState.ownerInvites = demoState.ownerInvites.filter((i) => i !== invite);
     return HttpResponse.json(toOwnedBusiness(record, userId, langOf(request)));
   }),
@@ -434,9 +482,10 @@ export const cabinetHandlers = [
       const { userId } = auth.session;
       const record = owned(userId, String(params.businessId));
       if (!record) return error(404, "not_found", "Topilmadi");
-      demoState.memberships = demoState.memberships.filter(
-        (m) => !(m.userId === userId && m.businessId === record.id),
-      );
+      const membership = membershipOf(userId, record.id);
+      demoState.memberships = demoState.memberships.filter((m) => m !== membership);
+      if (membership)
+        audit(null, "membership.leave", "membership", membership.id, `${record.name}: ega chiqdi`);
       for (const change of pendingOf(record.id)) {
         if (change.authorId === userId) closeChange(change, "withdrawn");
       }
@@ -533,7 +582,7 @@ export const cabinetHandlers = [
         .filter((c) => c.businessId === record.id)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .slice(0, 50)
-        .map(toOwnerChange),
+        .map((change) => toOwnerChange(change, auth.session.userId)),
     );
   }),
 
@@ -584,7 +633,7 @@ export const cabinetHandlers = [
         if (upload) upload.changeId = change.id;
       }
       for (const old of replaced) closeChange(old, "superseded");
-      return HttpResponse.json(toOwnerChange(change), { status: 201 });
+      return HttpResponse.json(toOwnerChange(change, auth.session.userId), { status: 201 });
     },
   ),
 
@@ -604,7 +653,7 @@ export const cabinetHandlers = [
       if (change.status !== "pending")
         return error(409, "not_pending", "Taklif allaqachon koʻrib chiqilgan");
       closeChange(change, "withdrawn");
-      return HttpResponse.json(toOwnerChange(change));
+      return HttpResponse.json(toOwnerChange(change, auth.session.userId));
     },
   ),
 ];

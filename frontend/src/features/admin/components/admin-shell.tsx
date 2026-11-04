@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   BarChart3,
   Building2,
+  ClipboardCheck,
   FolderTree,
   Inbox,
   LayoutDashboard,
@@ -43,6 +44,7 @@ type NavItem = {
     | "businesses"
     | "requests"
     | "reviews"
+    | "changes"
     | "complaints"
     | "categories"
     | "users"
@@ -59,6 +61,7 @@ const ITEMS: NavItem[] = [
   { href: "/admin/bizneslar", key: "businesses", icon: Building2, permission: "business.view" },
   { href: "/admin/sorovlar", key: "requests", icon: Inbox, permission: "business.edit" },
   { href: "/admin/sharhlar", key: "reviews", icon: Star, permission: "review.moderate" },
+  { href: "/admin/takliflar", key: "changes", icon: ClipboardCheck, permission: "change.review" },
   {
     href: "/admin/shikoyatlar",
     key: "complaints",

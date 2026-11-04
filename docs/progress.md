@@ -75,8 +75,30 @@ Oxirgi yangilanish: 2026-11-04
 | 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | ✅    |
 | 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ✅    |
 | 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ✅    |
-| 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ⏳    |
+| 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ✅    |
 | 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
+
+## 6.4 natijalari — admin: takliflar va egalar
+
+- **"Takliflar" bo'limi** (`/admin/takliflar`, ruxsat `change.review`; navigatsiyada va bosh paneldagi navbatlarda):
+  - navbat — eng eskisi birinchi; filtrlar: tekshiruvda, tasdiqlandi, rad etildi, qaytarib olindi, almashtirildi; biznes bo'yicha (`?biznes=`);
+  - "Muhim" (nom, kategoriya, tuman, manzil, joy) va "Ziddiyat" belgilari.
+- **Taklif sahifasi** (`/admin/takliflar/[id]`):
+  - har bir maydon: "hozir saytda" va "taklif"; ziddiyatda "taklif paytida" ham; yangi mahsulot — faqat taklif;
+  - qiymatlar odam o'qiydigan ko'rinishda: kategoriya va tuman nomi, telefonlar, qulayliklar, ish vaqti jadvali, narx, xususiyatlar, xaritadagi joy (OpenStreetMap havolasi), rasmlar ("Yangi" belgisi bilan);
+  - tasdiqlash yoki sabab bilan rad etish (tayyor variantlar); xatolar: allaqachon ko'rilgan, mahsulot o'chgan, hozirgi qoidalarga mos emas.
+- **Biznes tahririda "Egalar" tabi:** egalar (provayder, qachondan, kim taklif qilgan), egalikni bekor qilish, taklif havolasi — **QR kod bilan**, faqat yaratilganda bir marta; nusxalash/ulashish, bekor qilish, faol havola holati; kutilayotgan takliflar soni → navbatga havola.
+- **Shartnoma va backend:**
+  - `OwnerChange.mine` — "Qaytarib olish" faqat o'z taklifida (6.3 dagi cheklov tuzatildi);
+  - `OwnerInviteCreated.qrDataUri` — QR backendda (TOTP bilan bir xil `qrcode`, SVG);
+  - `BusinessOwner.provider` ga `demo` (demo kirish bilan ulangan ega shartnomani buzardi).
+- **Kabinet:** so'rovlar endi har ochilishda va oynaga qaytganda yangilanadi — aks holda moderator qarori (tasdiq yoki rad) "Takliflarim"da 60 s gacha ko'rinmasdi (E2E ushladi).
+- **Mock:** `admin-change-handlers.ts` — egalar, navbat, solishtiruv, tasdiqlash (haqiqatan qo'llanadi: profil, rasmlar, mahsulot yaratish/o'zgartirish/o'chirish), rad etish; audit yozuvlari backend bilan bir xil (`membership`, `change`).
+- **Testlar:**
+  - backend: 591 ta, shartnoma qamrovi 100/100 (`mine`, QR va ikkinchi ega tekshiruvi qo'shildi);
+  - frontend unit: 269 ta (+8 admin takliflari mock testlari);
+  - E2E `e2e/admin-changes.spec.ts` (3 ekran × 2): admin havola yaratadi (QR bilan) → ega alohida brauzerda qo'shilib taklif yuboradi → admin solishtiradi va tasdiqlaydi → ommaviy sahifada va "Takliflarim"da; rad etish sababi egaga ko'rinadi; egalikni bekor qilish;
+  - demo E2E — 270 o'tdi, 0 yiqildi (QR qo'shilgach tegishli 42 test qayta o'tdi); backend E2E — 284 o'tdi, 1 yiqildi: o'sha admin ustasi testi (6.3 da o'zgarishlarsiz ham yiqilishi tasdiqlangan, ochiq masala).
 
 ## 6.3 natijalari — kabinet interfeysi va mock qatlam
 
@@ -95,7 +117,7 @@ Oxirgi yangilanish: 2026-11-04
   - E2E `e2e/cabinet.spec.ts` (3 ekran × 3): havola → profil taklifi → takliflarim → qaytarib olish (axe bilan); kirilmagan holda havola; rasm va mahsulot takliflari.
 - **Topilgan va tuzatilgan:** sevimlilar E2E testida poyga — tugma optimistik yangilanadi, test esa so'rov tugashini kutmay sahifadan ketardi (yuklama ostida ro'yxat bo'sh chiqardi). Endi javob kutiladi.
 - **Natijalar:** demo E2E — 263 o'tdi, 1 yiqildi (sevimlilar poygasi, tuzatildi; qayta yugurishda o'tdi); backend E2E — 278 o'tdi (9 ta kabinet testi bilan), 1 yiqildi: admin ustasi testi (yangi e'lon qilingan biznes sahifasi 30 s test vaqtiga sig'maydi). Xuddi shu xato o'zgarishlarsiz (oldingi commit) ham takrorlandi — 6.3 ga bog'liq emas, ochiq masala sifatida qoldi.
-- **Cheklov:** bir biznesda bir nechta ega bo'lsa, "Qaytarib olish" tugmasi boshqa eganing taklifida ham ko'rinadi — backend ruxsat bermaydi (404), xato xabari chiqadi. Javobda muallif belgisi yo'q; kerak bo'lsa 6.4/6.5 da qo'shiladi.
+- **Cheklov (6.4 da tuzatildi):** bir biznesda bir nechta ega bo'lsa, "Qaytarib olish" tugmasi boshqa eganing taklifida ham ko'rinardi — endi `OwnerChange.mine`.
 
 ## 6.2 natijalari — backend
 

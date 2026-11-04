@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from apps.accounts.authentication import customer
+from apps.accounts.models import User
 from apps.accounts.sessions import hash_token
 from apps.businesses import public
 from apps.businesses.admin_views import admin_business, admin_item
@@ -85,9 +86,11 @@ def owner_business(business: Business, lang: Lang, request: Request) -> dict[str
     }
 
 
-def owner_change(change: BusinessChange) -> dict[str, Any]:
+def owner_change(change: BusinessChange, user: User) -> dict[str, Any]:
     return {
         "id": str(change.id),
+        # Bir biznesda bir nechta ega: qaytarib olish faqat o'z taklifida
+        "mine": change.author_id == user.id,
         "kind": change.kind,
         "status": change.status,
         "itemId": str(change.item_id) if change.item_id else None,
@@ -275,13 +278,14 @@ class ChangeListView(CustomerView):
     def get(self, request: Request, business_id: UUID) -> Response:
         business = owned(request, business_id)
         changes = BusinessChange.objects.filter(business=business).order_by("-created_at")
-        return Response([owner_change(c) for c in changes[:MAX_OWN_CHANGES_LISTED]])
+        user = customer(request)
+        return Response([owner_change(c, user) for c in changes[:MAX_OWN_CHANGES_LISTED]])
 
     def post(self, request: Request, business_id: UUID) -> Response:
         business = owned(request, business_id)
         body = request.data if isinstance(request.data, dict) else {}
         change = services.propose(business, customer(request), body)
-        return Response(owner_change(change), status=201)
+        return Response(owner_change(change, customer(request)), status=201)
 
 
 class ChangeWithdrawView(CustomerView):
@@ -293,4 +297,4 @@ class ChangeWithdrawView(CustomerView):
         if change is None:
             raise not_found()
         services.withdraw(change)
-        return Response(owner_change(change))
+        return Response(owner_change(change, customer(request)))

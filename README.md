@@ -27,12 +27,13 @@
 - Administratorlar, rollar va granular ruxsatlar (manbasi bilan), audit jurnali, sozlamalar
 - Statistika (koʻrishlar va bosishlar) va biznes egasi uchun maxfiy hisobot havolasi
 
-### Biznes egasi kabineti (`/kabinet`, ishlab chiqilmoqda — [ADR-0015](docs/adr/0015-biznes-kabineti.md))
+### Biznes egasi kabineti (`/kabinet`, [ADR-0015](docs/adr/0015-biznes-kabineti.md))
 
-- Ega oddiy mijoz akkaunti (Telegram/Google) bilan kiradi va administrator bergan bir martalik havola orqali biznesiga ulanadi (ko'pi bilan 3 ega)
-- Admin paneldagi formalar: asosiy maʼlumot, joylashuv, rasmlar, ish vaqti, aloqa, katalog — "Saqlash" o'rniga "Tasdiqlashga yuborish"; o'zgarish moderator tasdiqlagach saytga chiqadi
+- Ega oddiy mijoz akkaunti (Telegram/Google) bilan kiradi va administrator bergan bir martalik havola yoki QR kod orqali biznesiga ulanadi (koʻpi bilan 3 ega)
+- Admin paneldagi formalar: asosiy maʼlumot, joylashuv, rasmlar, ish vaqti, aloqa, katalog — "Saqlash" oʻrniga "Tasdiqlashga yuborish"; oʻzgarish moderator tasdiqlagach saytga chiqadi
 - "Takliflarim" (holati, rad etish sababi, qaytarib olish) va statistika
-- Hozircha: kabinet va backend tayyor; admin tomoni (taklif havolasini yaratish, takliflarni tasdiqlash interfeysi) — 6.4-qadamda
+- Admin panelda: "Takliflar" navbati — har bir maydon uchun "hozir saytda / taklif" (ziddiyatda — "taklif paytida" ham), tasdiqlash yoki sabab bilan rad etish; biznes sahifasida "Egalar" — havola va QR, egalikni bekor qilish
+- Hali yoʻq (6.5): yangi taklif haqida Telegram xabari, shartlar va maxfiylik matnlari
 
 MVP doirasi: [ADR-0008](docs/adr/0008-mvp-doirasi.md).
 

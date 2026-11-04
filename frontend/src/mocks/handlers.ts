@@ -16,6 +16,7 @@ import {
   type Lang,
 } from "./db";
 import { adminCategoryHandlers } from "./admin-category-handlers";
+import { adminChangeHandlers } from "./admin-change-handlers";
 import { adminHandlers } from "./admin-handlers";
 import { adminModerationHandlers } from "./admin-moderation-handlers";
 import { adminSystemHandlers } from "./admin-system-handlers";
@@ -57,6 +58,7 @@ export const handlers = [
   ...adminModerationHandlers,
   ...adminSystemHandlers,
   ...cabinetHandlers,
+  ...adminChangeHandlers,
   http.get(`${API}/categories`, ({ request }) => {
     return HttpResponse.json(listCategories(langOf(new URL(request.url))));
   }),

@@ -7,80 +7,18 @@ import type {
   OwnedBusiness,
   OwnerBusiness,
   OwnerChange,
-  OwnerInviteCreated,
   PendingUpload,
 } from "@/lib/api/types";
-import { mockFetch } from "./fetch";
+import {
+  adminLogin,
+  call,
+  invite,
+  owner,
+  photoUpload,
+  post,
+  userLogin,
+} from "./cabinet-test-utils";
 import { BUSINESSES } from "./fixtures/businesses";
-
-const BASE = "http://demo.test/api/v1";
-type Session = { cookie: string; csrf: string };
-
-const value = (cookies: string[], name: string) =>
-  cookies
-    .find((c) => c.startsWith(`${name}=`))
-    ?.split(";")[0]
-    ?.split("=")[1] ?? "";
-
-function call(path: string, session: Session | null, init: RequestInit = {}) {
-  const headers = new Headers(init.headers);
-  if (session) headers.set("cookie", session.cookie);
-  if (session && init.method && init.method !== "GET") headers.set("x-csrftoken", session.csrf);
-  if (typeof init.body === "string") headers.set("content-type", "application/json");
-  return mockFetch(new Request(`${BASE}${path}`, { ...init, headers }));
-}
-
-const post = (path: string, session: Session | null, body?: unknown) =>
-  call(path, session, {
-    method: "POST",
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-
-async function userLogin(): Promise<Session> {
-  const response = await mockFetch(new Request(`${BASE}/auth/demo`, { method: "POST" }));
-  const cookies = response.headers.getSetCookie();
-  return {
-    cookie: `sessionid=${value(cookies, "sessionid")}; csrftoken=${value(cookies, "csrftoken")}`,
-    csrf: value(cookies, "csrftoken"),
-  };
-}
-
-async function adminLogin(): Promise<Session> {
-  const step1 = await post("/admin/auth/login", null, { username: "root", password: "yaqin-demo" });
-  const { challengeToken } = (await step1.json()) as { challengeToken: string };
-  const step2 = await post("/admin/auth/2fa", null, { challengeToken, code: "123456" });
-  const cookies = step2.headers.getSetCookie();
-  return {
-    cookie: `adminsessionid=${value(cookies, "adminsessionid")}; csrftoken=${value(cookies, "csrftoken")}`,
-    csrf: value(cookies, "csrftoken"),
-  };
-}
-
-/** Admin taklif havolasini yaratadi; token — URL fragmentidan */
-async function invite(businessId: string): Promise<string> {
-  const admin = await adminLogin();
-  const response = await post(`/admin/businesses/${businessId}/owner-invite`, admin);
-  expect(response.status).toBe(201);
-  const { url } = (await response.json()) as OwnerInviteCreated;
-  expect(url).toMatch(/\/kabinet\/qoshilish#[A-Za-z0-9_-]{32,64}$/);
-  return url.split("#")[1]!;
-}
-
-/** Yangi foydalanuvchi biznes egasi bo'ladi */
-async function owner(businessId: string): Promise<Session> {
-  const session = await userLogin();
-  const response = await post("/cabinet/invites/accept", session, {
-    token: await invite(businessId),
-  });
-  expect(response.status).toBe(200);
-  return session;
-}
-
-function photoUpload(session: Session, businessId: string, type = "image/webp") {
-  const form = new FormData();
-  form.set("file", new Blob([new Uint8Array([1, 2, 3])], { type }), "photo.webp");
-  return call(`/cabinet/businesses/${businessId}/uploads`, session, { method: "POST", body: form });
-}
 
 describe("egalik taklifi", () => {
   const business = BUSINESSES[1]!;

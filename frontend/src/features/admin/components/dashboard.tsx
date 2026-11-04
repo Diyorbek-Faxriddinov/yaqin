@@ -1,7 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Inbox, MessageSquareWarning, Plus, Star, type LucideIcon } from "lucide-react";
+import {
+  ClipboardCheck,
+  Inbox,
+  MessageSquareWarning,
+  Plus,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +16,7 @@ import { Link } from "@/i18n/navigation";
 import { browserApi, call } from "@/lib/api/browser";
 import type { BusinessStatus } from "@/lib/api/types";
 import { useAdminMe, useCan } from "../use-admin";
+import { usePendingChangesCount } from "../use-changes";
 import { useQueueCount } from "../use-moderation";
 
 type StatKey = BusinessStatus | "noConsent";
@@ -55,12 +63,13 @@ function StatCard({ statKey }: { statKey: StatKey }) {
   );
 }
 
-type QueueKey = "requests" | "reviews" | "complaints";
+type QueueKey = "requests" | "reviews" | "complaints" | "changes";
 
 const QUEUES: Array<{ key: QueueKey; href: string; icon: LucideIcon }> = [
   { key: "requests", href: "/admin/sorovlar", icon: Inbox },
   { key: "reviews", href: "/admin/sharhlar", icon: Star },
   { key: "complaints", href: "/admin/shikoyatlar", icon: MessageSquareWarning },
+  { key: "changes", href: "/admin/takliflar", icon: ClipboardCheck },
 ];
 
 /** Navbatdagi ishlar soni; 0 bo'lmasa ajratib ko'rsatiladi */
@@ -74,7 +83,13 @@ function QueueCard({
   icon: LucideIcon;
 }) {
   const t = useTranslations("Admin.dashboard.queues");
-  const count = useQueueCount(queueKey, true);
+  // Takliflar soni alohida endpointdan (egalar takliflari, ADR-0015)
+  const moderationCount = useQueueCount(
+    queueKey === "changes" ? "reviews" : queueKey,
+    queueKey !== "changes",
+  );
+  const changesCount = usePendingChangesCount(queueKey === "changes");
+  const count = queueKey === "changes" ? changesCount : moderationCount;
   return (
     <Link
       href={href}
@@ -108,6 +123,7 @@ export function AdminDashboard() {
     requests: canEdit,
     reviews: useCan("review.moderate"),
     complaints: useCan("complaint.manage"),
+    changes: useCan("change.review"),
   };
   const queues = QUEUES.filter((queue) => allowed[queue.key]);
 

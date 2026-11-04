@@ -12,7 +12,9 @@
 ## Biznes egasi kabineti (demo)
 
 - `cabinet-handlers.ts` — `/cabinet/*` va admin `POST/DELETE /admin/businesses/{id}/owner-invite` (backend `apps/cabinet` qoidalari: taklif havolasi bir martalik, 7 kun, faqat SHA-256 xeshi; ko'pi bilan 3 ega; takliflar admin bilan bir xil tekshiriladi — `applyProfileFields`, `parseItem`; shu nishondagi eski taklif almashtiriladi; 20 ta kutilayotgan taklif, 40 ta rasm).
-- ⚠ Demo: taklif rasmining o'lchami o'lchanmaydi (namunaviy 1200×900); hamma narsa xotirada. Admin tomoni (egalar ro'yxati, takliflarni tasdiqlash) — 6.4-qadamda.
+- `admin-change-handlers.ts` — admin tomoni: egalar ro'yxati va egalikni bekor qilish, takliflar navbati, solishtiruv ("oldin / hozir / taklif", ziddiyat), tasdiqlash (o'zgarish haqiqatan qo'llanadi, yangi rasmlar ochiq media'ga ko'chadi, kesh yangilanadi) va rad etish — backend `services.py` bilan bir xil.
+- ⚠ Demo: taklif rasmining o'lchami o'lchanmaydi (namunaviy 1200×900); taklif havolasining QR kodi — "DEMO" belgisi (havolani kodlamaydi, backend haqiqiy QR beradi); hamma narsa xotirada.
+- Testlar uchun umumiy yordamchilar — `cabinet-test-utils.ts`.
 
 ## Backend bilan bir xil maʼlumot
 

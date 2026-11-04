@@ -2627,6 +2627,8 @@ export interface components {
         OwnerChange: {
             /** Format: uuid */
             id: string;
+            /** @description Taklifni shu foydalanuvchi yuborgan (qaytarib olish faqat o'z taklifida) */
+            mine: boolean;
             kind: components["schemas"]["ChangeKind"];
             status: components["schemas"]["ChangeStatus"];
             /** Format: uuid */
@@ -2686,8 +2688,11 @@ export interface components {
             /** Format: uuid */
             membershipId: string;
             user: components["schemas"]["UserRef"];
-            /** @enum {string} */
-            provider: "telegram" | "google";
+            /**
+             * @description `demo` — faqat ishlab chiqish va E2E (DEBUG)
+             * @enum {string}
+             */
+            provider: "telegram" | "google" | "demo";
             /** Format: date-time */
             since: string;
             /** @description Taklif yaratgan administratorning ko'rinadigan ismi */
@@ -2713,6 +2718,11 @@ export interface components {
              * @description `https://yaqinapp.uz/kabinet/qoshilish#<token>` — faqat shu javobda
              */
             url: string;
+            /**
+             * @description Shu havolaning QR kodi — `data:image/svg+xml;base64,...` (img src sifatida). Admin do'konda
+             *     telefon ekranini ko'rsatadi, ega skanerlaydi.
+             */
+            qrDataUri: string;
             status: components["schemas"]["OwnerInviteStatus"];
         };
     };

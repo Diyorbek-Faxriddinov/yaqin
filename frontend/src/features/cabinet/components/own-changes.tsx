@@ -79,7 +79,7 @@ function ChangeCard({
           {t("reason", { reason: change.rejectionReason })}
         </p>
       )}
-      {change.status === "pending" && (
+      {change.status === "pending" && change.mine && (
         <ConfirmDialog
           trigger={
             <Button variant="ghost" size="sm" className="-ml-2">

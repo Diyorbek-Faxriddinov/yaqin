@@ -129,6 +129,7 @@ def test_invite_flow_one_time_and_hashed() -> None:
     url = created.json()["url"]
     assert "/kabinet/qoshilish#" in url  # token fragmentda — server loglariga tushmaydi
     token = url.split("#", 1)[1]
+    assert created.json()["qrDataUri"].startswith("data:image/svg+xml;base64,")
     invite = OwnerInvite.objects.get(business=business)
     assert invite.token_hash == hash_token(token)
     assert token not in invite.token_hash
@@ -379,6 +380,12 @@ def test_withdraw() -> None:
     owner = owner_of(business)
     change = propose(owner, business, {"kind": "profile", "profile": {"description": "A"}}).json()
     path = f"/cabinet/businesses/{business.id}/changes/{change['id']}/withdraw"
+    # Ikkinchi ega taklifni ko'radi, lekin u o'ziniki emas — qaytarib ololmaydi
+    other = owner_of(business)
+    listed = other.call("GET", f"/cabinet/businesses/{business.id}/changes").json()
+    assert [c["mine"] for c in listed] == [False]
+    assert other.call("POST", path).status_code == 404
+    assert change["mine"] is True
     assert owner.call("POST", path).json()["status"] == "withdrawn"
     assert owner.call("POST", path).status_code == 409
 

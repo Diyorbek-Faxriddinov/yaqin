@@ -46,9 +46,15 @@ export function ownedBusinessQuery(id: string, lang: Lang) {
   };
 }
 
+/**
+ * Moderator qarori boshqa joyda (admin panelda) qabul qilinadi — kabinet maʼlumoti tez eskiradi:
+ * tab ochilganda va oynaga qaytganda qayta so'raladi (umumiy sozlamada 60 s va fokussiz).
+ */
+const FRESH = { staleTime: 0, refetchOnWindowFocus: true } as const;
+
 export function useOwnedBusiness(id: string) {
   const lang = useLocale() as Lang;
-  return useQuery(ownedBusinessQuery(id, lang));
+  return useQuery({ ...ownedBusinessQuery(id, lang), ...FRESH });
 }
 
 export function useOwnChanges(id: string, enabled = true) {
@@ -61,6 +67,7 @@ export function useOwnChanges(id: string, enabled = true) {
         }),
       ),
     enabled,
+    ...FRESH,
   });
 }
 

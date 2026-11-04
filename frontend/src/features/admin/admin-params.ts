@@ -24,8 +24,8 @@ export const BUSINESS_SECTIONS = [
 ] as const;
 export type BusinessSection = (typeof BUSINESS_SECTIONS)[number];
 
-/** Tahrirlash sahifasi tablari: usta bo'limlari + statistika (ustada yo'q) */
-export const EDITOR_TABS = [...BUSINESS_SECTIONS, "stats"] as const;
+/** Tahrirlash sahifasi tablari: usta bo'limlari + statistika va egalar (ustada yo'q) */
+export const EDITOR_TABS = [...BUSINESS_SECTIONS, "stats", "owners"] as const;
 export type EditorTab = (typeof EDITOR_TABS)[number];
 
 /** ?bolim= → tahrirlash sahifasidagi tab */
@@ -58,6 +58,17 @@ export type UserFilter = (typeof USER_FILTERS)[number];
 export const parseUserFilter = (value: string | undefined) => pick(USER_FILTERS, value, "all");
 
 /** searchParams qiymati (bir nechta bo'lsa — birinchisi) */
+export const CHANGE_FILTERS = [
+  "pending",
+  "approved",
+  "rejected",
+  "withdrawn",
+  "superseded",
+] as const;
+export type ChangeFilter = (typeof CHANGE_FILTERS)[number];
+export const parseChangeFilter = (value: string | undefined) =>
+  pick(CHANGE_FILTERS, value, "pending");
+
 export function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }

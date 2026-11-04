@@ -73,6 +73,13 @@ ADR-0007 bu bosqichni oldindan koʻzda tutgan ("bir martalik taklif havolasi orq
 
 API shartnomasi — [docs/api/drafts/business-cabinet.yaml](../api/drafts/business-cabinet.yaml) (loyiha). 6.2 da backend bilan birga asosiy `openapi.yaml` ga koʻchiriladi: backend testlari kontraktdagi har bir operatsiya sinalganini tekshiradi, amalga oshirilmagan endpoint esa CI'ni yiqitardi.
 
+## Yangilanish (2026-11-04) — interfeys (6.3–6.4)
+
+- `OwnerChange.mine` — bir biznesda bir nechta ega boʻlsa, "Qaytarib olish" faqat oʻz taklifida koʻrinadi (backend ham boshqa eganing taklifini qaytarishga ruxsat bermaydi — `404`).
+- `OwnerInviteCreated.qrDataUri` — havolaning QR kodi backendda (`qrcode`, SVG) yaratiladi, TOTP sozlashdagi bilan bir xil usulda; frontend'ga QR kutubxonasi qoʻshilmadi.
+- `BusinessOwner.provider` ga `demo` qoʻshildi — demo kirish (faqat DEBUG va E2E) bilan ulangan ega shartnomani buzmasligi uchun.
+- Kabinet formalari admin bo'limlarini qayta ishlatadi (`OwnerModeProvider`); admin tomoni — "Takliflar" navbati va taklif sahifasi ("taklif paytida / hozir saytda / taklif", ziddiyatda uchala ustun), biznes tahririda "Egalar" tabi.
+
 ## Koʻrib chiqilgan muqobillar
 
 - **Egalarni admin paneliga "faqat bitta biznesni boshqaradigan" rol bilan qoʻshish.** Rad etildi:

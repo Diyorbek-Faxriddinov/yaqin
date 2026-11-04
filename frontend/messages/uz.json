@@ -408,7 +408,8 @@
       "stats": "Statistika",
       "audit": "Audit jurnali",
       "staff": "Administratorlar",
-      "settings": "Sozlamalar"
+      "settings": "Sozlamalar",
+      "changes": "Takliflar"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -457,7 +458,8 @@
         "title": "Navbatda",
         "requests": "Yangi soʻrovlar",
         "reviews": "Moderatsiyadagi sharhlar",
-        "complaints": "Ochiq shikoyatlar"
+        "complaints": "Ochiq shikoyatlar",
+        "changes": "Egalar takliflari"
       }
     },
     "status": {
@@ -500,7 +502,8 @@
       "contacts": "Aloqa va rozilik",
       "catalog": "Katalog",
       "status": "Holat",
-      "stats": "Statistika"
+      "stats": "Statistika",
+      "owners": "Egalar"
     },
     "basic": {
       "name": "Biznes nomi",
@@ -1103,7 +1106,14 @@
         "role_delete": "rolni oʻchirdi",
         "settings_update": "sozlamalarni oʻzgartirdi",
         "report_create": "hisobot havolasini yaratdi",
-        "report_revoke": "hisobot havolasini bekor qildi"
+        "report_revoke": "hisobot havolasini bekor qildi",
+        "change_approve": "egasi taklifini tasdiqladi",
+        "change_reject": "egasi taklifini rad etdi",
+        "owner_invite": "egalik havolasini yaratdi",
+        "owner_invite_revoke": "egalik havolasini bekor qildi",
+        "owner_remove": "egalikni bekor qildi",
+        "membership_accept": "yangi ega qoʻshildi",
+        "membership_leave": "ega egalikdan chiqdi"
       }
     },
     "stats": {
@@ -1172,6 +1182,88 @@
         "email": "Email notoʻgʻri",
         "phone": "Raqam notoʻgʻri. Namuna: 90 123 45 67"
       }
+    },
+    "changes": {
+      "title": "Egalar takliflari",
+      "description": "Biznes egalari kabinetdan yuborgan oʻzgarishlar. Tasdiqlangach saytga chiqadi, rad etilsa — sabab egaga koʻrinadi.",
+      "filterLabel": "Holat",
+      "allBusinesses": "Barcha bizneslar",
+      "count": "{count, plural, =0 {Taklif yoʻq} other {# ta taklif}}",
+      "emptyQueue": "Koʻrib chiqiladigan taklif yoʻq",
+      "empty": "Bu holatda taklif yoʻq",
+      "back": "Takliflar",
+      "author": "Muallif: {name}",
+      "reviewed": "Koʻrib chiqdi: {name}, {date}",
+      "important": "Muhim",
+      "conflict": "Ziddiyat",
+      "conflictHint": "Taklif yuborilgandan keyin bu maʼlumot boshqa ega yoki administrator tomonidan oʻzgartirilgan. Ustunlarni solishtirib qaror qiling — tasdiqlansa, taklif hozirgi qiymat ustiga yoziladi.",
+      "columns": {
+        "before": "Taklif paytida",
+        "current": "Hozir saytda",
+        "after": "Taklif"
+      },
+      "wholeItem": "Mahsulot (butunlay oʻchiriladi)",
+      "none": "yoʻq",
+      "photoGone": "Rasm oʻchirilgan",
+      "first": "Asosiy",
+      "newPhoto": "Yangi",
+      "openMap": "Xaritada ochish",
+      "yes": "Ha",
+      "no": "Yoʻq",
+      "minutes": "{count} daqiqa",
+      "approve": "Tasdiqlash",
+      "reject": "Rad etish",
+      "approvedToast": "Tasdiqlandi — oʻzgarish saytga chiqdi",
+      "rejectedToast": "Rad etildi — sabab egaga koʻrinadi",
+      "rejectTitle": "Taklifni rad etish",
+      "rejectDescription": "Sabab biznes egasiga koʻrinadi — tushunarli va xushmuomala yozing.",
+      "reasonLabel": "Sabab",
+      "presets": {
+        "wrong": "Maʼlumot notoʻgʻri yoki tekshirib boʻlmadi",
+        "photos": "Rasm sifati past yoki biznesga tegishli emas",
+        "unrelated": "Reklama yoki biznesga aloqasiz matn"
+      },
+      "errors": {
+        "notPending": "Taklif allaqachon koʻrib chiqilgan yoki egasi qaytarib olgan",
+        "targetMissing": "Mahsulot oʻchirilgan — taklifni rad eting",
+        "invalid": "Taklif hozirgi qoidalarga mos emas (kategoriya yoki xususiyatlar oʻzgargan boʻlishi mumkin) — rad eting.",
+        "error": "Bajarib boʻlmadi — qayta urinib koʻring"
+      }
+    },
+    "owners": {
+      "description": "Ega oʻz Telegram yoki Google akkaunti bilan kabinetga kiradi va maʼlumotlarni yangilaydi. Har bir oʻzgarish «Takliflar» boʻlimida tasdiqlanadi.",
+      "pendingChanges": "{count, plural, other {# ta taklif koʻrib chiqilishini kutmoqda}}",
+      "title": "Egalar ({count}/{max})",
+      "empty": "Hali ega ulanmagan",
+      "providers": {
+        "telegram": "Telegram",
+        "google": "Google",
+        "demo": "Demo"
+      },
+      "since": "{date} dan",
+      "invitedBy": "havola: {name}",
+      "remove": "Egalikni bekor qilish",
+      "removeConfirm": "{name} egalikdan chiqarilsinmi?",
+      "removeHint": "Uning koʻrib chiqilmagan takliflari bekor qilinadi.",
+      "removed": "Egalik bekor qilindi",
+      "inviteTitle": "Taklif havolasi",
+      "inviteDescription": "Bir martalik, 7 kun amal qiladi. Egaga shaxsan (Telegram yoki SMS orqali) yuboring — havolani olgan har kim egalik oladi.",
+      "inviteActive": "Faol havola bor: {date} gacha (yaratdi: {name}). Havolaning oʻzi qayta koʻrsatilmaydi.",
+      "onceWarning": "Havola va QR kod faqat hozir koʻrinadi — egaga skanerlating yoki havolani nusxalab yuboring.",
+      "create": "Havola yaratish",
+      "regenerate": "Yangi havola (eskisi bekor boʻladi)",
+      "revoke": "Havolani bekor qilish",
+      "revokeConfirm": "Taklif havolasi bekor qilinsinmi?",
+      "revoked": "Havola bekor qilindi",
+      "created": "Havola yaratildi",
+      "copy": "Nusxalash",
+      "copied": "Nusxalandi",
+      "copyFailed": "Nusxalab boʻlmadi — qoʻlda belgilang",
+      "share": "Ulashish",
+      "shareTitle": "{name} — Yaqin kabineti",
+      "limit": "Egalar soni chegarada ({max} ta)",
+      "error": "Bajarib boʻlmadi — qayta urinib koʻring",
+      "qrAlt": "Taklif havolasining QR kodi"
     }
   },
   "Stats": {
