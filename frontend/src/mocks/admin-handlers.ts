@@ -83,7 +83,7 @@ function uniqueSlug(base: string, exceptId?: string): string {
   return slug;
 }
 
-function categoryRef(slug: string, lang: Lang) {
+export function categoryRef(slug: string, lang: Lang) {
   const category = findCategory(slug);
   if (!category) throw new Error(`Kategoriya yo'q: ${slug}`);
   return publicCategoryRef(category, lang);
@@ -250,7 +250,7 @@ function knownAttributes(record: DemoBusinessRecord) {
   return definitionsOf(findCategory(record.categorySlug)?.attributes ?? []);
 }
 
-function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: Lang): AdminItem {
+export function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: Lang): AdminItem {
   return {
     ...publicItem(item, record, lang),
     photos: item.photos,
@@ -259,7 +259,7 @@ function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: Lang): Ad
 }
 
 /** Yuklangan rasm (biznes va mahsulot uchun umumiy tekshiruv); xato bo'lsa — javob */
-async function readPhoto(request: Request): Promise<AdminPhoto | { response: Response }> {
+export async function readPhoto(request: Request): Promise<AdminPhoto | { response: Response }> {
   let form: FormData;
   try {
     form = await request.formData();
@@ -299,7 +299,7 @@ async function readPhoto(request: Request): Promise<AdminPhoto | { response: Res
   };
 }
 
-function parseItem(
+export function parseItem(
   body: Record<string, unknown> | null,
   record: DemoBusinessRecord,
 ): { item: Omit<DemoItem, "id" | "slug" | "photos"> } | { fields: Fields } {
@@ -354,6 +354,98 @@ function parseItem(
       isAvailable: body?.isAvailable !== false,
     },
   };
+}
+
+/**
+ * Biznes profili maydonlari (admin PATCH va egasi taklifi uchun umumiy, backend
+ * `admin_input.apply_update` bilan bir xil). Natija — saqlanmagan nusxa; xatolar `fields` ga.
+ */
+export function applyProfileFields(
+  record: DemoBusinessRecord,
+  body: Record<string, unknown>,
+  fields: Fields,
+): DemoBusinessRecord {
+  const next: DemoBusinessRecord = { ...record };
+  if ("name" in body) {
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    if (name.length < 2 || name.length > 120) fields.name = ["2–120 belgi"];
+    else next.name = name;
+  }
+  if ("description" in body) {
+    const text = typeof body.description === "string" ? body.description.trim() : "";
+    if (text.length > 2000) fields.description = ["Ko'pi bilan 2000 belgi"];
+    else next.description = text || null;
+  }
+  if ("categorySlug" in body) {
+    const slug = String(body.categorySlug);
+    if (!isLeafCategory(slug)) fields.categorySlug = ["Ichki kategoriyani tanlang"];
+    else next.categorySlug = slug;
+  }
+  if ("districtSlug" in body) {
+    const slug = String(body.districtSlug);
+    if (!districtBySlug.has(slug)) fields.districtSlug = ["Tumanni tanlang"];
+    else next.districtSlug = slug;
+  }
+  if ("address" in body) {
+    const address = body.address as { text?: unknown; landmark?: unknown } | null;
+    const text = typeof address?.text === "string" ? address.text.trim() : "";
+    const landmark = typeof address?.landmark === "string" ? address.landmark.trim() : "";
+    if (text.length > 300 || landmark.length > 200) fields.address = ["Juda uzun"];
+    else next.address = { text, landmark: landmark || null };
+  }
+  if ("location" in body) {
+    const location = body.location as { lat?: number; lng?: number } | null;
+    if (location !== null && !isValidPoint(location ?? {}))
+      fields.location = ["Koordinata noto'g'ri"];
+    else
+      next.location = location
+        ? { lat: location.lat as number, lng: location.lng as number }
+        : null;
+  }
+  if ("phones" in body) {
+    const phones = Array.isArray(body.phones)
+      ? (body.phones as Array<{ number?: string; label?: string | null }>)
+      : [];
+    if (phones.length > 5 || phones.some((p) => !/^\+998\d{9}$/.test(p.number ?? ""))) {
+      fields.phones = ["Raqam formati: +998XXXXXXXXX"];
+    } else {
+      next.phones = phones.map((p) => ({
+        number: p.number as string,
+        label: p.label?.trim() || null,
+      }));
+    }
+  }
+  for (const key of ["telegram", "instagram"] as const) {
+    if (key in body) {
+      const value =
+        typeof body[key] === "string" ? (body[key] as string).trim().replace(/^@/, "") : "";
+      const pattern = key === "telegram" ? /^[A-Za-z0-9_]{5,32}$/ : /^[A-Za-z0-9_.]{1,30}$/;
+      if (value && !pattern.test(value)) fields[key] = ["Foydalanuvchi nomi noto'g'ri"];
+      else next[key] = value || null;
+    }
+  }
+  if ("website" in body) {
+    const website = typeof body.website === "string" ? body.website.trim() : "";
+    if (website && !validWebsite(website)) fields.website = ["Toʻliq manzil: https://..."];
+    else next.website = website || null;
+  }
+  if ("amenities" in body) {
+    const amenities = body.amenities;
+    if (
+      !Array.isArray(amenities) ||
+      !amenities.every((a) => (AMENITIES as readonly unknown[]).includes(a))
+    ) {
+      fields.amenities = ["Qulaylik notoʻgʻri"];
+    } else {
+      next.amenities = sortAmenities(amenities as string[]);
+    }
+  }
+  if ("schedule" in body) {
+    if (body.schedule !== null && !validSchedule(body.schedule))
+      fields.schedule = ["Ish vaqti noto'g'ri"];
+    else next.schedule = body.schedule as WeeklySchedule | null;
+  }
+  return next;
 }
 
 export const adminHandlers = [
@@ -555,86 +647,7 @@ export const adminHandlers = [
     if (!record) return error(404, "not_found", "Topilmadi");
 
     const fields: Fields = {};
-    const next: DemoBusinessRecord = { ...record };
-    if ("name" in body) {
-      const name = typeof body.name === "string" ? body.name.trim() : "";
-      if (name.length < 2 || name.length > 120) fields.name = ["2–120 belgi"];
-      else next.name = name;
-    }
-    if ("description" in body) {
-      const text = typeof body.description === "string" ? body.description.trim() : "";
-      if (text.length > 2000) fields.description = ["Ko'pi bilan 2000 belgi"];
-      else next.description = text || null;
-    }
-    if ("categorySlug" in body) {
-      const slug = String(body.categorySlug);
-      if (!isLeafCategory(slug)) fields.categorySlug = ["Ichki kategoriyani tanlang"];
-      else next.categorySlug = slug;
-    }
-    if ("districtSlug" in body) {
-      const slug = String(body.districtSlug);
-      if (!districtBySlug.has(slug)) fields.districtSlug = ["Tumanni tanlang"];
-      else next.districtSlug = slug;
-    }
-    if ("address" in body) {
-      const address = body.address as { text?: unknown; landmark?: unknown } | null;
-      const text = typeof address?.text === "string" ? address.text.trim() : "";
-      const landmark = typeof address?.landmark === "string" ? address.landmark.trim() : "";
-      if (text.length > 300 || landmark.length > 200) fields.address = ["Juda uzun"];
-      else next.address = { text, landmark: landmark || null };
-    }
-    if ("location" in body) {
-      const location = body.location as { lat?: number; lng?: number } | null;
-      if (location !== null && !isValidPoint(location ?? {}))
-        fields.location = ["Koordinata noto'g'ri"];
-      else
-        next.location = location
-          ? { lat: location.lat as number, lng: location.lng as number }
-          : null;
-    }
-    if ("phones" in body) {
-      const phones = Array.isArray(body.phones)
-        ? (body.phones as Array<{ number?: string; label?: string | null }>)
-        : [];
-      if (phones.length > 5 || phones.some((p) => !/^\+998\d{9}$/.test(p.number ?? ""))) {
-        fields.phones = ["Raqam formati: +998XXXXXXXXX"];
-      } else {
-        next.phones = phones.map((p) => ({
-          number: p.number as string,
-          label: p.label?.trim() || null,
-        }));
-      }
-    }
-    for (const key of ["telegram", "instagram"] as const) {
-      if (key in body) {
-        const value =
-          typeof body[key] === "string" ? (body[key] as string).trim().replace(/^@/, "") : "";
-        const pattern = key === "telegram" ? /^[A-Za-z0-9_]{5,32}$/ : /^[A-Za-z0-9_.]{1,30}$/;
-        if (value && !pattern.test(value)) fields[key] = ["Foydalanuvchi nomi noto'g'ri"];
-        else next[key] = value || null;
-      }
-    }
-    if ("website" in body) {
-      const website = typeof body.website === "string" ? body.website.trim() : "";
-      if (website && !validWebsite(website)) fields.website = ["Toʻliq manzil: https://..."];
-      else next.website = website || null;
-    }
-    if ("amenities" in body) {
-      const amenities = body.amenities;
-      if (
-        !Array.isArray(amenities) ||
-        !amenities.every((a) => (AMENITIES as readonly unknown[]).includes(a))
-      ) {
-        fields.amenities = ["Qulaylik notoʻgʻri"];
-      } else {
-        next.amenities = sortAmenities(amenities as string[]);
-      }
-    }
-    if ("schedule" in body) {
-      if (body.schedule !== null && !validSchedule(body.schedule))
-        fields.schedule = ["Ish vaqti noto'g'ri"];
-      else next.schedule = body.schedule as WeeklySchedule | null;
-    }
+    const next = applyProfileFields(record, body, fields);
     if ("consent" in body) {
       const consent = body.consent as {
         givenBy?: string;

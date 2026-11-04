@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { isDemoMode } from "@/lib/env";
 import { siteUrl } from "@/lib/seo";
 
-const PRIVATE = ["/admin", "/profil", "/kirish", "/hisobot"];
+const PRIVATE = ["/admin", "/profil", "/kabinet", "/kirish", "/hisobot"];
 
 export default function robots(): MetadataRoute.Robots {
   // Demo maʼlumotlar to'qib chiqarilgan — demo sayt butunlay indekslanmaydi

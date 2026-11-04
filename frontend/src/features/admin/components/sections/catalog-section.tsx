@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,14 +32,19 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { defaultKind } from "@/features/business/catalog";
 import { ItemPriceText } from "@/features/business/components/item-list";
+import { PhotoDraft } from "@/features/cabinet/components/photo-draft";
+import { draftFromPhotos, toPhotoRefs } from "@/features/cabinet/photo-refs";
 import { browserApi, call } from "@/lib/api/browser";
 import type { AdminItem, AttributeDefinition, ItemInput } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { useOwnerMode } from "../../owner-mode";
 import {
   adminItemsKey,
   applyServerErrors,
+  saveErrorKey,
   useAdminItems,
   useDeleteItem,
+  usePendingItemIds,
   useSaveItem,
 } from "../../use-admin-business";
 import { PhotoManager, uploadPhoto } from "../photo-manager";
@@ -250,6 +256,8 @@ function ItemDialog({
   initialKind,
   open,
   onOpenChange,
+  saveLabel,
+  onSaved,
 }: {
   businessId: string;
   businessName: string;
@@ -260,10 +268,17 @@ function ItemDialog({
   initialKind: "product" | "service";
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  saveLabel: string;
+  /** Saqlangandan (egasi — taklif yuborilgandan) keyin */
+  onSaved?: () => void;
 }) {
   const t = useTranslations("Admin");
   const queryClient = useQueryClient();
+  const owner = useOwnerMode();
   const save = useSaveItem(businessId);
+  // Egasi: rasmlar ro'yxati taklif bilan birga yuboriladi
+  const [draftPhotos, setDraftPhotos] = useState(() => draftFromPhotos(item?.photos ?? []));
+  const [uploadingDraft, setUploadingDraft] = useState(false);
   const definitions = useCategoryAttributes(categorySlug, open);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadingPending, setUploadingPending] = useState(false);
@@ -364,11 +379,14 @@ function ItemDialog({
       ],
       isAvailable: v.isAvailable,
     };
+    const photos = owner
+      ? toPhotoRefs(draftPhotos, (index) => t("photos.alt", { name: v.name, index }))
+      : undefined;
     save.mutate(
-      { itemId: item?.id, body },
+      { itemId: item?.id, body, photos },
       {
         onSuccess: async (saved) => {
-          if (!item && pendingFiles.length > 0) {
+          if (saved && !item && pendingFiles.length > 0) {
             setUploadingPending(true);
             // Ketma-ket — sekin mobil internetda parallel yuklash hammasini sekinlashtiradi
             for (const [index, file] of pendingFiles.entries()) {
@@ -386,6 +404,7 @@ function ItemDialog({
             refreshItems();
           }
           onOpenChange(false);
+          onSaved?.();
         },
         onError: (error) => {
           if (
@@ -397,14 +416,14 @@ function ItemDialog({
               attributes: "typed",
             })
           ) {
-            toast.error(t("edit.saveError"));
+            toast.error(t(saveErrorKey(error)));
           }
         },
       },
     );
   };
 
-  const pending = save.isPending || uploadingPending;
+  const pending = save.isPending || uploadingPending || uploadingDraft;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -557,7 +576,19 @@ function ItemDialog({
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">{t("catalog.photos")}</legend>
             <p className="text-sm text-muted-foreground">{t("catalog.photosHint")}</p>
-            {item ? (
+            {owner ? (
+              <PhotoDraft
+                inputId="item-photo-input"
+                compact
+                businessId={businessId}
+                photos={draftPhotos}
+                onChange={setDraftPhotos}
+                max={MAX_ITEM_PHOTOS}
+                firstLabel={t("photos.main")}
+                limitMessage={t("catalog.photosLimit")}
+                onUploadingChange={setUploadingDraft}
+              />
+            ) : item ? (
               <PhotoManager
                 inputId="item-photo-input"
                 compact
@@ -661,7 +692,7 @@ function ItemDialog({
 
           <Button type="submit" size="lg" className="w-full" disabled={pending}>
             {pending && <Loader2 aria-hidden="true" className="animate-spin" />}
-            {t("catalog.save")}
+            {saveLabel}
           </Button>
         </form>
       </DialogContent>
@@ -672,9 +703,13 @@ function ItemDialog({
 /** Mahsulot va xizmatlar: darhol saqlanadi (har biri alohida) */
 export function CatalogSection({ business, canEdit, submitLabel, onDone }: SectionProps) {
   const t = useTranslations("Admin.catalog");
+  const tAdmin = useTranslations("Admin");
+  const tCabinet = useTranslations("Cabinet.catalog");
   const tProfile = useTranslations("Profile");
+  const owner = useOwnerMode();
   const { data: items, isPending } = useAdminItems(business.id);
   const remove = useDeleteItem(business.id);
+  const pendingIds = usePendingItemIds(business.id);
   // Tahrirlanayotgan mahsulot ro'yxatdan olinadi — rasm qo'shilganda dialog yangilanadi
   const [editingId, setEditingId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -713,7 +748,14 @@ export function CatalogSection({ business, canEdit, submitLabel, onDone }: Secti
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.name}</p>
+                <p className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-medium">{item.name}</span>
+                  {pendingIds.has(item.id) && (
+                    <Badge variant="secondary" className="shrink-0">
+                      {tCabinet("pending")}
+                    </Badge>
+                  )}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {[item.group, t(item.kind), !item.isAvailable && t("unavailable")]
                     .filter(Boolean)
@@ -743,11 +785,24 @@ export function CatalogSection({ business, canEdit, submitLabel, onDone }: Secti
                         <Trash2 aria-hidden="true" />
                       </Button>
                     }
-                    title={t("deleteConfirm", { name: item.name })}
-                    confirmLabel={t("delete")}
+                    title={
+                      owner
+                        ? tCabinet("deleteConfirm", { name: item.name })
+                        : t("deleteConfirm", { name: item.name })
+                    }
+                    description={owner ? tCabinet("deleteHint") : undefined}
+                    confirmLabel={owner ? tCabinet("delete") : t("delete")}
                     cancelLabel={tProfile("cancel")}
                     pending={remove.isPending}
-                    onConfirm={() => remove.mutateAsync(item.id)}
+                    onConfirm={async () => {
+                      if (!owner) return remove.mutateAsync(item.id);
+                      try {
+                        await remove.mutateAsync(item.id);
+                        onDone();
+                      } catch (error) {
+                        toast.error(tAdmin(saveErrorKey(error)));
+                      }
+                    }}
                   />
                 </div>
               )}
@@ -756,7 +811,8 @@ export function CatalogSection({ business, canEdit, submitLabel, onDone }: Secti
         </ul>
       )}
 
-      {canEdit && (
+      {/* Egasi har bir mahsulotni alohida yuboradi — umumiy tugma kerak emas */}
+      {canEdit && !owner && (
         <Button type="button" size="lg" className="w-full sm:w-auto" onClick={onDone}>
           {submitLabel}
         </Button>
@@ -772,6 +828,8 @@ export function CatalogSection({ business, canEdit, submitLabel, onDone }: Secti
         initialKind={defaultKind(items ?? [], business.category.iconKey)}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        saveLabel={owner ? submitLabel : tAdmin("catalog.save")}
+        onSaved={owner ? onDone : undefined}
       />
     </div>
   );

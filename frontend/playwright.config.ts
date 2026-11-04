@@ -42,7 +42,7 @@ const backendServers: PlaywrightTestConfig["webServer"] = [
       DEMO_LOGIN_ENABLED: "true",
       // Barcha testlar bitta IP'dan — cheklovlar yumshatiladi (faqat DEBUG'da ruxsat etilgan)
       DJANGO_THROTTLE_OVERRIDES:
-        "auth=1000/min,business_requests=1000/hour,events=10000/min,reviews=1000/hour,complaints=1000/hour,admin_auth=1000/min",
+        "auth=1000/min,business_requests=1000/hour,events=10000/min,reviews=1000/hour,complaints=1000/hour,admin_auth=1000/min,owner_invites=1000/min,owner_changes=1000/day,owner_uploads=1000/hour",
       DJANGO_ALLOWED_ORIGINS: baseURL,
       DJANGO_NUM_PROXIES: "1",
       FRONTEND_REVALIDATE_URL: `http://127.0.0.1:${FRONTEND_PORT}/api/revalidate`,

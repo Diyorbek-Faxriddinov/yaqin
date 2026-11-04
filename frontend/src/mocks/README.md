@@ -9,6 +9,11 @@
 - `fixtures/standard-attributes.json` — standart kategoriya xususiyatlari (backend migratsiyasi bilan bir xil, `seed_demo` va eksport orqali tekshiriladi).
 - `item-attributes.ts` — mahsulot xususiyatlari (kategoriya xususiyati: tekshiruv, tilga moslash) — backend `apps/businesses/attributes.py` bilan bir xil (ADR-0014).
 
+## Biznes egasi kabineti (demo)
+
+- `cabinet-handlers.ts` — `/cabinet/*` va admin `POST/DELETE /admin/businesses/{id}/owner-invite` (backend `apps/cabinet` qoidalari: taklif havolasi bir martalik, 7 kun, faqat SHA-256 xeshi; ko'pi bilan 3 ega; takliflar admin bilan bir xil tekshiriladi — `applyProfileFields`, `parseItem`; shu nishondagi eski taklif almashtiriladi; 20 ta kutilayotgan taklif, 40 ta rasm).
+- ⚠ Demo: taklif rasmining o'lchami o'lchanmaydi (namunaviy 1200×900); hamma narsa xotirada. Admin tomoni (egalar ro'yxati, takliflarni tasdiqlash) — 6.4-qadamda.
+
 ## Backend bilan bir xil maʼlumot
 
 Fixture'lar `scripts/export-demo-data.ts` orqali `backend/demo/demo-data.json` ga eksport qilinadi — backend `manage.py seed_demo` aynan shu maʼlumotni yuklaydi, E2E testlar ikkala rejimda bir xil natija kutadi. Fixture oʻzgarsa, eksportni qayta ishga tushiring.

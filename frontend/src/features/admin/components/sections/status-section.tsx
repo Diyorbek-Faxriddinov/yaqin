@@ -7,12 +7,11 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
 import { BrowserApiError } from "@/lib/api/browser";
-import type { BusinessStatus } from "@/lib/api/types";
+import type { AdminBusiness, BusinessStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { useCan } from "../../use-admin";
 import { useAdminItems, useDeleteBusiness, useUpdateBusiness } from "../../use-admin-business";
 import { BusinessStatusBadge } from "../status-badge";
-import type { SectionProps } from "./section-props";
 
 function Check({ done, label }: { done: boolean; label: string }) {
   return (
@@ -35,7 +34,13 @@ function Check({ done, label }: { done: boolean; label: string }) {
 }
 
 /** E'lon qilish: majburiy va tavsiya etilgan maydonlar ro'yxati, holatni o'zgartirish */
-export function StatusSection({ business, onDone }: Omit<SectionProps, "submitLabel" | "canEdit">) {
+export function StatusSection({
+  business,
+  onDone,
+}: {
+  business: AdminBusiness;
+  onDone: () => void;
+}) {
   const t = useTranslations("Admin.publish");
   const canPublish = useCan("business.publish");
   const update = useUpdateBusiness(business.id);
@@ -154,7 +159,7 @@ export function StatusSection({ business, onDone }: Omit<SectionProps, "submitLa
  * Xato kiritilgan qoralamani o'chirish. Bir marta e'lon qilingan biznes o'chirilmaydi — unga
  * sharhlar, statistika va tashqi havolalar bog'langan; uni yashirish kerak
  */
-function DeleteBusiness({ business }: Pick<SectionProps, "business">) {
+function DeleteBusiness({ business }: { business: AdminBusiness }) {
   const t = useTranslations("Admin.publish");
   const canEdit = useCan("business.edit");
   const remove = useDeleteBusiness(business.id);

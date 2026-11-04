@@ -74,9 +74,28 @@ Oxirgi yangilanish: 2026-11-04
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
 | 6.1   | ADR-0015 va API shartnomasi (loyiha): egalik, taklif havolasi, kabinet, takliflar, moderatsiya                                       | ✅    |
 | 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ✅    |
-| 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ⏳    |
+| 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ✅    |
 | 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ⏳    |
 | 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
+
+## 6.3 natijalari — kabinet interfeysi va mock qatlam
+
+- **Sahifalar** (telefonga moslashgan, uz/ru, indekslanmaydi):
+  - `/kabinet/qoshilish#<token>` — taklifni qabul qilish. Token fragmentdan olinadi va manzildan darhol o'chiriladi; kirilmagan bo'lsa sessionStorage'da kutadi, kirishdan keyin shu sahifaga qaytiladi (proxy bu sahifani yo'naltirmaydi — `/kirish?next=` fragmentni olib o'tmaydi). Noto'g'ri/eskirgan havola, egalar chegarasi — tushunarli xabar;
+  - `/kabinet` — mening bizneslarim (holati, tekshiruvdagi takliflar soni, qachondan ega);
+  - `/kabinet/[id]` — tablar: Asosiy, Joylashuv, Rasmlar, Ish vaqti, Aloqa, Katalog, Takliflarim, Statistika; "Egalikdan chiqish".
+- **Formalar admin paneldagi bilan bir xil** — bo'limlar qayta ishlatiladi. `OwnerModeProvider` ichida saqlash hook'lari admin API o'rniga taklif yuboradi; tugma — "Tasdiqlashga yuborish". Egaga rozilik va holat bo'limlari ko'rinmaydi, rozilik maydoni yuborilmaydi.
+- **Rasmlar:** yangi rasm darhol yuklanadi (saytda ko'rinmaydi, faqat sessiya bilan), ro'yxat — tartib, o'chirish, qo'shish — taklif bilan yuboriladi (biznes rasmlari va mahsulot dialogi).
+- **Takliflarim:** turi, mahsulot nomi, o'zgargan maydonlar, holati, rad etish sababi, kutilayotganini qaytarib olish. Katalogda tekshiruvdagi mahsulot belgisi; sahifa boshida "N ta taklifingiz tekshiruvda".
+- **Xatolar:** "Hech narsa o'zgarmagan", "kutilayotgan takliflar ko'p (20)", "juda ko'p urinish" — admin formalarida ham.
+- **Kirish yo'li:** foydalanuvchi menyusi va profil navigatsiyasida "Biznes kabineti" (faqat biror biznes egasiga).
+- **Mock qatlam** (`src/mocks/cabinet-handlers.ts`): barcha 10 ta kabinet endpointi va admin taklif havolasi (yaratish/bekor qilish) — backend qoidalari bilan; profil tekshiruvi admin PATCH bilan umumiy funksiyaga ajratildi.
+- **Testlar:**
+  - unit: 261 ta (+12): mock handler'lar (havola bir martalik, 401/404, egalar chegarasi, almashtirish, validatsiya, rasm ko'rinishi, qaytarib olish, mahsulot takliflari), proxy, rasm ro'yxati;
+  - E2E `e2e/cabinet.spec.ts` (3 ekran × 3): havola → profil taklifi → takliflarim → qaytarib olish (axe bilan); kirilmagan holda havola; rasm va mahsulot takliflari.
+- **Topilgan va tuzatilgan:** sevimlilar E2E testida poyga — tugma optimistik yangilanadi, test esa so'rov tugashini kutmay sahifadan ketardi (yuklama ostida ro'yxat bo'sh chiqardi). Endi javob kutiladi.
+- **Natijalar:** demo E2E — 263 o'tdi, 1 yiqildi (sevimlilar poygasi, tuzatildi; qayta yugurishda o'tdi); backend E2E — 278 o'tdi (9 ta kabinet testi bilan), 1 yiqildi: admin ustasi testi (yangi e'lon qilingan biznes sahifasi 30 s test vaqtiga sig'maydi). Xuddi shu xato o'zgarishlarsiz (oldingi commit) ham takrorlandi — 6.3 ga bog'liq emas, ochiq masala sifatida qoldi.
+- **Cheklov:** bir biznesda bir nechta ega bo'lsa, "Qaytarib olish" tugmasi boshqa eganing taklifida ham ko'rinadi — backend ruxsat bermaydi (404), xato xabari chiqadi. Javobda muallif belgisi yo'q; kerak bo'lsa 6.4/6.5 da qo'shiladi.
 
 ## 6.2 natijalari — backend
 

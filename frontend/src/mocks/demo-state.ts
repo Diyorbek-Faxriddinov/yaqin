@@ -5,6 +5,8 @@ import type {
   AuditTargetType,
   BusinessRequestStatus,
   BusinessStatus,
+  ChangeKind,
+  ChangeStatus,
   Consent,
   Me,
   PlatformSettings,
@@ -127,6 +129,57 @@ export type StoredBusinessRequest = {
   updatedAt: string;
 };
 
+/** Biznes egasi (ADR-0015): mijoz akkaunti + biznes, ko'pi bilan 3 ta */
+export type StoredMembership = {
+  id: string;
+  userId: string;
+  businessId: string;
+  invitedBy: string | null;
+  createdAt: string;
+};
+
+/** Egalik taklifi: biznesga bitta faol; token o'zi saqlanmaydi — faqat SHA-256 xeshi */
+export type StoredOwnerInvite = {
+  businessId: string;
+  tokenHash: string;
+  createdBy: string | null;
+  createdAt: string;
+  expiresAt: string;
+};
+
+/** Egasining taklifi — qiymatlar admin API kirish shaklida (backend `BusinessChange`) */
+export type StoredChange = {
+  id: string;
+  businessId: string;
+  authorId: string;
+  kind: ChangeKind;
+  status: ChangeStatus;
+  itemId: string | null;
+  /** "profile", "photos", "item:<id>" yoki "new:<uuid>" — bir nishonda bitta kutilayotgan taklif */
+  target: string;
+  payload: Record<string, unknown>;
+  before: Record<string, unknown>;
+  fields: string[];
+  important: boolean;
+  createdAt: string;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  rejectionReason: string | null;
+};
+
+/** Taklif uchun yuklangan rasm — ommaviy media'ga tushmaydi, faqat egasi va moderatorga */
+export type StoredUpload = {
+  id: string;
+  businessId: string;
+  userId: string;
+  changeId: string | null;
+  contentType: string;
+  bytes: Uint8Array;
+  width: number;
+  height: number;
+  createdAt: string;
+};
+
 type DemoState = {
   sessions: Map<string, DemoSession>;
   users: Map<string, Me>;
@@ -153,6 +206,10 @@ type DemoState = {
   reportLinks: Map<string, ReportLink>;
   /** "businessId|YYYY-MM-DD" → haqiqiy hodisalar soni (demo asosiy qiymatlarga qo'shiladi) */
   statsEvents: Map<string, StatsTotals>;
+  memberships: StoredMembership[];
+  ownerInvites: StoredOwnerInvite[];
+  changes: StoredChange[];
+  uploads: Map<string, StoredUpload>;
 };
 
 export const ALL_PERMISSIONS: AdminPermission[] = [
@@ -288,6 +345,10 @@ function createState(): DemoState {
     settings: structuredClone(DEFAULT_SETTINGS),
     reportLinks: new Map(),
     statsEvents: new Map(),
+    memberships: [],
+    ownerInvites: [],
+    changes: [],
+    uploads: new Map(),
   };
 }
 
@@ -303,7 +364,7 @@ export function permissionsOf(admin: DemoAdmin): AdminPermission[] {
 const globalStore = globalThis as typeof globalThis & { __yaqinDemoState?: DemoState };
 
 // Eski shakldagi holat (dev rejimida kod o'zgarganda) bo'lsa — qayta yaratamiz
-if (!globalStore.__yaqinDemoState?.roles) globalStore.__yaqinDemoState = createState();
+if (!globalStore.__yaqinDemoState?.memberships) globalStore.__yaqinDemoState = createState();
 
 export const demoState: DemoState = globalStore.__yaqinDemoState;
 
@@ -378,6 +439,11 @@ export function deleteDemoUser(userId: string) {
   demoState.reviews = demoState.reviews
     .filter((r) => r.userId !== userId || r.status === "published")
     .map((r) => (r.userId === userId ? { ...r, userId: DELETED_USER_ID } : r));
+  // Egalik tugaydi; takliflar muallifsiz qoladi (backend: CASCADE va SET_NULL)
+  demoState.memberships = demoState.memberships.filter((m) => m.userId !== userId);
+  for (const change of demoState.changes) {
+    if (change.authorId === userId) change.authorId = DELETED_USER_ID;
+  }
 }
 
 /** Akkaunti o'chirilgan muallif (ommaviy sharhlarda) */

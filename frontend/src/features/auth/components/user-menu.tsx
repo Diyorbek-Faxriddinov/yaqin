@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, LogIn, LogOut, MessageSquareWarning, Star, User } from "lucide-react";
+import { Heart, LogIn, LogOut, MessageSquareWarning, Star, Store, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOwnedBusinesses } from "@/features/cabinet/use-cabinet";
 import { Link, useRouter } from "@/i18n/navigation";
 import { currentPathWithoutLocale, loginHref, useLogout, useMe } from "../use-me";
 
@@ -37,6 +38,8 @@ export function UserMenu() {
   const router = useRouter();
   const { data: me, isPending } = useMe();
   const logout = useLogout();
+  // "Biznes kabineti" faqat biror biznes egasiga ko'rinadi
+  const { data: owned } = useOwnedBusinesses();
 
   if (isPending) return <Skeleton className="hidden h-10 w-24 md:block" />;
 
@@ -102,6 +105,17 @@ export function UserMenu() {
             {tProfile("complaints")}
           </Link>
         </DropdownMenuItem>
+        {owned && owned.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/kabinet">
+                <Store aria-hidden="true" />
+                {tProfile("cabinet")}
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={logout.isPending} onSelect={() => logout.mutate()}>
           <LogOut aria-hidden="true" />

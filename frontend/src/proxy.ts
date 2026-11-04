@@ -7,9 +7,14 @@ const intl = createMiddleware(routing);
 // Kirish talab qilinadigan bo'limlar (tilsiz yo'l) va ularning sessiya cookie'si
 const PROTECTED: Array<{ prefix: string; cookie: string; login: string }> = [
   { prefix: "/profil", cookie: "sessionid", login: "/kirish" },
+  { prefix: "/kabinet", cookie: "sessionid", login: "/kirish" },
   // Admin sessiyasi mijoz sessiyasidan alohida (ADR-0012)
   { prefix: "/admin", cookie: "adminsessionid", login: "/admin/kirish" },
 ];
+
+// Himoyalangan bo'lim ichida, lekin kirishni o'zi so'raydi: taklif tokeni URL fragmentida (#) —
+// yo'naltirishda u /kirish?next=... ga o'tmay yo'qoladi; sahifa uni saqlab, kirishga o'zi yuboradi
+const SELF_LOGIN = ["/kabinet/qoshilish"];
 
 /**
  * 1) Himoyalangan sahifaga sessiya cookie'siz kirilsa — /kirish?next=... ga yo'naltiradi.
@@ -23,7 +28,10 @@ export default function proxy(request: NextRequest) {
   const path = pathname.slice(localePrefix.length) || "/";
 
   const area = PROTECTED.find(
-    ({ prefix, login }) => (path === prefix || path.startsWith(`${prefix}/`)) && path !== login,
+    ({ prefix, login }) =>
+      (path === prefix || path.startsWith(`${prefix}/`)) &&
+      path !== login &&
+      !SELF_LOGIN.includes(path),
   );
   if (area && !request.cookies.has(area.cookie)) {
     const url = request.nextUrl.clone();

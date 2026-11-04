@@ -286,7 +286,8 @@
       "profile": "Profil",
       "favorites": "Sevimlilar",
       "reviews": "Sharhlarim",
-      "complaints": "Xabarlarim"
+      "complaints": "Xabarlarim",
+      "cabinet": "Biznes kabineti"
     },
     "displayName": "Ismingiz",
     "displayNameHint": "Sharhlaringiz yonida shu ism koʻrinadi.",
@@ -661,7 +662,10 @@
       "saveError": "Saqlab boʻlmadi. Maydonlarni tekshiring.",
       "readOnly": "Sizda faqat koʻrish ruxsati bor.",
       "back": "Bizneslar roʻyxati",
-      "sections": "Boʻlimlar"
+      "sections": "Boʻlimlar",
+      "nothingChanged": "Hech narsa oʻzgarmagan",
+      "tooManyPending": "Koʻrib chiqilmagan takliflar koʻp (20 ta) — avvalgilari tasdiqlanishini kuting",
+      "tooManyRequests": "Juda koʻp urinish — birozdan keyin qayta urinib koʻring"
     },
     "validation": {
       "nameLength": "2–120 belgi",
@@ -1320,6 +1324,119 @@
       "phone": "Raqam notoʻgʻri. Namuna: 90 123 45 67",
       "agree": "Bogʻlanishimiz uchun rozilik kerak",
       "tooLong": "Juda uzun"
+    }
+  },
+  "Cabinet": {
+    "title": "Biznes kabineti",
+    "listTitle": "Mening bizneslarim",
+    "listEmpty": "Siz hali hech qaysi biznes egasi emassiz",
+    "listEmptyHint": "Biznesingiz Yaqinda boʻlsa, administratordan taklif havolasini soʻrang. Havola orqali qoʻshilgach, maʼlumotlarni oʻzingiz yangilay olasiz.",
+    "pendingCount": "{count, plural, =0 {Kutilayotgan taklif yoʻq} other {# ta taklif tekshiruvda}}",
+    "ownerSince": "{date} dan beri egasiz",
+    "open": "Boshqarish",
+    "back": "Mening bizneslarim",
+    "viewPublic": "Saytda koʻrish",
+    "moderationNote": "Oʻzgarishlar moderator tekshirgandan keyin saytda koʻrinadi. Formalarda — hozir saytdagi maʼlumot.",
+    "submit": "Tasdiqlashga yuborish",
+    "submitted": "Tasdiqlashga yuborildi. Moderator tekshirgach saytda koʻrinadi.",
+    "pendingBanner": "{count, plural, other {# ta taklifingiz tekshiruvda}}",
+    "pendingBannerLink": "Takliflarim",
+    "notFound": "Biznes topilmadi yoki siz uning egasi emassiz",
+    "tabs": {
+      "basic": "Asosiy",
+      "location": "Joylashuv",
+      "photos": "Rasmlar",
+      "hours": "Ish vaqti",
+      "contacts": "Aloqa",
+      "catalog": "Katalog",
+      "changes": "Takliflarim",
+      "stats": "Statistika"
+    },
+    "photos": {
+      "new": "Yangi",
+      "tooMany": "Tasdiqlanmagan rasmlar juda koʻp — avvalgi takliflar koʻrib chiqilishini kuting"
+    },
+    "catalog": {
+      "pending": "Tekshiruvda",
+      "deleteConfirm": "«{name}» oʻchirilsinmi?",
+      "deleteHint": "Soʻrov moderatorga yuboriladi — tasdiqlangach saytdan oʻchadi.",
+      "delete": "Oʻchirishni soʻrash"
+    },
+    "changes": {
+      "empty": "Hali taklif yuborilmagan",
+      "emptyHint": "Boshqa boʻlimlarda maʼlumotni oʻzgartiring va «Tasdiqlashga yuborish» tugmasini bosing.",
+      "kinds": {
+        "profile": "Biznes maʼlumotlari",
+        "itemCreate": "Yangi mahsulot yoki xizmat",
+        "itemUpdate": "Mahsulot oʻzgarishi",
+        "itemDelete": "Mahsulotni oʻchirish",
+        "photos": "Biznes rasmlari"
+      },
+      "statuses": {
+        "pending": "Tekshiruvda",
+        "approved": "Tasdiqlandi",
+        "rejected": "Rad etildi",
+        "withdrawn": "Qaytarib olindi",
+        "superseded": "Yangisi bilan almashtirildi"
+      },
+      "fields": {
+        "name": "Nomi",
+        "description": "Tavsif",
+        "categorySlug": "Kategoriya",
+        "districtSlug": "Tuman",
+        "address": "Manzil",
+        "location": "Xaritadagi joy",
+        "phones": "Telefon",
+        "telegram": "Telegram",
+        "instagram": "Instagram",
+        "website": "Sayt",
+        "amenities": "Qulayliklar",
+        "schedule": "Ish vaqti",
+        "photos": "Rasmlar",
+        "item": {
+          "kind": "Turi",
+          "name": "Nomi",
+          "group": "Boʻlim",
+          "description": "Tavsif",
+          "price": "Narx",
+          "durationMinutes": "Davomiyligi",
+          "attributes": "Xususiyatlar",
+          "isAvailable": "Mavjudligi"
+        }
+      },
+      "changed": "Oʻzgargan: {fields}",
+      "sentAt": "Yuborildi: {date}",
+      "reviewedAt": "Koʻrib chiqildi: {date}",
+      "reason": "Sabab: {reason}",
+      "removedItem": "oʻchirilgan mahsulot",
+      "withdraw": "Qaytarib olish",
+      "withdrawConfirm": "Taklif qaytarib olinsinmi?",
+      "withdrawHint": "Moderator uni koʻrmaydi. Kerak boʻlsa, qaytadan yuborishingiz mumkin.",
+      "withdrawn": "Taklif qaytarib olindi",
+      "withdrawError": "Qaytarib olib boʻlmadi — sahifani yangilang"
+    },
+    "stats": {
+      "description": "Saytdagi sahifangiz koʻrishlari va tugmalar bosilishi. Shaxsiy maʼlumot yigʻilmaydi."
+    },
+    "leave": {
+      "button": "Egalikdan chiqish",
+      "confirm": "«{name}» egaligidan chiqasizmi?",
+      "hint": "Kutilayotgan takliflaringiz bekor qilinadi. Qaytish uchun administratordan yangi havola kerak boʻladi.",
+      "done": "Egalikdan chiqdingiz",
+      "error": "Bajarib boʻlmadi — qayta urinib koʻring"
+    },
+    "accept": {
+      "title": "Biznes egasi sifatida qoʻshilish",
+      "description": "Administrator sizga biznesingizni boshqarish uchun havola yubordi. Qabul qilgach, maʼlumotlarni oʻzingiz yangilay olasiz — har bir oʻzgarish moderator tasdigʻidan keyin saytga chiqadi.",
+      "loginFirst": "Davom etish uchun Telegram yoki Google orqali kiring — keyin shu sahifaga qaytasiz.",
+      "login": "Kirish",
+      "as": "Siz {name} sifatida kirgansiz.",
+      "button": "Taklifni qabul qilish",
+      "noToken": "Havola toʻliq emas. Administrator yuborgan havolani toʻliq nusxalab oching.",
+      "invalid": "Havola notoʻgʻri, muddati oʻtgan yoki allaqachon ishlatilgan. Administratordan yangisini soʻrang.",
+      "ownerLimit": "Bu biznesda egalar soni chegarada (3 ta). Administrator bilan bogʻlaning.",
+      "error": "Qabul qilib boʻlmadi — qayta urinib koʻring",
+      "done": "Endi siz «{name}» egasisiz"
     }
   }
 }

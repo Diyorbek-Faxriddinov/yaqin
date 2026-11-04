@@ -15,7 +15,8 @@ import type { AdminBusinessUpdate, Amenity } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format/date";
 import { formatPhone, normalizeUzPhone } from "@/lib/format/phone";
-import { useUpdateBusiness } from "../../use-admin-business";
+import { useOwnerMode } from "../../owner-mode";
+import { saveErrorKey, useUpdateBusiness } from "../../use-admin-business";
 import type { SectionProps } from "./section-props";
 
 const TELEGRAM = /^[A-Za-z0-9_]{5,32}$/;
@@ -37,6 +38,8 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
   const tAmenity = useTranslations("Amenities");
   const locale = useLocale();
   const update = useUpdateBusiness(business.id);
+  // Rozilik — admin qayd etadigan maʼlumot (egasining o'zi kabinetga kirgani rozilik hisoblanadi)
+  const owner = useOwnerMode();
   const [phones, setPhones] = useState<string[]>(
     business.phones.length ? business.phones.map((p) => formatPhone(p.number)) : [""],
   );
@@ -49,7 +52,7 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
   const [givenAt, setGivenAt] = useState(today);
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const existingConsent = consentRemoved ? null : business.consent;
+  const existingConsent = consentRemoved ? null : (business.consent ?? null);
 
   const save = () => {
     const next: Record<string, string> = {};
@@ -68,7 +71,7 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
         ? `https://${website.trim()}`
         : website.trim();
     if (site && !validWebsite(site)) next.website = t("validation.website");
-    if (!existingConsent && givenBy.trim() && givenBy.trim().length < 2)
+    if (!owner && !existingConsent && givenBy.trim() && givenBy.trim().length < 2)
       next.givenBy = t("validation.givenBy");
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -80,13 +83,13 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
       website: site || null,
       amenities,
     };
-    if (!existingConsent && givenBy.trim()) {
+    if (!owner && !existingConsent && givenBy.trim()) {
       body.consent = {
         givenBy: givenBy.trim(),
         givenAt: new Date(`${givenAt}T12:00:00+05:00`).toISOString(),
         note: note.trim() || null,
       };
-    } else if (consentRemoved) {
+    } else if (!owner && consentRemoved) {
       body.consent = null;
     }
 
@@ -106,7 +109,7 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
             ),
           );
         }
-        toast.error(t("edit.saveError"));
+        toast.error(t(saveErrorKey(error)));
       },
     });
   };
@@ -259,76 +262,78 @@ export function ContactsSection({ business, canEdit, submitLabel, onDone }: Sect
           </div>
         </fieldset>
 
-        <section aria-labelledby="consent-title" className="space-y-3 rounded-xl border p-4">
-          <h3 id="consent-title" className="flex items-center gap-2 font-semibold">
-            <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
-            {t("consent.title")}
-          </h3>
-          {existingConsent ? (
-            <div className="space-y-2">
-              <p className="text-sm text-success">
-                {t("consent.recorded", {
-                  name: existingConsent.givenBy,
-                  date: formatDate(existingConsent.givenAt, locale),
-                })}
-              </p>
-              {existingConsent.note && (
-                <p className="text-sm text-muted-foreground">{existingConsent.note}</p>
-              )}
-              {canEdit && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="-ml-2 text-destructive"
-                  onClick={() => setConsentRemoved(true)}
-                >
-                  {t("consent.remove")}
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t("consent.description")}</p>
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <div className="grid gap-2">
-                  <Label htmlFor="consent-given-by">{t("consent.givenBy")}</Label>
-                  <Input
-                    id="consent-given-by"
-                    placeholder={t("consent.givenByPlaceholder")}
-                    value={givenBy}
-                    maxLength={100}
-                    aria-invalid={Boolean(errors.givenBy || errors.consent)}
-                    onChange={(e) => setGivenBy(e.target.value)}
-                  />
+        {!owner && (
+          <section aria-labelledby="consent-title" className="space-y-3 rounded-xl border p-4">
+            <h3 id="consent-title" className="flex items-center gap-2 font-semibold">
+              <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
+              {t("consent.title")}
+            </h3>
+            {existingConsent ? (
+              <div className="space-y-2">
+                <p className="text-sm text-success">
+                  {t("consent.recorded", {
+                    name: existingConsent.givenBy,
+                    date: formatDate(existingConsent.givenAt, locale),
+                  })}
+                </p>
+                {existingConsent.note && (
+                  <p className="text-sm text-muted-foreground">{existingConsent.note}</p>
+                )}
+                {canEdit && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="-ml-2 text-destructive"
+                    onClick={() => setConsentRemoved(true)}
+                  >
+                    {t("consent.remove")}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">{t("consent.description")}</p>
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                  <div className="grid gap-2">
+                    <Label htmlFor="consent-given-by">{t("consent.givenBy")}</Label>
+                    <Input
+                      id="consent-given-by"
+                      placeholder={t("consent.givenByPlaceholder")}
+                      value={givenBy}
+                      maxLength={100}
+                      aria-invalid={Boolean(errors.givenBy || errors.consent)}
+                      onChange={(e) => setGivenBy(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="consent-given-at">{t("consent.givenAt")}</Label>
+                    <Input
+                      id="consent-given-at"
+                      type="date"
+                      value={givenAt}
+                      max={today()}
+                      onChange={(e) => setGivenAt(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="consent-given-at">{t("consent.givenAt")}</Label>
-                  <Input
-                    id="consent-given-at"
-                    type="date"
-                    value={givenAt}
-                    max={today()}
-                    onChange={(e) => setGivenAt(e.target.value)}
+                  <Label htmlFor="consent-note">{t("consent.note")}</Label>
+                  <Textarea
+                    id="consent-note"
+                    rows={2}
+                    maxLength={500}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
                   />
                 </div>
+                {(errors.givenBy || errors.consent) && (
+                  <p className="text-sm text-destructive">{errors.givenBy || errors.consent}</p>
+                )}
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="consent-note">{t("consent.note")}</Label>
-                <Textarea
-                  id="consent-note"
-                  rows={2}
-                  maxLength={500}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-              </div>
-              {(errors.givenBy || errors.consent) && (
-                <p className="text-sm text-destructive">{errors.givenBy || errors.consent}</p>
-              )}
-            </div>
-          )}
-        </section>
+            )}
+          </section>
+        )}
       </fieldset>
 
       {canEdit && (

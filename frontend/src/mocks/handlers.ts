@@ -19,6 +19,7 @@ import { adminCategoryHandlers } from "./admin-category-handlers";
 import { adminHandlers } from "./admin-handlers";
 import { adminModerationHandlers } from "./admin-moderation-handlers";
 import { adminSystemHandlers } from "./admin-system-handlers";
+import { cabinetHandlers } from "./cabinet-handlers";
 import { meHandlers } from "./me-handlers";
 
 // Handler'lar har qanday host'dagi /api/v1 yo'lini ushlaydi (API_URL qanday bo'lishidan qat'i nazar)
@@ -55,6 +56,7 @@ export const handlers = [
   ...adminCategoryHandlers,
   ...adminModerationHandlers,
   ...adminSystemHandlers,
+  ...cabinetHandlers,
   http.get(`${API}/categories`, ({ request }) => {
     return HttpResponse.json(listCategories(langOf(new URL(request.url))));
   }),

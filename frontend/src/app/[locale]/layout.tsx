@@ -41,9 +41,9 @@ export const viewport: Viewport = {
 export default async function LocaleLayout({ children }: LayoutProps<"/[locale]">) {
   const locale = await getLocale();
   const t = await getTranslations("Common");
-  // Admin panel matnlari (tarjimalarning katta qismi) ommaviy sahifalarga yuborilmaydi —
-  // ular admin layout'idagi alohida provider orqali faqat admin bo'limida ulanadi
-  const { Admin: _admin, ...publicMessages } = await getMessages();
+  // Admin panel va biznes kabineti matnlari (tarjimalarning katta qismi) ommaviy sahifalarga
+  // yuborilmaydi — ular o'z layout'laridagi alohida provider orqali faqat shu bo'limlarda ulanadi
+  const { Admin: _admin, Cabinet: _cabinet, ...publicMessages } = await getMessages();
 
   return (
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>

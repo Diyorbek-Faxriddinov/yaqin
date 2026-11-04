@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { findActiveHref } from "@/components/common/active-href";
+import { useOwnedBusinesses } from "@/features/cabinet/use-cabinet";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -14,15 +15,21 @@ const ITEMS = [
 
 export function ProfileNav() {
   const t = useTranslations("Profile");
+  // Biznes egasiga — kabinet havolasi (telefonda header menyusi yo'q, profil orqali kiriladi)
+  const { data: owned } = useOwnedBusinesses();
+  const items = [
+    ...ITEMS,
+    ...(owned?.length ? [{ href: "/kabinet", key: "cabinet" } as const] : []),
+  ];
   const active = findActiveHref(
     usePathname(),
-    ITEMS.map((item) => item.href),
+    items.map((item) => item.href),
   );
 
   return (
     <nav aria-label={t("title")} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex gap-1 border-b">
-        {ITEMS.map(({ href, key }) => (
+        {items.map(({ href, key }) => (
           <li key={href}>
             <Link
               href={href}

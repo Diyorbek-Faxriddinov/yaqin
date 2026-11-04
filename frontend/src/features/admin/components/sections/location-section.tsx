@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { LocationPicker } from "@/features/map/components/lazy-map";
 import { TASHKENT_CENTER } from "@/features/map/config";
 import type { GeoPoint } from "@/lib/geo";
-import { useCatalogOptions, useUpdateBusiness } from "../../use-admin-business";
+import { saveErrorKey, useCatalogOptions, useUpdateBusiness } from "../../use-admin-business";
 import type { SectionProps } from "./section-props";
 
 export function LocationSection({ business, canEdit, submitLabel, onDone }: SectionProps) {
@@ -62,7 +62,7 @@ export function LocationSection({ business, canEdit, submitLabel, onDone }: Sect
     setAddressError(null);
     update.mutate(
       { location, address: { text: address.trim(), landmark: landmark.trim() || null } },
-      { onSuccess: onDone, onError: () => toast.error(t("edit.saveError")) },
+      { onSuccess: onDone, onError: (error) => toast.error(t(saveErrorKey(error))) },
     );
   };
 

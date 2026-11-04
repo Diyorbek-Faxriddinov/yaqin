@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { useUpdateBusiness } from "../../use-admin-business";
+import { saveErrorKey, useUpdateBusiness } from "../../use-admin-business";
 import {
   applyPreset,
   copyToAll,
@@ -54,7 +54,7 @@ export function HoursSection({ business, canEdit, submitLabel, onDone }: Section
     if (!unknown && hasErrors) return;
     update.mutate(
       { schedule: unknown ? null : toSchedule(state) },
-      { onSuccess: onDone, onError: () => toast.error(tAdmin("edit.saveError")) },
+      { onSuccess: onDone, onError: (error) => toast.error(tAdmin(saveErrorKey(error))) },
     );
   };
 

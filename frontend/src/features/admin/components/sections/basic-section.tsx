@@ -19,20 +19,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { AdminBusiness } from "@/lib/api/types";
 import {
   applyServerErrors,
   useCatalogOptions,
   useCreateBusiness,
+  saveErrorKey,
   useUpdateBusiness,
 } from "../../use-admin-business";
+import type { EditableBusiness } from "./section-props";
 
 type Props = {
   /** null — yangi biznes yaratish (ustaning 1-qadami) */
-  business: AdminBusiness | null;
+  business: EditableBusiness | null;
   canEdit: boolean;
   submitLabel: string;
-  onDone: (business: AdminBusiness) => void;
+  /** Saqlangan (yoki yaratilgan) biznes ID'si */
+  onDone: (businessId: string) => void;
 };
 
 function FieldError({ id, message }: { id: string; message?: string }) {
@@ -70,26 +72,27 @@ export function BasicSection({ business, canEdit, submitLabel, onDone }: Props) 
   const pending = create.isPending || update.isPending;
 
   const onSubmit = (values: Values) => {
-    const handlers = {
-      onSuccess: onDone,
-      onError: (error: unknown) => {
-        if (
-          !applyServerErrors(form, error, {
-            name: "name",
-            categorySlug: "categorySlug",
-            districtSlug: "districtSlug",
-          })
-        ) {
-          toast.error(t("edit.saveError"));
-        }
-      },
+    const onError = (error: unknown) => {
+      if (
+        !applyServerErrors(form, error, {
+          name: "name",
+          categorySlug: "categorySlug",
+          districtSlug: "districtSlug",
+          description: "description",
+        })
+      ) {
+        toast.error(t(saveErrorKey(error)));
+      }
     };
     if (business) {
-      update.mutate({ ...values, description: values.description || null }, handlers);
+      update.mutate(
+        { ...values, description: values.description || null },
+        { onSuccess: () => onDone(business.id), onError },
+      );
     } else {
       create.mutate(
         { name: values.name, categorySlug: values.categorySlug, districtSlug: values.districtSlug },
-        handlers,
+        { onSuccess: (created) => onDone(created.id), onError },
       );
     }
   };

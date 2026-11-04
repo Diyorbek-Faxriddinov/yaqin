@@ -103,7 +103,14 @@ test.describe("Sevimlilar", () => {
   test("qo'shish, ro'yxatda ko'rish va olib tashlash", async ({ page }) => {
     await loginDemo(page, "/kategoriya/sartaroshxonalar");
     const heart = page.getByRole("button", { name: /Barber Bek — sevimlilarga qoʻshish/ });
+    // Tugma optimistik yangilanadi — sahifadan ketishdan oldin so'rov tugashi kutiladi
+    // (yuklama ostida aks holda navigatsiya so'rovni uzib, ro'yxat bo'sh chiqardi)
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/v1/me/favorites/") && response.request().method() === "PUT",
+    );
     await heart.click();
+    expect((await saved).ok()).toBe(true);
     await expect(
       page.getByRole("button", { name: /Barber Bek — sevimlilardan olib tashlash/ }),
     ).toHaveAttribute("aria-pressed", "true");

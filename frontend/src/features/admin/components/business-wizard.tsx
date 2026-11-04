@@ -92,9 +92,9 @@ export function BusinessWizard({
             business={business ?? null}
             canEdit
             submitLabel={t("wizard.next")}
-            onDone={(created) => {
-              setId(created.id);
-              goTo(1, created.id);
+            onDone={(createdId) => {
+              setId(createdId);
+              goTo(1, createdId);
             }}
           />
         ) : !sectionProps || isPending ? (

@@ -3,8 +3,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import {
+  ownedBusinessQuery,
+  proposeChange,
+  refreshCabinet,
+  useOwnChanges,
+} from "@/features/cabinet/use-cabinet";
 import { browserApi, BrowserApiError, call } from "@/lib/api/browser";
-import type { AdminBusiness, AdminBusinessUpdate, ItemInput } from "@/lib/api/types";
+import type {
+  AdminBusiness,
+  AdminBusinessUpdate,
+  AdminItem,
+  ItemInput,
+  OwnerProfileInput,
+  PhotoRef,
+} from "@/lib/api/types";
+import { useOwnerMode } from "./owner-mode";
 
 type Lang = "uz" | "ru";
 
@@ -39,18 +53,30 @@ export function useCreateBusiness() {
   });
 }
 
+/**
+ * Biznes maydonlarini saqlash. Egasi rejimida — profil taklifi (natija `null`): rozilik va holat
+ * egaga tegishli emas, yuborilmaydi.
+ */
 export function useUpdateBusiness(id: string) {
   const lang = useLocale() as Lang;
+  const owner = useOwnerMode();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: AdminBusinessUpdate) =>
-      call(
+    mutationFn: async (body: AdminBusinessUpdate): Promise<AdminBusiness | null> => {
+      if (owner) {
+        const { consent: _consent, status: _status, ...profile } = body;
+        await proposeChange(id, { kind: "profile", profile: profile as OwnerProfileInput });
+        return null;
+      }
+      return call(
         browserApi.PATCH("/admin/businesses/{businessId}", {
           params: { path: { businessId: id }, query: { lang } },
           body,
         }),
-      ),
+      );
+    },
     onSuccess: (business) => {
+      if (!business) return refreshCabinet(queryClient, id);
       queryClient.setQueryData(adminBusinessKey(id), business);
       void queryClient.invalidateQueries({ queryKey: adminBusinessesKey });
     },
@@ -83,8 +109,11 @@ export function useRefreshBusiness(id: string) {
   };
 }
 
+/** Katalog. Egasi rejimida — kabinet biznes maʼlumotidan (joriy, tasdiqlangan holat) */
 export function useAdminItems(id: string) {
-  return useQuery({
+  const lang = useLocale() as Lang;
+  const owner = useOwnerMode();
+  const admin = useQuery({
     queryKey: adminItemsKey(id),
     queryFn: () =>
       call(
@@ -92,14 +121,50 @@ export function useAdminItems(id: string) {
           params: { path: { businessId: id } },
         }),
       ),
+    enabled: !owner,
   });
+  const cabinet = useQuery({
+    ...ownedBusinessQuery(id, lang),
+    select: (business): AdminItem[] => business.items,
+    enabled: owner,
+  });
+  return owner ? cabinet : admin;
 }
 
+/** Egasi rejimida: tekshiruvdagi takliflari bor mahsulotlar (ro'yxatda belgi uchun) */
+export function usePendingItemIds(businessId: string): Set<string> {
+  const owner = useOwnerMode();
+  const { data } = useOwnChanges(businessId, owner);
+  return new Set(
+    (data ?? []).flatMap((change) =>
+      change.status === "pending" && change.itemId ? [change.itemId] : [],
+    ),
+  );
+}
+
+export type SaveItemInput = {
+  itemId?: string;
+  body: ItemInput;
+  /** Egasi rejimida: rasmlarning yakuniy tartiblangan ro'yxati (admin rasmlarni alohida saqlaydi) */
+  photos?: PhotoRef[];
+};
+
+/** Mahsulotni saqlash. Egasi rejimida — taklif (natija `null`) */
 export function useSaveItem(businessId: string) {
+  const owner = useOwnerMode();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ itemId, body }: { itemId?: string; body: ItemInput }) =>
-      itemId
+    mutationFn: async ({ itemId, body, photos = [] }: SaveItemInput): Promise<AdminItem | null> => {
+      if (owner) {
+        await proposeChange(
+          businessId,
+          itemId
+            ? { kind: "item.update", itemId, item: body, photos }
+            : { kind: "item.create", item: body, photos },
+        );
+        return null;
+      }
+      return itemId
         ? call(
             browserApi.PUT("/admin/businesses/{businessId}/items/{itemId}", {
               params: { path: { businessId, itemId } },
@@ -111,24 +176,36 @@ export function useSaveItem(businessId: string) {
               params: { path: { businessId } },
               body,
             }),
-          ),
-    onSuccess: () => {
+          );
+    },
+    onSuccess: (item) => {
+      if (!item) return refreshCabinet(queryClient, businessId);
       void queryClient.invalidateQueries({ queryKey: adminItemsKey(businessId) });
       void queryClient.invalidateQueries({ queryKey: adminBusinessesKey });
     },
   });
 }
 
+/** Mahsulotni o'chirish. Egasi rejimida — o'chirish taklifi */
 export function useDeleteItem(businessId: string) {
+  const owner = useOwnerMode();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (itemId: string) =>
-      call(
+    mutationFn: async (itemId: string) => {
+      if (owner) {
+        await proposeChange(businessId, { kind: "item.delete", itemId });
+        return;
+      }
+      await call(
         browserApi.DELETE("/admin/businesses/{businessId}/items/{itemId}", {
           params: { path: { businessId, itemId } },
         }),
-      ),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: adminItemsKey(businessId) }),
+      );
+    },
+    onSuccess: () =>
+      owner
+        ? refreshCabinet(queryClient, businessId)
+        : void queryClient.invalidateQueries({ queryKey: adminItemsKey(businessId) }),
   });
 }
 
@@ -168,6 +245,20 @@ export function applyServerErrors<T extends FieldValues>(
     }
   }
   return applied;
+}
+
+/**
+ * Saqlash xatosining foydalanuvchiga tushunarli matni (tarjima kaliti `Admin.edit.*`):
+ * o'zgarish yo'q, kutilayotgan takliflar ko'p (egasi), juda ko'p urinish. Boshqasi — umumiy xabar.
+ */
+export function saveErrorKey(
+  error: unknown,
+): "edit.nothingChanged" | "edit.tooManyPending" | "edit.tooManyRequests" | "edit.saveError" {
+  if (!(error instanceof BrowserApiError)) return "edit.saveError";
+  if (error.status === 429) return "edit.tooManyRequests";
+  if (error.status === 409 && error.body?.code === "too_many_pending") return "edit.tooManyPending";
+  if (error.status === 400 && error.body?.fields?.non_field_errors) return "edit.nothingChanged";
+  return "edit.saveError";
 }
 
 export type { AdminBusiness };

@@ -49,7 +49,7 @@ function cookieHeader(
 }
 
 /** Sessiyani tekshiradi; o'zgartiruvchi so'rovlarda CSRF tokenini ham */
-function authenticate(
+export function authenticate(
   request: StrictRequest<DefaultBodyType>,
   cookies: Record<string, string>,
 ): { session: DemoSession } | { response: Response } {
