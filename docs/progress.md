@@ -12,7 +12,7 @@ Oxirgi yangilanish: 2026-11-04
 | 3       | Backend                                                   | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
 | 4       | Integratsiya va yakuniy tekshiruv                         | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
 | 5       | Hosting va domen                                          | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
-| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md)) | 🔄 Jarayonda                                                     |
+| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md)) | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
 
 ## 2-bosqich qadamlari
 
@@ -57,16 +57,18 @@ Oxirgi yangilanish: 2026-11-04
 
 ## Ochiq qolgan ishlar (administrator qarori, 2026-11-04 — keyinroq bajariladi)
 
-| Ish                                                                            | Qachon / nimaga bog'liq                                               | Manba |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ----- |
-| HSTS (1 hafta, keyin 1 yil)                                                    | Auditoriya yig'ila boshlaganda; Release bilan                         | 5.6   |
-| To'liq tiklash mashqi (vaqtinchalik ikkinchi server, bir necha ming so'm)      | Auditoriya yig'ila boshlaganda; "noldan tiklash" shungacha sinalmagan | 5.6   |
-| Qidiruv tizimlariga indekslashni ochish                                        | 20–30 ta haqiqiy biznesdan keyin                                      | 5.6   |
-| Birinchi haqiqiy bizneslar ("Sandal nonkabob" va boshqalar)                    | Administrator kiritadi                                                | 5.6   |
-| Zaxira uchun S3 Toshkent                                                       | Servercore istisno so'roviga javob; rad etilsa — UzCloud              | 5.5   |
-| Telegram tugmasi iframe nomi (a11y) saytga chiqishi                            | Keyingi Release bilan                                                 | 5.6   |
-| Telegram havola rasmidagi qo'sh bo'shliq (Inter shriftini `next/og` ga berish) | Kosmetik, keyinroq                                                    | 5.6   |
-| Servercore balansini to'ldirish                                                | ~2026-11-25                                                           | 5.3   |
+| Ish                                                                              | Qachon / nimaga bog'liq                                                | Manba |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----- |
+| HSTS (1 hafta, keyin 1 yil)                                                      | Auditoriya yig'ila boshlaganda; Release bilan                          | 5.6   |
+| To'liq tiklash mashqi (vaqtinchalik ikkinchi server, bir necha ming so'm)        | Auditoriya yig'ila boshlaganda; "noldan tiklash" shungacha sinalmagan  | 5.6   |
+| Qidiruv tizimlariga indekslashni ochish                                          | 20–30 ta haqiqiy biznesdan keyin                                       | 5.6   |
+| Birinchi haqiqiy bizneslar ("Sandal nonkabob" va boshqalar)                      | Administrator kiritadi                                                 | 5.6   |
+| Zaxira uchun S3 Toshkent                                                         | Servercore istisno so'roviga javob; rad etilsa — UzCloud               | 5.5   |
+| Telegram tugmasi iframe nomi (a11y) saytga chiqishi                              | Keyingi Release bilan                                                  | 5.6   |
+| Telegram havola rasmidagi qo'sh bo'shliq (Inter shriftini `next/og` ga berish)   | Kosmetik, keyinroq                                                     | 5.6   |
+| Egalar takliflari productionda: taklif, Telegram xabari, tasdiqlash va rad etish | Birinchi haqiqiy bizneslar bilan; shungacha sinalmagan deb hisoblanadi | 6.5   |
+| Telegram bilan kirib taklif havolasini qabul qilish (Google bilan sinalgan)      | Birinchi Telegram'dan foydalanadigan ega bilan                         | 6.5   |
+| Servercore balansini to'ldirish                                                  | ~2026-11-25                                                            | 5.3   |
 
 ## 6-bosqich qadamlari — biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))
 
@@ -76,7 +78,7 @@ Oxirgi yangilanish: 2026-11-04
 | 6.2   | Backend: modellar, API, umumiy validatsiya, testlar ("boshqa biznesni ko'rib bo'lmaydi" — har bir endpoint), shartnoma asosiy faylga | ✅    |
 | 6.3   | Kabinet interfeysi (`/kabinet`, telefonga moslashgan) va mock qatlam                                                                 | ✅    |
 | 6.4   | Admin: "Takliflar" bo'limi (oldin / hozir / taklif), biznes sahifasida egalar va taklif havolasi                                     | ✅    |
-| 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ⏳    |
+| 6.5   | Telegram bildirishnomalari, shartlar va maxfiylik matnlari, E2E, hujjatlar, joylash, haqiqiy ega bilan telefonda sinov               | ✅    |
 
 ## 6.5 natijalari — bildirishnoma, hujjatlar, joylash
 
@@ -87,6 +89,10 @@ Oxirgi yangilanish: 2026-11-04
 
 - **E2E build:** `e2e-backend.mjs` dagi vaqtinchalik backend 4 oqim bilan ishlardi va build vaqti-vaqti bilan `backend_timeout` bilan yiqilardi; endi 16 oqim (Playwright sozlamasi bilan bir xil).
 - **Testlar:** backend 592 ta, shartnoma qamrovi 100/100; frontend unit 270 ta; demo E2E — 267 o'tdi, 3 yiqildi (yangi tekshiruvdagi selektor xatosi, tuzatildi, kabinet testlari 9/9); backend E2E — 285 o'tdi, 0 yiqildi.
+
+- **Joylandi** (`ac5cb03cd136`, 2026-11-04): CI 6/6 yashil, yangi migratsiya yo'q, smoke test 24/24. `yaqin-changes` taymeri o'rnatildi, skript production bazasida xatosiz ishladi (hali taklif yo'q). `/kabinet` kirishga yo'naltiradi, `/kabinet/qoshilish` ochiladi, kabinet va admin API sessiyasiz 401 beradi.
+- **Productionda sinaldi (administrator, 2026-11-04):** havola yaratish va Google akkaunti bilan egalikni qabul qilish; muammo chiqmadi. Serverda tasdiqlandi: 1 ta ega, havola sarflangan, audit yozuvlari bor, loglarda xato yo'q.
+- **Productionda sinalmagan (administrator qarori, birinchi bizneslar bilan):** taklif yuborish, rasm yuklash, Telegram xabari, tasdiqlash va rad etish. Bular faqat lokal testlar va E2E'da tekshirilgan, 0 ta taklif yuborilgan.
 
 ## 6.4 natijalari — admin: takliflar va egalar
 
