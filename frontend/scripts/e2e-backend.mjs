@@ -75,6 +75,9 @@ try {
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: "e2e-only.apps.googleusercontent.com",
       NEXT_PUBLIC_SITE_URL: SITE,
       API_URL: `http://127.0.0.1:${BACKEND_PORT}/api/v1`,
+      // Faqat build uchun: yuzlab parallel prerender so'rovi bitta Django jarayonida navbatga turadi
+      // va 10 s standart chegaradan oshib, build vaqti-vaqti bilan yiqilardi. Oqim qo'shish yetmadi
+      API_TIMEOUT_MS: "60000",
     },
   });
 } finally {

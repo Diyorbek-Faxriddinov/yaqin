@@ -1410,6 +1410,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cabinet/businesses/{businessId}/tag-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Mahsulot teglari uchun takliflar (faqat biznes egasi) */
+        get: operations["getOwnedTagSuggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cabinet/businesses/{businessId}/uploads": {
         parameters: {
             query?: never;
@@ -1498,6 +1517,25 @@ export interface paths {
         put?: never;
         /** Taklifni qaytarib olish (faqat kutilayotgan) */
         post: operations["withdrawChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/tag-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        /** Mahsulot teglari uchun takliflar — ruxsat business.view */
+        get: operations["adminGetTagSuggestions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1821,6 +1859,11 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+            /**
+             * @description Qattiq qidiruv bo'sh qaytgani uchun yumshoq qidiruv natijasi: so'zlarning kamida yarmi
+             *     mos keladi (ADR-0016). Sahifa buni foydalanuvchiga aytishi kerak.
+             */
+            relaxed: boolean;
         };
         Phone: {
             /** @description E.164, masalan +998901234567 */
@@ -1891,6 +1934,8 @@ export interface components {
             isAvailable: boolean;
         };
         AdminItem: components["schemas"]["Item"] & {
+            /** @description Qidiruv teglari — ommaviy `Item` da yo'q, saytda ko'rinmaydi (ADR-0016) */
+            tags: string[];
             /** @description `images` bilan bir xil, tartib va o'chirish uchun ID bilan */
             photos: components["schemas"]["AdminPhoto"][];
             /**
@@ -2115,7 +2160,19 @@ export interface components {
             price: components["schemas"]["ItemPrice"];
             durationMinutes: number | null;
             attributes: components["schemas"]["ItemAttributeInput"][];
+            /**
+             * @description Qidiruv teglari — saytda ko'rinmaydi. Yuborilmasa: yangi mahsulotda bo'sh, mavjudida
+             *     o'zgarmaydi. Har biri 2–40 belgi; bir xil teg bir marta saqlanadi (ADR-0016).
+             */
+            tags?: string[];
             isAvailable: boolean;
+        };
+        TagSuggestions: {
+            /**
+             * @description Avval shu biznes teglari, keyin shu kategoriyada e'lon qilingan bizneslarda eng ko'p
+             *     ishlatilgan 20 ta teg. Takrorlar olib tashlangan.
+             */
+            tags: string[];
         };
         /**
          * @description - `key` — biznes kategoriyasining xususiyati (`AttributeDefinition.key`): nom kategoriyadan
@@ -5138,6 +5195,30 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    getOwnedTagSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Takliflar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagSuggestions"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     uploadChangePhoto: {
         parameters: {
             query?: never;
@@ -5288,6 +5369,31 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    adminGetTagSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: components["parameters"]["BusinessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Takliflar */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagSuggestions"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     adminGetBusinessOwners: {

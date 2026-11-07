@@ -20,11 +20,14 @@ from apps.businesses.slugs import slugify
 from apps.catalog.models import Category, District
 from apps.core.api import invalid
 from apps.core.schedule import schedule_problem
+from apps.core.text import normalize_for_search
 
 Fields = dict[str, list[str]]
 
 MAX_PHONES = 5
 MAX_ATTRIBUTES = 20
+MAX_TAGS = 15
+TAG_LENGTH = (2, 40)
 PHONE = re.compile(r"^\+998\d{9}$")
 TELEGRAM = re.compile(r"^[A-Za-z0-9_]{5,32}$")
 INSTAGRAM = re.compile(r"^[A-Za-z0-9_.]{1,30}$")
@@ -223,10 +226,26 @@ def _amount(value: Any) -> int | None:
     return amount if isinstance(amount, int) and not isinstance(amount, bool) else None
 
 
+def parse_tags(raw: Any) -> list[str] | None:
+    """Qidiruv teglari: bir xil teg (normallashtirilgani bo'yicha) bir marta. Xato — None."""
+    if not isinstance(raw, list):
+        return None
+    tags: dict[str, str] = {}
+    low, high = TAG_LENGTH
+    for value in raw:
+        tag = text(value)
+        key = normalize_for_search(tag)
+        if not low <= len(tag) <= high or not key:
+            return None
+        tags.setdefault(key, tag)
+    return list(tags.values()) if len(tags) <= MAX_TAGS else None
+
+
 def apply_item(item: Item, body: dict[str, Any]) -> None:
     """ItemInput (POST va PUT — to'liq almashtirish) → mahsulot maydonlari.
 
     Xususiyatlar biznes kategoriyasining ta'riflari bo'yicha tekshiriladi (attributes.py).
+    `tags` yuborilmasa o'zgarmaydi: eski ochiq sahifa teglarni o'chirib yubormasin (ADR-0016).
     """
     fields: Fields = {}
     name = text(body.get("name"))
@@ -269,6 +288,9 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
             fields["attributes"] = problems
     if len(text(body.get("description"))) > 1000:
         fields["description"] = ["1000 belgigacha"]
+    tags = parse_tags(body["tags"]) if "tags" in body else item.tags
+    if tags is None:
+        fields["tags"] = [f"Koʻpi bilan {MAX_TAGS} ta teg, har biri 2–40 belgi"]
     if fields:
         raise invalid(fields)
 
@@ -281,4 +303,5 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
     # Davomiylik faqat xizmatlarda (DB cheklovi)
     item.duration_minutes = duration if kind == Item.Kind.SERVICE else None
     item.attributes = stored
+    item.tags = tags or []
     item.is_available = body.get("isAvailable") is not False

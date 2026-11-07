@@ -494,6 +494,40 @@ def test_item_update_and_delete() -> None:
     assert not Item.objects.filter(pk=item.id).exists()
 
 
+def test_item_tags_go_through_moderation() -> None:
+    business = published()
+    owner = owner_of(business)
+    reviewer = admin("change.review")
+    tags = ["stirjka", "barber"]
+    create = propose(owner, business, {"kind": "item.create", "item": ITEM, "photos": []}).json()
+    reviewer.call("POST", f"/admin/changes/{create['id']}/approve")
+    item = Item.objects.get(business=business)
+    assert item.tags == []
+
+    body = {"kind": "item.update", "itemId": str(item.id), "item": {**ITEM, "tags": tags}}
+    change = propose(owner, business, {**body, "photos": []}).json()
+    assert change["fields"] == ["item.tags"]
+    item.refresh_from_db()
+    assert item.tags == []  # tasdiqlanmaguncha qidiruvga kirmaydi
+
+    view = reviewer.call("GET", f"/admin/changes/{change['id']}").json()
+    assert view["fields"][0]["after"] == tags
+    reviewer.call("POST", f"/admin/changes/{change['id']}/approve")
+    item.refresh_from_db()
+    assert item.tags == tags
+    business.refresh_from_db()
+    assert "stirjka" in business.search_text
+
+
+def test_owner_tag_suggestions_are_isolated() -> None:
+    mine, theirs = published(), published()
+    owner = owner_of(mine)
+    assert owner.call("GET", f"/cabinet/businesses/{mine.id}/tag-suggestions").json() == {
+        "tags": []
+    }
+    assert owner.call("GET", f"/cabinet/businesses/{theirs.id}/tag-suggestions").status_code == 404
+
+
 def test_item_deleted_before_approval() -> None:
     business = published()
     item = make_item(business=business)

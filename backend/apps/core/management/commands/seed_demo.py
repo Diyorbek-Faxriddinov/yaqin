@@ -29,7 +29,6 @@ from apps.accounts.models import User
 from apps.businesses.models import Business, BusinessRequest, Item
 from apps.catalog.models import Category, District
 from apps.community.models import Complaint, Review
-from apps.core.text import normalize_for_search
 from apps.staff import totp
 from apps.staff.models import AdminUser, Role
 from apps.staff.passwords import hash_password
@@ -170,8 +169,6 @@ class Command(BaseCommand):
                         attributes=entry["attributes"],
                         is_available=entry["isAvailable"],
                         position=position,
-                        # bulk_create save() ni chaqirmaydi
-                        search_text=normalize_for_search(entry["name"]),
                     )
                 )
 
@@ -208,6 +205,9 @@ class Command(BaseCommand):
 
         User.objects.bulk_create(authors.values())
         Business.objects.bulk_create(business for business, _ in created.values())
+        # bulk_create save() ni chaqirmaydi
+        for item in items:
+            item.search_text = item.build_search_text()
         Item.objects.bulk_create(items)
         Review.objects.bulk_create(reviews, batch_size=500)
         DailyStats.objects.bulk_create(stats, batch_size=1000)

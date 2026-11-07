@@ -255,6 +255,8 @@ export function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: La
     ...publicItem(item, record, lang),
     photos: item.photos,
     attributeValues: inputValues(item.attributes, knownAttributes(record)),
+    // ⚠ Qidiruv teglari mock'da 7.3 da (ADR-0016)
+    tags: [],
   };
 }
 

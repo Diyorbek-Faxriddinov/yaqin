@@ -21,6 +21,7 @@ from apps.businesses.admin_input import apply_item, apply_update, parse_create, 
 from apps.businesses.models import Business, BusinessPhoto, BusinessRequest, Item, ItemPhoto
 from apps.businesses.photos import ProcessedPhoto, process_photo
 from apps.businesses.slugs import unique_business_slug, unique_item_slug
+from apps.businesses.tags import tag_suggestions
 from apps.catalog.views import category_ref, district_ref
 from apps.core.api import (
     ApiError,
@@ -115,6 +116,7 @@ def admin_item(entry: Item, lang: Lang, request: Request) -> dict[str, Any]:
         **public.item(entry, lang, known),
         "photos": [photo_payload(photo, request) for photo in entry.photos.all()],
         "attributeValues": item_attributes.input_values(entry.attributes, known),
+        "tags": list(entry.tags),
     }
 
 
@@ -370,6 +372,11 @@ class AdminPhotoDetailView(BusinessAdminView):
             refresh_public(business)
             delete_files_on_commit([name])
         return Response(status=204)
+
+
+class AdminTagSuggestionsView(BusinessAdminView):
+    def get(self, request: Request, business_id: UUID) -> Response:
+        return Response({"tags": tag_suggestions(get_business(business_id))})
 
 
 class AdminItemListView(BusinessAdminView):

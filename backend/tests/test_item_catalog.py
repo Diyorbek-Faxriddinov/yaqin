@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import Client
 from PIL import Image
 
@@ -350,3 +351,132 @@ def test_suggest_returns_items_of_published_businesses(
             "businessName": "Moda uyi",
         }
     ]
+
+
+# --- Qidiruv teglari (ADR-0016) ---
+
+
+def test_tags_are_searchable_but_hidden_from_public(
+    root: AdminClient, client: Client, shop: Business
+) -> None:
+    created = root.call(
+        "POST",
+        f"/admin/businesses/{shop.id}/items",
+        {**ITEM, "name": "Sport poyabzal", "tags": ["krossovka", "Кроссовки", "krossovka "]},
+    ).json()
+    # Bir xil teg bir marta: kirillcha yozuv boshqa, takror esa olib tashlanadi
+    assert created["tags"] == ["krossovka", "Кроссовки"]
+
+    page = public_get(client, "/businesses?q=кроссовки").json()
+    assert [b["slug"] for b in page["items"]] == ["moda-uyi"]
+    assert page["relaxed"] is False
+    # Teg mahsulotni ham topadi
+    assert page["items"][0]["matchedItems"] == [{"slug": created["slug"], "name": "Sport poyabzal"}]
+    suggest = public_get(client, "/search/suggest?q=krossovka").json()
+    assert [i["name"] for i in suggest["items"]] == ["Sport poyabzal"]
+
+    # Saytda ko'rinmaydi
+    public_items = public_get(client, f"/businesses/{shop.slug}/items").json()
+    assert all("tags" not in entry for entry in public_items)
+    assert "krossovka" not in public_get(client, f"/businesses/{shop.slug}").content.decode()
+
+
+def test_tags_validation_and_keep_when_omitted(root: AdminClient, shop: Business) -> None:
+    url = f"/admin/businesses/{shop.id}/items"
+    for bad in (["a"], ["x" * 41], ["!!"], "teg", [1], [f"teg{i}" for i in range(16)]):
+        response = root.call("POST", url, {**ITEM, "tags": bad})
+        assert response.status_code == 400
+        assert "tags" in response.json()["fields"]
+
+    created = root.call("POST", url, {**ITEM, "tags": ["birinchi"]}).json()
+    # Eski ochiq sahifa `tags` ni yubormasa — teglar o'chib ketmaydi
+    item_url = f"{url}/{created['id']}"
+    assert root.call("PUT", item_url, {**ITEM, "name": "Yangi nom"}).json()["tags"] == ["birinchi"]
+    assert root.call("PUT", item_url, {**ITEM, "tags": []}).json()["tags"] == []
+
+
+def test_description_and_attributes_are_searchable(
+    root: AdminClient, client: Client, shop: Business
+) -> None:
+    root.call(
+        "POST",
+        f"/admin/businesses/{shop.id}/items",
+        {
+            **ITEM,
+            "description": "Italiyadan keltirilgan charm",
+            "attributes": [{"key": None, "name": "Brend", "value": "Zarafshon"}],
+        },
+    )
+    assert public_get(client, "/businesses?q=italiyadan").json()["total"] == 1
+    assert public_get(client, "/businesses?q=zarafshon").json()["total"] == 1
+    shop.description = "Oilaviy savdo uyi"
+    shop.save()
+    assert public_get(client, "/businesses?q=oilaviy").json()["total"] == 1
+
+
+def test_relaxed_search_when_strict_is_empty(
+    root: AdminClient, client: Client, shop: Business
+) -> None:
+    root.call("POST", f"/admin/businesses/{shop.id}/items", {**ITEM, "name": "Soch olish"})
+    other = make_business(**publishable(name="Boshqa doʻkon", slug="boshqa"))
+
+    # Ortiqcha so'z natijani bo'shatmaydi va bu ochiq aytiladi
+    page = public_get(client, "/businesses?q=soch+olish+qimmatbaho").json()
+    assert page["relaxed"] is True
+    assert [b["slug"] for b in page["items"]] == ["moda-uyi"]
+
+    # Qattiq natija bor bo'lsa — yumshatilmaydi
+    assert public_get(client, "/businesses?q=soch+olish").json()["relaxed"] is False
+    # Bitta so'zni yumshatib bo'lmaydi; yarmidan kami mos kelsa — topilmaydi
+    assert public_get(client, "/businesses?q=qimmatbaho").json() == {
+        "items": [],
+        "total": 0,
+        "page": 1,
+        "pageSize": 20,
+        "relaxed": False,
+    }
+    assert public_get(client, "/businesses?q=soch+zzzzzz+qqqqqq").json()["total"] == 0
+    # Boshqa filtrlar yumshatilmaydi
+    filtered = public_get(
+        client, f"/businesses?q=soch+olish+qimmatbaho&district={other.district.slug}x"
+    )
+    assert filtered.json()["total"] == 0
+
+
+def test_rebuild_search_refreshes_existing_rows(client: Client, shop: Business) -> None:
+    item = Item.objects.create(
+        business=shop,
+        slug="eski",
+        kind="product",
+        name="Eski mahsulot",
+        tags=["yashirinteg"],
+        price_type="on_request",
+    )
+    Item.objects.filter(pk=item.pk).update(search_text="eski mahsulot")
+    Business.objects.filter(pk=shop.pk).update(search_text="moda")
+    assert public_get(client, "/businesses?q=yashirinteg").json()["total"] == 0
+
+    call_command("rebuild_search", stdout=io.StringIO())
+
+    assert public_get(client, "/businesses?q=yashirinteg").json()["total"] == 1
+    item.refresh_from_db()
+    assert "yashirinteg" in item.search_text
+
+
+def test_tag_suggestions(root: AdminClient, shop: Business) -> None:
+    other = make_business(**publishable(name="Raqib", slug="raqib", category=shop.category))
+    draft = make_business(name="Qoralama", slug="qoralama", category=shop.category, status="draft")
+    for business, tags in ((other, ["umumiy", "raqib"]), (draft, ["yashirin"])):
+        Item.objects.create(
+            business=business,
+            slug="m",
+            kind="product",
+            name="Mahsulot",
+            tags=tags,
+            price_type="on_request",
+        )
+    root.call("POST", f"/admin/businesses/{shop.id}/items", {**ITEM, "tags": ["ozim", "umumiy"]})
+
+    tags = root.call("GET", f"/admin/businesses/{shop.id}/tag-suggestions").json()["tags"]
+    # Avval o'z teglari; boshqasi takrorlanmaydi; qoralama bizneslardan olinmaydi
+    assert tags == ["ozim", "umumiy", "raqib"]

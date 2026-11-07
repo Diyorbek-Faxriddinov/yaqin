@@ -61,6 +61,7 @@ ITEM_FIELDS = (
     "price",
     "durationMinutes",
     "attributes",
+    "tags",
     "isAvailable",
 )
 MAX_PENDING_CHANGES = 20
@@ -102,6 +103,7 @@ def item_values(item: Item) -> dict[str, Any]:
         },
         "durationMinutes": item.duration_minutes,
         "attributes": item_attributes.input_values(item.attributes, known),
+        "tags": list(item.tags),
         "isAvailable": item.is_available,
     }
 

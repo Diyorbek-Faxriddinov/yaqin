@@ -23,6 +23,7 @@ from apps.businesses import public
 from apps.businesses.admin_views import admin_business, admin_item
 from apps.businesses.models import Business
 from apps.businesses.photos import process_photo
+from apps.businesses.tags import tag_suggestions
 from apps.cabinet import services
 from apps.cabinet.models import (
     MAX_OWNERS,
@@ -222,6 +223,11 @@ class OwnedBusinessStatsView(CustomerView):
         days = days_param(request)
         business = owned(request, business_id)
         return Response(stats_series(Business.objects.filter(pk=business.pk), days))
+
+
+class OwnedTagSuggestionsView(CustomerView):
+    def get(self, request: Request, business_id: UUID) -> Response:
+        return Response({"tags": tag_suggestions(owned(request, business_id))})
 
 
 class UploadListView(CustomerView):

@@ -113,14 +113,13 @@ class Business(TimestampedModel):
 
     def build_search_text(self) -> str:
         category = self.category
-        parts = [self.name, category.name_uz, category.name_ru]
+        parts = [self.name, self.description, category.name_uz, category.name_ru]
         if category.parent:
             parts += [category.parent.name_uz, category.parent.name_ru]
         parts += [self.district.name_uz, self.district.name_ru]
         # Yangi (hali saqlanmagan) biznesda katalog yo'q
         if not self._state.adding:
-            for name, group in self.items.values_list("name", "group"):
-                parts += [name, group]
+            parts += self.items.values_list("search_text", flat=True)
         return normalize_for_search(" ".join(parts))
 
     def refresh_search_text(self) -> None:
@@ -188,10 +187,12 @@ class Item(TimestampedModel):
     # Erkin: {"key", "name", "value"}; kategoriya xususiyati — qo'shimcha "raw" (xom qiymat),
     # name/value — saqlangan paytdagi ko'rinish (apps/businesses/attributes.py)
     attributes = models.JSONField(default=list, blank=True)
+    # Qidiruv teglari (ADR-0016): saytda ko'rinmaydi, faqat qidiruvga kiradi
+    tags = models.JSONField(default=list, blank=True)
     is_available = models.BooleanField(default=True)
     position = models.PositiveIntegerField(default=0)
-    # Qidiruv takliflari va "nima uchun topildi" — normallashtirilgan nom
-    search_text = models.CharField(max_length=200, blank=True, editable=False)
+    # Qidiruv takliflari va "nima uchun topildi": nom, bo'lim, teglar, xususiyatlar, tavsif
+    search_text = models.TextField(blank=True, editable=False)
 
     class Meta:
         ordering = ["position", "created_at"]
@@ -232,8 +233,13 @@ class Item(TimestampedModel):
     def __str__(self) -> str:
         return self.name
 
+    def build_search_text(self) -> str:
+        values = [str(a.get("value", "")) for a in self.attributes if isinstance(a, dict)]
+        parts = [self.name, self.group, *self.tags, *values, self.description]
+        return normalize_for_search(" ".join(parts))
+
     def save(self, *args: object, **kwargs: object) -> None:
-        self.search_text = normalize_for_search(self.name)
+        self.search_text = self.build_search_text()
         update_fields = kwargs.get("update_fields")
         if update_fields is not None:
             kwargs["update_fields"] = {*update_fields, "search_text"}  # type: ignore[misc]

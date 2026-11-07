@@ -49,9 +49,19 @@ class BusinessListView(APIView):
         page, page_size = page_params(request)
         filters = params.validated_data
         origin = public.origin_of(filters)
-        queryset = public.apply_filters(public.published(), filters, timezone.now())
+        now = timezone.now()
+        queryset = public.apply_filters(public.published(), filters, now)
         total = queryset.count()
         ordered = public.apply_sort(queryset, filters["sort"], origin)
+        relaxed = False
+        if total == 0 and filters.get("q"):
+            # Boshqa filtrlar yumshatilmaydi; ko'proq so'z mos kelgani birinchi
+            others = public.apply_filters(public.published(), {**filters, "q": ""}, now)
+            loose = public.apply_relaxed_query(others, filters["q"])
+            if loose is not None and (total := loose.count()) > 0:
+                relaxed = True
+                ordered = public.apply_sort(loose, filters["sort"], origin)
+                ordered = ordered.order_by("-search_hits", *ordered.query.order_by)
         lang = lang_of(request)
         businesses = list(page_slice(ordered, page, page_size))
         if filters.get("q"):
@@ -62,6 +72,7 @@ class BusinessListView(APIView):
                 "total": total,
                 "page": page,
                 "pageSize": page_size,
+                "relaxed": relaxed,
             }
         )
 

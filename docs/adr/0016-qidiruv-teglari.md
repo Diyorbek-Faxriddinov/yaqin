@@ -1,6 +1,6 @@
 # 0016. Mahsulot teglari va qidiruvni kengaytirish
 
-- **Holat:** Loyiha (administrator koʻrib chiqishi kerak)
+- **Holat:** Qabul qilingan (2026-11-07)
 - **Sana:** 2026-11-07
 
 ## Kontekst
@@ -44,14 +44,14 @@ Bir xil soʻzni har safar yozmaslik uchun: shu kategoriyada eʼlon qilingan bizn
 - Natija **boʻsh** boʻlsa va soʻrovda 3+ harfli kamida ikkita soʻz boʻlsa — yumshoq qidiruv: soʻzlarning kamida yarmi (yuqoriga yaxlitlab) mos kelishi yetarli. Koʻproq soʻz mos kelgani birinchi, keyin tanlangan saralash.
 - Kategoriya, tuman va "hozir ochiq" filtrlari yumshatilmaydi.
 - `BusinessPage.relaxed: true` boʻladi va sahifa ogohlantiradi: "Aniq mos natija topilmadi — oʻxshashlari koʻrsatilmoqda". Foydalanuvchi aldanmasligi uchun.
-- Xarita (`/map/markers`) roʻyxat bilan bir xil natija beradi. Qidiruv takliflari qattiqligicha qoladi.
+- Qidiruv takliflari qattiqligicha qoladi. `/map/markers` soʻrov matnini qabul qilmaydi, unga taʼsir yoʻq.
 
 ### 5. Hujjatlar va mock
 
 - Mock qatlam (`src/mocks/db.ts`, `src/lib/text/normalize`) backend bilan bir xil qoidalarda ishlaydi, chunki E2E ikkala rejimda bir xil natija kutadi.
 - Maxfiylik siyosati oʻzgarmaydi: teglar shaxsiy maʼlumot emas va qidiruv soʻrovlari saqlanmaydi.
 
-API shartnomasi — [docs/api/drafts/item-tags.yaml](../api/drafts/item-tags.yaml) (loyiha). Backend bilan birga asosiy `openapi.yaml` ga koʻchiriladi: amalga oshirilmagan maydon va endpoint kontrakt testlarini yiqitadi.
+API shartnomasi — asosiy [docs/api/openapi.yaml](../api/openapi.yaml).
 
 ## Koʻrib chiqilgan muqobillar
 

@@ -11,6 +11,10 @@ urlpatterns = [
         "admin/businesses/<uuid:business_id>/photos/<uuid:photo_id>",
         views.AdminPhotoDetailView.as_view(),
     ),
+    path(
+        "admin/businesses/<uuid:business_id>/tag-suggestions",
+        views.AdminTagSuggestionsView.as_view(),
+    ),
     path("admin/businesses/<uuid:business_id>/items", views.AdminItemListView.as_view()),
     path(
         "admin/businesses/<uuid:business_id>/items/<uuid:item_id>",

@@ -13,6 +13,7 @@ from django.db.models import (
     Case,
     F,
     FloatField,
+    IntegerField,
     Max,
     Min,
     OuterRef,
@@ -110,6 +111,23 @@ def _query_filter(q: str) -> Q:
     return condition
 
 
+def apply_relaxed_query(queryset: QuerySet[Business], q: str) -> QuerySet[Business] | None:
+    """Qattiq qidiruv bo'sh bo'lganda: so'zlarning kamida yarmi mos kelsa yetarli (ADR-0016).
+
+    Ortiqcha so'z ("arzon soch olish") natijani bo'shatmasin. 3+ harfli kamida ikkita so'z kerak,
+    aks holda yumshatishga arziydigan narsa yo'q — None.
+    """
+    tokens = [t for t in normalize_for_search(q).split() if len(t) >= MIN_MATCH_TOKEN]
+    if len(tokens) < 2:
+        return None
+    hits: Any = Value(0)
+    for token in tokens:
+        stem = token[:-1] if len(token) >= 5 else token
+        match = Q(search_text__icontains=stem) | Q(search_text__trigram_word_similar=token)
+        hits += Case(When(match, then=Value(1)), default=Value(0), output_field=IntegerField())
+    return queryset.annotate(search_hits=hits).filter(search_hits__gte=(len(tokens) + 1) // 2)
+
+
 def apply_filters(
     queryset: QuerySet[Business], params: dict[str, Any], now: datetime
 ) -> QuerySet[Business]:
@@ -150,7 +168,7 @@ def apply_sort(queryset: QuerySet[Business], sort: str, origin: Point | None) ->
 
 
 def attach_matched_items(businesses: list[Business], q: str) -> None:
-    """`matchedItems`: nomida qidiruv so'zlaridan biri bor mahsulotlar (sahifadagi bizneslar)."""
+    """`matchedItems`: qidiruv so'zlaridan biri mos mahsulotlar (sahifadagi bizneslar)."""
     stems = [stem for stem in _stems(q) if len(stem) >= MIN_MATCH_TOKEN]
     if not stems or not businesses:
         return
@@ -172,7 +190,7 @@ def attach_matched_items(businesses: list[Business], q: str) -> None:
 
 
 def suggest_items(q: str, limit: int) -> list[dict[str, str]]:
-    """Qidiruv takliflari: nomida barcha so'zlar bor mahsulotlar (e'lon qilingan bizneslardan)."""
+    """Qidiruv takliflari: barcha so'zlar mos mahsulotlar (e'lon qilingan bizneslardan)."""
     stems = _stems(q)
     if not stems:
         return []

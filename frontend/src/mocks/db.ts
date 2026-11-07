@@ -304,7 +304,8 @@ export function listBusinesses(params: ListBusinessesParams): BusinessPage {
     const record = records.get(summary.id);
     return q && record ? { ...summary, matchedItems: matchedItems(record, q) } : summary;
   });
-  return { items: pageItems, total: items.length, page, pageSize };
+  // ⚠ Yumshoq qidiruv mock'da 7.3 da (ADR-0016)
+  return { items: pageItems, total: items.length, page, pageSize, relaxed: false };
 }
 
 export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {

@@ -72,12 +72,24 @@ Oxirgi yangilanish: 2026-11-04
 
 ## 7-bosqich qadamlari — qidiruv teglari ([ADR-0016](adr/0016-qidiruv-teglari.md))
 
-| Qadam | Mazmuni                                                                                                                  | Holat                |
-| ----- | ------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| 7.1   | ADR-0016 va API shartnomasi (loyiha)                                                                                     | 🔄 Tasdiq kutilmoqda |
-| 7.2   | Backend: `Item.tags`, qidiruv matni, yumshoq qidiruv, teg takliflari, `rebuild_search`, testlar, shartnoma asosiy faylga | ⏳                   |
-| 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ⏳                   |
-| 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ⏳                   |
+| Qadam | Mazmuni                                                                                                                  | Holat |
+| ----- | ------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 7.1   | ADR-0016 va API shartnomasi (loyiha)                                                                                     | ✅    |
+| 7.2   | Backend: `Item.tags`, qidiruv matni, yumshoq qidiruv, teg takliflari, `rebuild_search`, testlar, shartnoma asosiy faylga | ✅    |
+| 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ⏳    |
+| 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ⏳    |
+
+## 7.2 natijalari — backend
+
+- **`Item.tags`:** ko'pi bilan 15 ta, har biri 2–40 belgi, bir xil teg bir marta. Ommaviy API qaytarmaydi. `tags` yuborilmasa, mavjud teglar o'zgarmaydi.
+- **Qidiruv matni:** mahsulotda — nom, bo'lim, teglar, xususiyat qiymatlari, tavsif; biznesda — yana biznes tavsifi. Teg mahsulotni ham topadi (`matchedItems`, qidiruv takliflari).
+- **Yumshoq qidiruv:** qattiq natija bo'sh bo'lsa, so'zlarning kamida yarmi mos kelishi yetarli, `BusinessPage.relaxed: true`. Boshqa filtrlar yumshatilmaydi, qo'shimcha so'rov faqat natija bo'sh bo'lganda.
+- **Teg takliflari:** `GET /admin/businesses/{id}/tag-suggestions` va `GET /cabinet/businesses/{id}/tag-suggestions`.
+- **Kabinet:** `item.tags` taklif maydoni, tasdiqlanmaguncha qidiruvga kirmaydi.
+- **`manage.py rebuild_search`:** mavjud yozuvlar uchun, joylashdan keyin bir marta.
+- **O'zgargan xulq:** avval "ustoz yunusobod" bo'sh qaytardi, endi qisman mos natija `relaxed: true` bilan keladi. Eski test yangi qoidaga moslandi.
+- **ADR tuzatildi:** `/map/markers` so'rov matnini umuman qabul qilmaydi, loyihadagi "xarita ham shunday" jumlasi noto'g'ri edi.
+- **Testlar:** backend 604 ta (+12), shartnoma qamrovi 102/102. Shartnoma loyihasi asosiy faylga ko'chirildi, loyiha fayli o'chirildi. Mock'ga hozircha faqat bo'sh qiymatlar qo'shildi, to'liq qoidalar — 7.3.
 
 ## 6-bosqich qadamlari — biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))
 
@@ -96,7 +108,7 @@ Oxirgi yangilanish: 2026-11-04
 - **Topilgan va tuzatilgan:** akkaunt o'chirilganda kutilayotgan takliflar muallifsiz qolib ketardi va moderator ularni tasdiqlashi mumkin edi. Endi `end_memberships` ularni qaytaradi, egalik tugagani audit jurnaliga yoziladi (backend va mock testlari bilan).
 - **Admin ustasi E2E testi — sababi topildi:** 6.3–6.4 da yiqilgan test osilish emas ekan. Trace bilan o'lchandi: yangi serverda birinchi `/_next/image` optimizatsiyasi 8 ta parallel ishchi ostida 18–19 s, keyingilari 50–300 ms. Test 30 s ichida `load` hodisasini kutardi. Test vaqti uzaytirildi (`test.slow()`); 90 s bilan 29/29 o'tdi.
 
-- **E2E build:** `e2e-backend.mjs` dagi vaqtinchalik backend 4 oqim bilan ishlardi va build vaqti-vaqti bilan `backend_timeout` bilan yiqilardi; endi 16 oqim (Playwright sozlamasi bilan bir xil).
+- **E2E build:** `e2e-backend.mjs` dagi vaqtinchalik backend 4 oqim bilan ishlardi va build vaqti-vaqti bilan `backend_timeout` bilan yiqilardi; 16 oqim qilindi. Bu yetmadi — xato 7.2 da yana chiqdi, shu sabab o'sha buildda `API_TIMEOUT_MS` ham 60 s qilindi.
 - **Testlar:** backend 592 ta, shartnoma qamrovi 100/100; frontend unit 270 ta; demo E2E — 267 o'tdi, 3 yiqildi (yangi tekshiruvdagi selektor xatosi, tuzatildi, kabinet testlari 9/9); backend E2E — 285 o'tdi, 0 yiqildi.
 
 - **Joylandi** (`ac5cb03cd136`, 2026-11-04): CI 6/6 yashil, yangi migratsiya yo'q, smoke test 24/24. `yaqin-changes` taymeri o'rnatildi, skript production bazasida xatosiz ishladi (hali taklif yo'q). `/kabinet` kirishga yo'naltiradi, `/kabinet/qoshilish` ochiladi, kabinet va admin API sessiyasiz 401 beradi.

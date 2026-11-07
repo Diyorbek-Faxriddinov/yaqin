@@ -2173,6 +2173,25 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /cabinet/businesses/{businessId}/tag-suggestions:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [cabinet]
+      operationId: getOwnedTagSuggestions
+      summary: Mahsulot teglari uchun takliflar (faqat biznes egasi)
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: Takliflar
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TagSuggestions" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /cabinet/businesses/{businessId}/uploads:
     parameters:
       - $ref: "#/components/parameters/BusinessId"
@@ -2319,6 +2338,27 @@ paths:
           $ref: "#/components/responses/Conflict"
 
   # ---------------------------------------------------------------- Admin: egalar
+
+  /admin/businesses/{businessId}/tag-suggestions:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [admin]
+      operationId: adminGetTagSuggestions
+      summary: Mahsulot teglari uchun takliflar — ruxsat business.view
+      security: [{ adminSessionCookie: [] }]
+      responses:
+        "200":
+          description: Takliflar
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TagSuggestions" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /admin/businesses/{businessId}/owners:
     parameters:
@@ -2910,7 +2950,7 @@ components:
 
     BusinessPage:
       type: object
-      required: [items, total, page, pageSize]
+      required: [items, total, page, pageSize, relaxed]
       properties:
         items:
           type: array
@@ -2919,6 +2959,11 @@ components:
         total: { type: integer }
         page: { type: integer }
         pageSize: { type: integer }
+        relaxed:
+          type: boolean
+          description: |
+            Qattiq qidiruv bo'sh qaytgani uchun yumshoq qidiruv natijasi: so'zlarning kamida yarmi
+            mos keladi (ADR-0016). Sahifa buni foydalanuvchiga aytishi kerak.
 
     Phone:
       type: object
@@ -3069,8 +3114,12 @@ components:
       allOf:
         - $ref: "#/components/schemas/Item"
         - type: object
-          required: [photos, attributeValues]
+          required: [photos, attributeValues, tags]
           properties:
+            tags:
+              type: array
+              description: Qidiruv teglari — ommaviy `Item` da yo'q, saytda ko'rinmaydi (ADR-0016)
+              items: { type: string }
             photos:
               type: array
               maxItems: 5
@@ -3468,7 +3517,26 @@ components:
           type: array
           maxItems: 20
           items: { $ref: "#/components/schemas/ItemAttributeInput" }
+        tags:
+          type: array
+          maxItems: 15
+          description: |
+            Qidiruv teglari — saytda ko'rinmaydi. Yuborilmasa: yangi mahsulotda bo'sh, mavjudida
+            o'zgarmaydi. Har biri 2–40 belgi; bir xil teg bir marta saqlanadi (ADR-0016).
+          items: { type: string, minLength: 2, maxLength: 40 }
         isAvailable: { type: boolean }
+
+    TagSuggestions:
+      type: object
+      required: [tags]
+      properties:
+        tags:
+          type: array
+          maxItems: 40
+          description: |
+            Avval shu biznes teglari, keyin shu kategoriyada e'lon qilingan bizneslarda eng ko'p
+            ishlatilgan 20 ta teg. Takrorlar olib tashlangan.
+          items: { type: string, maxLength: 40 }
 
     ItemAttributeInput:
       type: object

@@ -193,8 +193,16 @@ def test_search_latin_cyrillic_typo_and_category(
     assert slugs(get(client, "/businesses", q=query)) == ["ustoz-sartaroshxonasi"]
 
 
-def test_search_requires_every_word(client: Client, data: dict[str, Business]) -> None:
-    assert slugs(get(client, "/businesses", q="ustoz yunusobod")) == []
+def test_search_prefers_every_word_and_marks_partial_match(
+    client: Client, data: dict[str, Business]
+) -> None:
+    # Hamma so'z mos natija bor bo'lsa, qisman moslar aralashmaydi
+    exact = get(client, "/businesses", q="ustoz chilonzor").json()
+    assert (exact["total"], exact["relaxed"]) == (1, False)
+    # Bo'lmasa, qisman mos natija ochiq belgilanadi (ADR-0016)
+    partial = get(client, "/businesses", q="ustoz yunusobod")
+    assert slugs(partial) == ["ustoz-sartaroshxonasi"]
+    assert partial.json()["relaxed"] is True
 
 
 def test_distance_sort_returns_meters(client: Client, data: dict[str, Business]) -> None:
