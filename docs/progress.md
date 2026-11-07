@@ -13,7 +13,7 @@ Oxirgi yangilanish: 2026-11-04
 | 4       | Integratsiya va yakuniy tekshiruv                                   | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
 | 5       | Hosting va domen                                                    | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
 | 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))           | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
-| 7       | Qidiruv: mahsulot teglari ([ADR-0016](adr/0016-qidiruv-teglari.md)) | 🔄 Jarayonda                                                     |
+| 7       | Qidiruv: mahsulot teglari ([ADR-0016](adr/0016-qidiruv-teglari.md)) | ✅ Joylandi                                                      |
 
 ## 2-bosqich qadamlari
 
@@ -77,7 +77,14 @@ Oxirgi yangilanish: 2026-11-04
 | 7.1   | ADR-0016 va API shartnomasi (loyiha)                                                                                     | ✅    |
 | 7.2   | Backend: `Item.tags`, qidiruv matni, yumshoq qidiruv, teg takliflari, `rebuild_search`, testlar, shartnoma asosiy faylga | ✅    |
 | 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ✅    |
-| 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ⏳    |
+| 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ✅    |
+
+## 7.4 natijalari — joylash
+
+- **Joylandi** (`90cce874d870`, 2026-11-07): CI yashil, joylashdan oldin qo'lda zaxira olindi, migratsiya `businesses.0004` qo'llandi, smoke test 24/24. `rebuild_search`: 6 ta mahsulot, 3 ta biznes.
+- **Productionda tekshirildi** (bazada, faqat o'qish): "vomero", "krasovka", "poyabzal", "nonkabob" topadi; "vomero arzon" qattiq qidiruvda 0, yumshoqda topadi; "zzzzzz qqqqqq" hech narsa topmaydi. Teg takliflari endpointlari sessiyasiz 401.
+- **Productionda tekshirilmagan:** sahifadagi "o'xshash natijalar" xabari va ommaviy API'dagi yumshoq natija. Hozir e'lon qilingan biznes yo'q: administrator 2026-11-07 da hammasini qoralama qilgan yoki yashirgan (audit jurnalida bor). Ular demo va backend E2E'da sinalgan.
+- **Haqiqiy maʼlumotdan xulosa:** "krossovka" va "кроссовки" Theonly_uz ni topmaydi, chunki mahsulotlarda "krasovka" yozilgan — teglar shu uchun kerak. Variantlar hozircha "Bo'lim"da turibdi, ularni teglarga ko'chirish kerak.
 
 ## 7.3 natijalari — interfeys va mock
 
