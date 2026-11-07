@@ -142,6 +142,19 @@ export function ChangeValue({ field, value }: { field: string; value: unknown })
         </ul>
       );
     }
+    case "item.tags": {
+      const tags = Array.isArray(value) ? (value as string[]) : [];
+      if (tags.length === 0) return <Empty />;
+      return (
+        <ul className="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <li key={tag}>
+              <Badge variant="secondary">{tag}</Badge>
+            </li>
+          ))}
+        </ul>
+      );
+    }
     case "item": {
       // O'chirish taklifi — butun mahsulot
       const item = (isRecord(value) ? value : {}) as ItemValues;

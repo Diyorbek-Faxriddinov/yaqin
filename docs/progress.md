@@ -76,8 +76,19 @@ Oxirgi yangilanish: 2026-11-04
 | ----- | ------------------------------------------------------------------------------------------------------------------------ | ----- |
 | 7.1   | ADR-0016 va API shartnomasi (loyiha)                                                                                     | ✅    |
 | 7.2   | Backend: `Item.tags`, qidiruv matni, yumshoq qidiruv, teg takliflari, `rebuild_search`, testlar, shartnoma asosiy faylga | ✅    |
-| 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ⏳    |
+| 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ✅    |
 | 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ⏳    |
+
+## 7.3 natijalari — interfeys va mock
+
+- **Teg kiritish** (`tag-input.tsx`): mahsulot dialogida "Boʻlim"dan keyin. Enter, vergul yoki maydondan chiqish teg qoʻshadi, Backspace oxirgisini oʻchiradi. Vergul `onChange` da ham tekshiriladi: Android klaviaturalari `keydown` da tugmani aytmaydi. Bir xil teg (kirill va lotin yozuvi ham) takrorlanmaydi.
+- **Takliflar:** shu biznes va kategoriyadagi teglar tugma boʻlib chiqadi, bosilganda qoʻshiladi.
+- **Moderator:** taklif sahifasida "Qidiruv teglari" maydoni.
+- **Qidiruv sahifasi:** yumshoq natijada "Aniq mos natija topilmadi — oʻxshashlari koʻrsatilmoqda".
+- **Mock:** teglar, kengroq qidiruv matni, yumshoq qidiruv, ikkala takliflar endpointi. `publicItem` maydonlarni yoyib qaytargani uchun teglar demo'da ommaviy javobga sizib chiqardi — oldindan ushlandi, test bor.
+- **Testlar:** unit 281 ta (+11), E2E `e2e/search-tags.spec.ts` (3 ekran × 3). Demo E2E — 279 o'tdi, 0 yiqildi.
+- **Backend E2E farqi:** tasdiqlanmagan teg testi backendda yiqildi. Tekshirildi: sizib chiqish emas, trigram o'xshashligi (0.79, chegara 0.6) birinchi testning deyarli bir xil tegi bilan boshqa biznesni topgan. Test "shu biznes natijada yo'q" deb tekshiradigan qilindi.
+- **Testlar topgan:** teglar roʻyxatining `aria-label` i maydon nomi bilan bir xil edi, ekran oʻquvchi ularni ajrata olmasdi. Alohida nom berildi.
 
 ## 7.2 natijalari — backend
 

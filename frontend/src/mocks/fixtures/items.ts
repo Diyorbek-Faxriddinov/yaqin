@@ -10,6 +10,8 @@ import { demoId, seededRandom } from "./ids";
 export type DemoItem = Omit<Item, "attributes" | "images"> & {
   attributes: StoredAttribute[];
   photos: AdminPhoto[];
+  /** Qidiruv teglari (ADR-0016): ommaviy `Item` da yo'q */
+  tags: string[];
 };
 
 type PriceType = Item["price"]["type"];
@@ -336,6 +338,7 @@ export function itemsFor(business: DemoBusiness): DemoItem[] {
         return storedTyped(definition, attribute[1]);
       }),
       photos: [],
+      tags: [],
       isAvailable: random() > 0.1,
     };
   });

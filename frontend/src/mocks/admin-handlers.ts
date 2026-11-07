@@ -10,6 +10,7 @@ import type {
 } from "@/lib/api/types";
 import { AMENITIES, sortAmenities } from "@/lib/amenities";
 import { isValidPoint } from "@/lib/geo";
+import { normalizeForSearch } from "@/lib/text/normalize";
 import {
   API,
   audit,
@@ -255,8 +256,7 @@ export function toAdminItem(item: DemoItem, record: DemoBusinessRecord, lang: La
     ...publicItem(item, record, lang),
     photos: item.photos,
     attributeValues: inputValues(item.attributes, knownAttributes(record)),
-    // ⚠ Qidiruv teglari mock'da 7.3 da (ADR-0016)
-    tags: [],
+    tags: item.tags,
   };
 }
 
@@ -301,10 +301,26 @@ export async function readPhoto(request: Request): Promise<AdminPhoto | { respon
   };
 }
 
+/** Qidiruv teglari: bir xil teg bir marta (backend `parse_tags`). Xato — null */
+function parseTags(raw: unknown): string[] | null {
+  if (!Array.isArray(raw)) return null;
+  const tags = new Map<string, string>();
+  for (const value of raw) {
+    const tag = typeof value === "string" ? value.trim() : "";
+    const key = normalizeForSearch(tag);
+    if (tag.length < 2 || tag.length > 40 || !key) return null;
+    if (!tags.has(key)) tags.set(key, tag);
+  }
+  return tags.size <= 15 ? [...tags.values()] : null;
+}
+
+/** `tags` yuborilmasa — natijada ham yo'q: mavjud mahsulotda o'zgarmaydi (ADR-0016) */
 export function parseItem(
   body: Record<string, unknown> | null,
   record: DemoBusinessRecord,
-): { item: Omit<DemoItem, "id" | "slug" | "photos"> } | { fields: Fields } {
+):
+  | { item: Omit<DemoItem, "id" | "slug" | "photos" | "tags"> & { tags?: string[] } }
+  | { fields: Fields } {
   const fields: Fields = {};
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const kind = body?.kind === "product" || body?.kind === "service" ? body.kind : null;
@@ -335,6 +351,8 @@ export function parseItem(
   else if (parsed.problems.length > 0) fields.attributes = parsed.problems;
   const description = typeof body?.description === "string" ? body.description.trim() : "";
   if (description.length > 1000) fields.description = ["1000 belgigacha"];
+  const tags = body && "tags" in body ? parseTags(body.tags) : undefined;
+  if (tags === null) fields.tags = ["Koʻpi bilan 15 ta teg, har biri 2–40 belgi"];
   if (Object.keys(fields).length > 0 || !price || !kind) return { fields };
 
   return {
@@ -354,6 +372,7 @@ export function parseItem(
       durationMinutes: kind === "service" && typeof duration === "number" ? duration : null,
       attributes: parsed.stored,
       isAvailable: body?.isAvailable !== false,
+      ...(tags ? { tags } : {}),
     },
   };
 }
@@ -840,7 +859,13 @@ export const adminHandlers = [
     let slug = slugify(parsed.item.name);
     for (let n = 2; items.some((i) => i.slug === slug); n++)
       slug = `${slugify(parsed.item.name)}-${n}`;
-    const item: DemoItem = { ...parsed.item, id: crypto.randomUUID(), slug, photos: [] };
+    const item: DemoItem = {
+      tags: [],
+      ...parsed.item,
+      id: crypto.randomUUID(),
+      slug,
+      photos: [],
+    };
     demoState.items.set(record.id, [...items, item]);
     audit(auth.admin, "item.create", "item", item.id, `${record.name}: ${item.name}`);
     return HttpResponse.json(toAdminItem(item, record, langOf(request)), {

@@ -28,6 +28,7 @@ import {
   pendingOf,
   photoRefs,
   same,
+  tagSuggestions,
 } from "./cabinet-handlers";
 import {
   DELETED_USER_ID,
@@ -256,6 +257,17 @@ function applyChange(change: StoredChange, record: DemoBusinessRecord): Response
 }
 
 export const adminChangeHandlers = [
+  http.get(
+    `${API}/admin/businesses/:businessId/tag-suggestions`,
+    ({ request, cookies, params }) => {
+      const auth = authorize(request, cookies, "business.view");
+      if ("response" in auth) return auth.response;
+      const record = findBusinessRecord(String(params.businessId));
+      if (!record) return error(404, "not_found", "Topilmadi");
+      return HttpResponse.json({ tags: tagSuggestions(record) });
+    },
+  ),
+
   // --- Egalar ---
   http.get(`${API}/admin/businesses/:businessId/owners`, ({ request, cookies, params }) => {
     const auth = authorize(request, cookies, "business.view");

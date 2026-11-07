@@ -16,6 +16,12 @@
 - ⚠ Demo: taklif rasmining o'lchami o'lchanmaydi (namunaviy 1200×900); taklif havolasining QR kodi — "DEMO" belgisi (havolani kodlamaydi, backend haqiqiy QR beradi); hamma narsa xotirada.
 - Testlar uchun umumiy yordamchilar — `cabinet-test-utils.ts`.
 
+## Qidiruv (demo)
+
+- `db.ts` qoidalari backend bilan bir xil (ADR-0016): mahsulot matni — nom, boʻlim, teglar, xususiyatlar, tavsif; qattiq natija boʻsh boʻlsa, soʻzlarning kamida yarmi yetarli va `relaxed: true`.
+- ⚠ Farqi: mock'da trigram oʻxshashlik yoʻq, shuning uchun imlo xatosi bilan yozilgan soʻz backenddagidek topilmasligi mumkin.
+- Demo mahsulotlarda teglar boʻsh; ular `scripts/export-demo-data.ts` ga kirmaydi.
+
 ## Backend bilan bir xil maʼlumot
 
 Fixture'lar `scripts/export-demo-data.ts` orqali `backend/demo/demo-data.json` ga eksport qilinadi — backend `manage.py seed_demo` aynan shu maʼlumotni yuklaydi, E2E testlar ikkala rejimda bir xil natija kutadi. Fixture oʻzgarsa, eksportni qayta ishga tushiring.

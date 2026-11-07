@@ -96,6 +96,13 @@ export async function BusinessResults({
         </Alert>
       )}
 
+      {/* Foydalanuvchi aldanmasin: natija so'rovning hamma so'ziga mos emas (ADR-0016) */}
+      {page.relaxed && (
+        <Alert>
+          <AlertDescription>{t("relaxed")}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Kartalar sarlavhasi h3 — sarlavhalar tartibi uzilmasligi uchun (a11y) */}
       <h2 className="sr-only">{t("heading")}</h2>
       <p role="status" className="text-sm text-muted-foreground">

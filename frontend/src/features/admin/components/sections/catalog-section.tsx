@@ -46,8 +46,10 @@ import {
   useDeleteItem,
   usePendingItemIds,
   useSaveItem,
+  useTagSuggestions,
 } from "../../use-admin-business";
 import { PhotoManager, uploadPhoto } from "../photo-manager";
+import { TagInput } from "../tag-input";
 import type { SectionProps } from "./section-props";
 
 const PRICE_TYPES = ["fixed", "from", "range", "on_request"] as const;
@@ -280,6 +282,8 @@ function ItemDialog({
   const [draftPhotos, setDraftPhotos] = useState(() => draftFromPhotos(item?.photos ?? []));
   const [uploadingDraft, setUploadingDraft] = useState(false);
   const definitions = useCategoryAttributes(categorySlug, open);
+  const tagSuggestions = useTagSuggestions(businessId, open);
+  const [tags, setTags] = useState<string[]>(item?.tags ?? []);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadingPending, setUploadingPending] = useState(false);
   const refreshItems = () =>
@@ -378,6 +382,7 @@ function ItemDialog({
           .map((a) => ({ key: null, name: a.name, value: a.value })),
       ],
       isAvailable: v.isAvailable,
+      tags,
     };
     const photos = owner
       ? toPhotoRefs(draftPhotos, (index) => t("photos.alt", { name: v.name, index }))
@@ -493,6 +498,8 @@ function ItemDialog({
               {t("catalog.groupHint")}
             </p>
           </div>
+
+          <TagInput value={tags} onChange={setTags} suggestions={tagSuggestions} />
 
           <div className="grid gap-2">
             <Label htmlFor="item-price-type">{t("catalog.priceType")}</Label>

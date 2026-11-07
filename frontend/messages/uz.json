@@ -140,7 +140,8 @@
     "prev": "Oldingi",
     "next": "Keyingi",
     "pageOf": "{page} / {total}",
-    "heading": "Natijalar"
+    "heading": "Natijalar",
+    "relaxed": "Aniq mos natija topilmadi — oʻxshashlari koʻrsatilmoqda."
   },
   "CategoriesPage": {
     "title": "Kategoriyalar",
@@ -625,7 +626,15 @@
       "removeAttribute": "Olib tashlash",
       "save": "Saqlash",
       "yes": "Ha",
-      "no": "Yoʻq"
+      "no": "Yoʻq",
+      "tags": "Qidiruv teglari (ixtiyoriy)",
+      "tagsPlaceholder": "Masalan: stirjka",
+      "tagsHint": "Saytda koʻrinmaydi. Odamlar bu mahsulotni yana qanday nomlar bilan qidirishi mumkin? Enter yoki vergul bilan ajrating.",
+      "tagsSuggested": "Taklif qilingan teglar",
+      "tagRemove": "{tag} tegini olib tashlash",
+      "tagLength": "Teg 2–40 belgi boʻlsin",
+      "tagsLimit": "Koʻpi bilan {max} ta teg",
+      "tagsAdded": "Qoʻshilgan teglar"
     },
     "publish": {
       "current": "Hozirgi holat",
@@ -1493,7 +1502,8 @@
           "price": "Narx",
           "durationMinutes": "Davomiyligi",
           "attributes": "Xususiyatlar",
-          "isAvailable": "Mavjudligi"
+          "isAvailable": "Mavjudligi",
+          "tags": "Qidiruv teglari"
         }
       },
       "changed": "Oʻzgargan: {fields}",

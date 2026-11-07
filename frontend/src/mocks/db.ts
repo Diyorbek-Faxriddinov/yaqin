@@ -145,7 +145,8 @@ function toSummary(business: PublicRecord, lang: Lang, origin: GeoPoint | null):
 
 /** Mahsulot ommaviy ko'rinishda: kategoriya xususiyatlari so'ralgan tilda */
 export function publicItem(item: DemoItem, business: DemoBusinessRecord, lang: Lang): Item {
-  const { photos, attributes, ...rest } = item;
+  // `tags` ommaviy javobga chiqmaydi (ADR-0016)
+  const { photos, attributes, tags: _tags, ...rest } = item;
   const known = definitionsOf(findCategory(business.categorySlug)?.attributes ?? []);
   return {
     ...rest,
@@ -158,14 +159,29 @@ export function publicItem(item: DemoItem, business: DemoBusinessRecord, lang: L
 const MIN_MATCH_TOKEN = 3;
 const MAX_MATCHED_ITEMS = 3;
 
-/** `matchedItems`: nomida qidiruv so'zlaridan biri bor mahsulotlar (backend bilan bir xil) */
+/** Mahsulot qidiruv matni: backend `Item.build_search_text` bilan bir xil (ADR-0016) */
+function itemSearchText(item: DemoItem): string {
+  return normalizeForSearch(
+    [
+      item.name,
+      item.group,
+      ...item.tags,
+      ...item.attributes.map((attribute) => attribute.value),
+      item.description,
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+/** `matchedItems`: qidiruv so'zlaridan biri mos mahsulotlar (backend bilan bir xil) */
 function matchedItems(business: DemoBusinessRecord, q: string): BusinessSummary["matchedItems"] {
   const stems = searchStems(q).filter((stem) => stem.length >= MIN_MATCH_TOKEN);
   if (stems.length === 0) return [];
   return itemsOf(business)
     .filter((item) => {
-      const name = normalizeForSearch(item.name);
-      return stems.some((stem) => name.includes(stem));
+      const text = itemSearchText(item);
+      return stems.some((stem) => text.includes(stem));
     })
     .slice(0, MAX_MATCHED_ITEMS)
     .map(({ slug, name }) => ({ slug, name }));
@@ -208,20 +224,21 @@ function ratingOf(business: DemoBusinessRecord): BusinessSummary["rating"] {
   return { average: Math.round((sum / count) * 10) / 10, count };
 }
 
-/** Qidiruv matni: nom, kategoriya (ikkala tilda, ota-kategoriya bilan), tuman, katalog */
+/** Qidiruv matni: nom, tavsif, kategoriya (ikkala tilda, ota-kategoriya bilan), tuman, katalog */
 function searchText(business: DemoBusinessRecord): string {
   const category = findCategory(business.categorySlug);
   const parent = category?.parentSlug ? findCategory(category.parentSlug) : undefined;
   const district = districtBySlug.get(business.districtSlug);
   return [
     business.name,
+    business.description,
     category?.name.uz,
     category?.name.ru,
     parent?.name.uz,
     parent?.name.ru,
     district?.name.uz,
     district?.name.ru,
-    ...itemsOf(business).flatMap((item) => [item.name, item.group]),
+    ...itemsOf(business).map(itemSearchText),
   ]
     .filter(Boolean)
     .join(" ");
@@ -277,16 +294,34 @@ export function listBusinesses(params: ListBusinessesParams): BusinessPage {
 
   const categorySlugs = category ? descendantSlugs(category) : null;
 
-  const matching = publicBusinesses().filter((b) => {
+  const filtered = publicBusinesses().filter((b) => {
     if (categorySlugs && !categorySlugs.has(b.categorySlug)) return false;
     if (district && b.districtSlug !== district) return false;
-    if (q && !matchesQuery(searchText(b), q)) return false;
     if (openNow) {
       const state = computeOpenStatus(b.schedule, now).state;
       if (state !== "open" && state !== "closingSoon") return false;
     }
     return true;
   });
+  let matching = q ? filtered.filter((b) => matchesQuery(searchText(b), q)) : filtered;
+
+  // Yumshoq qidiruv: qattiq natija bo'sh bo'lsa, so'zlarning kamida yarmi yetarli (ADR-0016)
+  const hits = new Map<string, number>();
+  let relaxed = false;
+  if (q && matching.length === 0) {
+    const tokens = normalizeForSearch(q)
+      .split(" ")
+      .filter((token) => token.length >= MIN_MATCH_TOKEN);
+    if (tokens.length >= 2) {
+      const stems = searchStems(tokens.join(" "));
+      for (const b of filtered) {
+        const text = normalizeForSearch(searchText(b));
+        hits.set(b.id, stems.filter((stem) => text.includes(stem)).length);
+      }
+      matching = filtered.filter((b) => (hits.get(b.id) ?? 0) >= Math.ceil(tokens.length / 2));
+      relaxed = matching.length > 0;
+    }
+  }
   const records = new Map(matching.map((b) => [b.id, b]));
   let items = matching.map((b) => toSummary(b, lang, origin));
 
@@ -297,15 +332,16 @@ export function listBusinesses(params: ListBusinessesParams): BusinessPage {
     distance: (a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0),
     newest: (a, b) => b.createdAt.localeCompare(a.createdAt),
   };
-  items = items.sort(compare[sort]);
+  items = items.sort(
+    (a, b) => (hits.get(b.id) ?? 0) - (hits.get(a.id) ?? 0) || compare[sort](a, b),
+  );
 
   const start = (page - 1) * pageSize;
   const pageItems = items.slice(start, start + pageSize).map((summary) => {
     const record = records.get(summary.id);
     return q && record ? { ...summary, matchedItems: matchedItems(record, q) } : summary;
   });
-  // ⚠ Yumshoq qidiruv mock'da 7.3 da (ADR-0016)
-  return { items: pageItems, total: items.length, page, pageSize, relaxed: false };
+  return { items: pageItems, total: items.length, page, pageSize, relaxed };
 }
 
 export function getBusiness(slug: string, lang: Lang): BusinessDetail | null {
@@ -344,13 +380,13 @@ export function suggest(q: string, lang: Lang): SearchSuggestions {
         name: b.name,
         categoryName: findCategory(b.categorySlug)?.name[lang] ?? "",
       })),
-    // Nomida barcha so'zlar bor mahsulotlar (backend: nom bo'yicha tartiblangan, 5 tagacha)
+    // Barcha so'zlar mos mahsulotlar (backend: nom bo'yicha tartiblangan, 5 tagacha)
     items: publicBusinesses()
       .flatMap((b) =>
         itemsOf(b)
           .filter((item) => {
-            const name = normalizeForSearch(item.name);
-            return stems.length > 0 && stems.every((stem) => name.includes(stem));
+            const text = itemSearchText(item);
+            return stems.length > 0 && stems.every((stem) => text.includes(stem));
           })
           .map((item) => ({
             slug: item.slug,

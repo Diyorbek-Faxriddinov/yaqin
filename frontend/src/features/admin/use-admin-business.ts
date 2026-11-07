@@ -142,6 +142,26 @@ export function usePendingItemIds(businessId: string): Set<string> {
   );
 }
 
+/** Teg takliflari: shu biznes teglari va kategoriyada ko'p ishlatilganlari (ADR-0016) */
+export function useTagSuggestions(businessId: string, enabled: boolean): string[] {
+  const owner = useOwnerMode();
+  const { data } = useQuery({
+    queryKey: ["tag-suggestions", owner ? "owner" : "admin", businessId],
+    queryFn: () =>
+      call(
+        owner
+          ? browserApi.GET("/cabinet/businesses/{businessId}/tag-suggestions", {
+              params: { path: { businessId } },
+            })
+          : browserApi.GET("/admin/businesses/{businessId}/tag-suggestions", {
+              params: { path: { businessId } },
+            }),
+      ),
+    enabled,
+  });
+  return data?.tags ?? [];
+}
+
 export type SaveItemInput = {
   itemId?: string;
   body: ItemInput;

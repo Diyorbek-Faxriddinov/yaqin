@@ -33,6 +33,7 @@ import {
 } from "./demo-state";
 import type { DemoItem } from "./fixtures/items";
 import { definitionsOf, inputValues } from "./item-attributes";
+import { normalizeForSearch } from "@/lib/text/normalize";
 import { authenticate } from "./me-handlers";
 import { statsSeries, parseDays } from "./stats";
 
@@ -84,6 +85,7 @@ export const ITEM_FIELDS = [
   "price",
   "durationMinutes",
   "attributes",
+  "tags",
   "isAvailable",
 ] as const;
 
@@ -200,8 +202,39 @@ export function itemValues(
       item.attributes,
       definitionsOf(findCategory(record.categorySlug)?.attributes ?? []),
     ),
+    tags: item.tags,
     isAvailable: item.isAvailable,
   };
+}
+
+/** Teg takliflari: avval o'zi, keyin shu kategoriyada e'lon qilinganlarning eng ko'plari */
+export function tagSuggestions(record: DemoBusinessRecord): string[] {
+  const result = new Map<string, string>();
+  for (const item of itemsOf(record)) {
+    for (const tag of item.tags) {
+      const key = normalizeForSearch(tag);
+      if (!result.has(key)) result.set(key, tag);
+    }
+  }
+  const counts = new Map<string, { tag: string; count: number }>();
+  for (const other of demoState.businesses) {
+    if (other.id === record.id || other.status !== "published") continue;
+    if (other.categorySlug !== record.categorySlug) continue;
+    for (const item of itemsOf(other)) {
+      for (const tag of item.tags) {
+        const key = normalizeForSearch(tag);
+        counts.set(key, {
+          tag: counts.get(key)?.tag ?? tag,
+          count: (counts.get(key)?.count ?? 0) + 1,
+        });
+      }
+    }
+  }
+  const popular = [...counts.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 20);
+  for (const [key, { tag }] of popular) {
+    if (!result.has(key)) result.set(key, tag);
+  }
+  return [...result.values()].slice(0, 40);
 }
 
 export function photoRefs(photos: AdminPhoto[]) {
@@ -304,8 +337,9 @@ function draftChange(
     }
     if (!body.item || typeof body.item !== "object")
       return { fields: { item: ["Mahsulot maʼlumotlari kerak"] } };
-    const parsed = parseItem(body.item as Record<string, unknown>, record);
-    if ("fields" in parsed) return parsed;
+    const result = parseItem(body.item as Record<string, unknown>, record);
+    if ("fields" in result) return result;
+    const parsed = { item: { ...result.item, tags: result.item.tags ?? existing?.tags ?? [] } };
     const target = existing ? `item:${existing.id}` : `new:${crypto.randomUUID()}`;
     const refs = parsePhotoRefs(
       body.photos,
@@ -490,6 +524,17 @@ export const cabinetHandlers = [
         if (change.authorId === userId) closeChange(change, "withdrawn");
       }
       return new HttpResponse(null, { status: 204 });
+    },
+  ),
+
+  http.get(
+    `${API}/cabinet/businesses/:businessId/tag-suggestions`,
+    ({ request, cookies, params }) => {
+      const auth = authenticate(request, cookies);
+      if ("response" in auth) return auth.response;
+      const record = owned(auth.session.userId, String(params.businessId));
+      if (!record) return error(404, "not_found", "Topilmadi");
+      return HttpResponse.json({ tags: tagSuggestions(record) });
     },
   ),
 
