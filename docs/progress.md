@@ -4,15 +4,16 @@ Oxirgi yangilanish: 2026-11-04
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                                                   | Holat                                                            |
-| ------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| 0       | Gʻoya tahlili, arxitektura                                | ✅ Tasdiqlangan                                                  |
-| 1       | Frontend rejasi                                           | ✅ Tasdiqlangan                                                  |
-| 2       | Frontend ishlab chiqish                                   | ✅ Tasdiqlangan                                                  |
-| 3       | Backend                                                   | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
-| 4       | Integratsiya va yakuniy tekshiruv                         | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
-| 5       | Hosting va domen                                          | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
-| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md)) | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
+| Bosqich | Mazmuni                                                             | Holat                                                            |
+| ------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura                                          | ✅ Tasdiqlangan                                                  |
+| 1       | Frontend rejasi                                                     | ✅ Tasdiqlangan                                                  |
+| 2       | Frontend ishlab chiqish                                             | ✅ Tasdiqlangan                                                  |
+| 3       | Backend                                                             | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
+| 4       | Integratsiya va yakuniy tekshiruv                                   | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
+| 5       | Hosting va domen                                                    | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
+| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))           | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
+| 7       | Qidiruv: mahsulot teglari ([ADR-0016](adr/0016-qidiruv-teglari.md)) | 🔄 Jarayonda                                                     |
 
 ## 2-bosqich qadamlari
 
@@ -64,11 +65,19 @@ Oxirgi yangilanish: 2026-11-04
 | Qidiruv tizimlariga indekslashni ochish                                          | 20–30 ta haqiqiy biznesdan keyin                                       | 5.6   |
 | Birinchi haqiqiy bizneslar ("Sandal nonkabob" va boshqalar)                      | Administrator kiritadi                                                 | 5.6   |
 | Zaxira uchun S3 Toshkent                                                         | Servercore istisno so'roviga javob; rad etilsa — UzCloud               | 5.5   |
-| Telegram tugmasi iframe nomi (a11y) saytga chiqishi                              | Keyingi Release bilan                                                  | 5.6   |
 | Telegram havola rasmidagi qo'sh bo'shliq (Inter shriftini `next/og` ga berish)   | Kosmetik, keyinroq                                                     | 5.6   |
 | Egalar takliflari productionda: taklif, Telegram xabari, tasdiqlash va rad etish | Birinchi haqiqiy bizneslar bilan; shungacha sinalmagan deb hisoblanadi | 6.5   |
 | Telegram bilan kirib taklif havolasini qabul qilish (Google bilan sinalgan)      | Birinchi Telegram'dan foydalanadigan ega bilan                         | 6.5   |
 | Servercore balansini to'ldirish                                                  | ~2026-11-25                                                            | 5.3   |
+
+## 7-bosqich qadamlari — qidiruv teglari ([ADR-0016](adr/0016-qidiruv-teglari.md))
+
+| Qadam | Mazmuni                                                                                                                  | Holat                |
+| ----- | ------------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| 7.1   | ADR-0016 va API shartnomasi (loyiha)                                                                                     | 🔄 Tasdiq kutilmoqda |
+| 7.2   | Backend: `Item.tags`, qidiruv matni, yumshoq qidiruv, teg takliflari, `rebuild_search`, testlar, shartnoma asosiy faylga | ⏳                   |
+| 7.3   | Frontend: teg kiritish, takliflar, "o'xshash natijalar" xabari, kabinet va moderator ko'rinishi, mock, unit va E2E       | ⏳                   |
+| 7.4   | Hujjatlar, joylash, `rebuild_search`, productionda tekshirish                                                            | ⏳                   |
 
 ## 6-bosqich qadamlari — biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))
 
