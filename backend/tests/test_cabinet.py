@@ -519,6 +519,21 @@ def test_item_tags_go_through_moderation() -> None:
     assert "stirjka" in business.search_text
 
 
+def test_item_link_change_is_important_for_moderator() -> None:
+    business = published()
+    owner = owner_of(business)
+    reviewer = admin("change.review")
+    body = {"kind": "item.create", "item": {**ITEM, "link": "https://instagram.com/p/x"}}
+    change = propose(owner, business, {**body, "photos": []}).json()
+    view = reviewer.call("GET", f"/admin/changes/{change['id']}").json()
+    assert view["important"] is True
+    link = next(f for f in view["fields"] if f["field"] == "item.link")
+    assert link["important"] is True
+    assert link["after"] == "https://instagram.com/p/x"
+    bad = {**body, "item": {**ITEM, "link": "https://evil.example.com"}}
+    assert propose(owner, business, {**bad, "photos": []}).status_code == 400
+
+
 def test_owner_tag_suggestions_are_isolated() -> None:
     mine, theirs = published(), published()
     owner = owner_of(mine)

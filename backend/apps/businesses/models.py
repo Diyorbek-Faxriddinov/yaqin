@@ -189,6 +189,8 @@ class Item(TimestampedModel):
     attributes = models.JSONField(default=list, blank=True)
     # Qidiruv teglari (ADR-0016): saytda ko'rinmaydi, faqat qidiruvga kiradi
     tags = models.JSONField(default=list, blank=True)
+    # Batafsil havola: Instagram, Telegram, YouTube, TikTok, Facebook'dagi video (links.py)
+    link = models.CharField(max_length=500, blank=True)
     is_available = models.BooleanField(default=True)
     position = models.PositiveIntegerField(default=0)
     # Qidiruv takliflari va "nima uchun topildi": nom, bo'lim, teglar, xususiyatlar, tavsif

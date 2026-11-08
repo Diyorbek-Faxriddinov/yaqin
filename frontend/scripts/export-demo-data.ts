@@ -26,7 +26,7 @@ const data = {
   businesses: BUSINESSES.map((business) => ({
     ...business,
     // Rasmlar fixture'da yo'q (mock xotirasidagi yuklashlar uchun maydon)
-    items: itemsFor(business).map(({ photos: _photos, tags: _tags, ...item }) => item),
+    items: itemsFor(business).map(({ photos: _photos, tags: _tags, link: _link, ...item }) => item),
     // Ommaviy sharhlar roʻyxati (mock'dagi kabi, eng ko'pi 150 ta); reyting — fixture'dagi qiymat
     reviews: reviewsFor(business, BASE_DATE),
   })),

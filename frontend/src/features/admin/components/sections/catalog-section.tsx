@@ -36,6 +36,7 @@ import { PhotoDraft } from "@/features/cabinet/components/photo-draft";
 import { draftFromPhotos, toPhotoRefs } from "@/features/cabinet/photo-refs";
 import { browserApi, call } from "@/lib/api/browser";
 import type { AdminItem, AttributeDefinition, ItemInput } from "@/lib/api/types";
+import { linkPlatform, MAX_ITEM_LINK } from "@/lib/item-link";
 import { cn } from "@/lib/utils";
 import { useOwnerMode } from "../../owner-mode";
 import {
@@ -299,6 +300,10 @@ function ItemDialog({
         .max(120, t("validation.nameLength")),
       group: z.string().trim().max(60, t("validation.tooLong")),
       description: z.string().trim().max(1000, t("validation.tooLong")),
+      link: z
+        .string()
+        .trim()
+        .refine((value) => !value || linkPlatform(value) !== null, t("catalog.linkInvalid")),
       priceType: z.enum(PRICE_TYPES),
       min: z.string(),
       max: z.string(),
@@ -342,6 +347,7 @@ function ItemDialog({
       name: item?.name ?? "",
       group: item?.group ?? "",
       description: item?.description ?? "",
+      link: item?.link ?? "",
       priceType: item?.price.type ?? "fixed",
       min: toSom(item?.price.min?.amount),
       max: toSom(item?.price.max?.amount),
@@ -383,6 +389,7 @@ function ItemDialog({
       ],
       isAvailable: v.isAvailable,
       tags,
+      link: v.link || null,
     };
     const photos = owner
       ? toPhotoRefs(draftPhotos, (index) => t("photos.alt", { name: v.name, index }))
@@ -418,6 +425,7 @@ function ItemDialog({
               price: "min",
               durationMinutes: "duration",
               description: "description",
+              link: "link",
               attributes: "typed",
             })
           ) {
@@ -476,6 +484,24 @@ function ItemDialog({
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
             )}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="item-link">{t("catalog.link")}</Label>
+            <Input
+              id="item-link"
+              type="url"
+              inputMode="url"
+              maxLength={MAX_ITEM_LINK}
+              placeholder="https://www.instagram.com/reel/..."
+              aria-describedby="item-link-hint"
+              aria-invalid={Boolean(errors.link)}
+              {...form.register("link")}
+            />
+            <p id="item-link-hint" className="text-sm text-muted-foreground">
+              {t("catalog.linkHint")}
+            </p>
+            {errors.link && <p className="text-sm text-destructive">{errors.link.message}</p>}
           </div>
 
           <div className="grid gap-2">

@@ -3083,9 +3083,16 @@ components:
         - attributes
         - images
         - isAvailable
+        - link
       properties:
         id: { type: string, format: uuid }
         slug: { type: string }
+        link:
+          type: [string, "null"]
+          format: uri
+          description: |
+            Batafsil havola — Instagram, Telegram, YouTube, TikTok yoki Facebook'dagi video yoki post
+            (faqat https). Sayt uni yangi oynada ochadi va bosilishini `link_click` bilan sanaydi.
         kind:
           type: string
           enum: [product, service]
@@ -3524,6 +3531,13 @@ components:
             Qidiruv teglari — saytda ko'rinmaydi. Yuborilmasa: yangi mahsulotda bo'sh, mavjudida
             o'zgarmaydi. Har biri 2–40 belgi; bir xil teg bir marta saqlanadi (ADR-0016).
           items: { type: string, minLength: 2, maxLength: 40 }
+        link:
+          type: [string, "null"]
+          maxLength: 500
+          description: |
+            Batafsil havola: faqat https va faqat instagram.com, t.me, youtube.com / youtu.be,
+            tiktok.com, facebook.com / fb.watch (boshqasi — `400`, `fields.link`). Yuborilmasa,
+            mavjud mahsulotda o'zgarmaydi. Egasi taklifida o'zgarsa — moderatorga «muhim» belgisi.
         isAvailable: { type: boolean }
 
     TagSuggestions:
@@ -3586,7 +3600,14 @@ components:
       properties:
         type:
           type: string
-          enum: [profile_view, call_click, telegram_click, direction_click]
+          enum:
+            [
+              profile_view,
+              call_click,
+              telegram_click,
+              direction_click,
+              link_click,
+            ]
         businessId: { type: string, format: uuid }
 
     LocalizedText:
@@ -4080,12 +4101,16 @@ components:
 
     StatsTotals:
       type: object
-      required: [profileViews, calls, telegramClicks, directionClicks]
+      required:
+        [profileViews, calls, telegramClicks, directionClicks, linkClicks]
       properties:
         profileViews: { type: integer }
         calls: { type: integer }
         telegramClicks: { type: integer }
         directionClicks: { type: integer }
+        linkClicks:
+          type: integer
+          description: Mahsulotning batafsil havolasi (Instagram va boshqalar) bosilishi
 
     StatsDay:
       allOf:

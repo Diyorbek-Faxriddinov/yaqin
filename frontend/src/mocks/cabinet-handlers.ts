@@ -86,6 +86,7 @@ export const ITEM_FIELDS = [
   "durationMinutes",
   "attributes",
   "tags",
+  "link",
   "isAvailable",
 ] as const;
 
@@ -203,6 +204,7 @@ export function itemValues(
       definitionsOf(findCategory(record.categorySlug)?.attributes ?? []),
     ),
     tags: item.tags,
+    link: item.link,
     isAvailable: item.isAvailable,
   };
 }
@@ -339,7 +341,13 @@ function draftChange(
       return { fields: { item: ["Mahsulot maʼlumotlari kerak"] } };
     const result = parseItem(body.item as Record<string, unknown>, record);
     if ("fields" in result) return result;
-    const parsed = { item: { ...result.item, tags: result.item.tags ?? existing?.tags ?? [] } };
+    const parsed = {
+      item: {
+        ...result.item,
+        tags: result.item.tags ?? existing?.tags ?? [],
+        link: result.item.link !== undefined ? result.item.link : (existing?.link ?? null),
+      },
+    };
     const target = existing ? `item:${existing.id}` : `new:${crypto.randomUUID()}`;
     const refs = parsePhotoRefs(
       body.photos,
@@ -361,7 +369,8 @@ function draftChange(
         ? { item: itemValues(existing, record), photos: photoRefs(existing.photos) }
         : {},
       fields,
-      important: false,
+      // Havola almashtirish — moderatorga alohida belgi (backend bilan bir xil)
+      important: fields.includes("item.link") && Boolean(parsed.item.link),
     };
   }
 

@@ -10,6 +10,7 @@ import type {
 } from "@/lib/api/types";
 import { AMENITIES, sortAmenities } from "@/lib/amenities";
 import { isValidPoint } from "@/lib/geo";
+import { linkPlatform } from "@/lib/item-link";
 import { normalizeForSearch } from "@/lib/text/normalize";
 import {
   API,
@@ -319,7 +320,12 @@ export function parseItem(
   body: Record<string, unknown> | null,
   record: DemoBusinessRecord,
 ):
-  | { item: Omit<DemoItem, "id" | "slug" | "photos" | "tags"> & { tags?: string[] } }
+  | {
+      item: Omit<DemoItem, "id" | "slug" | "photos" | "tags" | "link"> & {
+        tags?: string[];
+        link?: string | null;
+      };
+    }
   | { fields: Fields } {
   const fields: Fields = {};
   const name = typeof body?.name === "string" ? body.name.trim() : "";
@@ -353,6 +359,11 @@ export function parseItem(
   if (description.length > 1000) fields.description = ["1000 belgigacha"];
   const tags = body && "tags" in body ? parseTags(body.tags) : undefined;
   if (tags === null) fields.tags = ["Koʻpi bilan 15 ta teg, har biri 2–40 belgi"];
+  // `link` yuborilmasa — oʻzgarmaydi (teglar bilan bir xil); faqat ruxsat etilgan platformalar
+  const link =
+    body && "link" in body ? (typeof body.link === "string" ? body.link.trim() : "") : undefined;
+  if (link && linkPlatform(link) === null)
+    fields.link = ["Instagram, Telegram, YouTube, TikTok yoki Facebook havolasi (https://...)"];
   if (Object.keys(fields).length > 0 || !price || !kind) return { fields };
 
   return {
@@ -373,6 +384,7 @@ export function parseItem(
       attributes: parsed.stored,
       isAvailable: body?.isAvailable !== false,
       ...(tags ? { tags } : {}),
+      ...(link !== undefined ? { link: link || null } : {}),
     },
   };
 }
@@ -861,6 +873,7 @@ export const adminHandlers = [
       slug = `${slugify(parsed.item.name)}-${n}`;
     const item: DemoItem = {
       tags: [],
+      link: null,
       ...parsed.item,
       id: crypto.randomUUID(),
       slug,

@@ -12,6 +12,8 @@ export type DemoItem = Omit<Item, "attributes" | "images"> & {
   photos: AdminPhoto[];
   /** Qidiruv teglari (ADR-0016): ommaviy `Item` da yo'q */
   tags: string[];
+  /** Batafsil havola (Instagram va boshqalar) */
+  link: string | null;
 };
 
 type PriceType = Item["price"]["type"];
@@ -339,6 +341,7 @@ export function itemsFor(business: DemoBusiness): DemoItem[] {
       }),
       photos: [],
       tags: [],
+      link: null,
       isAvailable: random() > 0.1,
     };
   });

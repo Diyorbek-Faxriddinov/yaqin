@@ -21,6 +21,7 @@
 - Parol + 2FA (TOTP) kirishi; yangi administrator birinchi kirishda vaqtinchalik parolni almashtiradi va autentifikator ilovasini QR orqali ulaydi
 
 - Doʻkonda turib 7 qadamda biznes qoʻshish: GPS, kamera rasmlari (EXIF, jumladan GPS, telefonda ham, serverda ham olib tashlanadi), ish vaqti, katalog, egasining roziligi
+- Mahsulotga batafsil havola: Instagram, Telegram, YouTube, TikTok yoki Facebook'dagi video — saytda tugma, bosilishi statistikada
 - Mahsulot qidiruv teglari (saytda koʻrinmaydi, [ADR-0016](docs/adr/0016-qidiruv-teglari.md)): odamlar mahsulotni boshqa soʻz bilan qidirsa ham topiladi
 - Katalog: mahsulot va xizmatlar rasmlari (5 tagacha), tavsifi, kategoriya xususiyatlari turiga mos maydonlar bilan (oʻlchamlar — tugmachalar, son — birligi bilan), boʻlim takliflari; 46 kategoriya uchun tayyor standart xususiyatlar ([ADR-0014](docs/adr/0014-dokon-katalogi.md))
 - Eʼlon qilish va saytdan yashirish; xato kiritilgan (hech qachon eʼlon qilinmagan) qoralamani oʻchirish — eʼlon qilingan biznes oʻchirilmaydi, yashiriladi

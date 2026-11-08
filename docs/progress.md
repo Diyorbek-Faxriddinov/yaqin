@@ -4,16 +4,17 @@ Oxirgi yangilanish: 2026-11-04
 
 ## Bosqichlar
 
-| Bosqich | Mazmuni                                                             | Holat                                                            |
-| ------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 0       | Gʻoya tahlili, arxitektura                                          | ✅ Tasdiqlangan                                                  |
-| 1       | Frontend rejasi                                                     | ✅ Tasdiqlangan                                                  |
-| 2       | Frontend ishlab chiqish                                             | ✅ Tasdiqlangan                                                  |
-| 3       | Backend                                                             | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
-| 4       | Integratsiya va yakuniy tekshiruv                                   | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
-| 5       | Hosting va domen                                                    | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
-| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))           | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
-| 7       | Qidiruv: mahsulot teglari ([ADR-0016](adr/0016-qidiruv-teglari.md)) | ✅ Joylandi                                                      |
+| Bosqich | Mazmuni                                                                          | Holat                                                            |
+| ------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 0       | Gʻoya tahlili, arxitektura                                                       | ✅ Tasdiqlangan                                                  |
+| 1       | Frontend rejasi                                                                  | ✅ Tasdiqlangan                                                  |
+| 2       | Frontend ishlab chiqish                                                          | ✅ Tasdiqlangan                                                  |
+| 3       | Backend                                                                          | ✅ Tasdiqlangan ([reja](backend-plan.md))                        |
+| 4       | Integratsiya va yakuniy tekshiruv                                                | ✅ Tasdiqlangan ([reja](integration-plan.md))                    |
+| 5       | Hosting va domen                                                                 | ✅ Ishlayapti, ochiq bandlar keyinroq ([tuzilma](deployment.md)) |
+| 6       | Biznes kabineti ([ADR-0015](adr/0015-biznes-kabineti.md))                        | ✅ Joylandi, birinchi haqiqiy taklif sinovi ochiq                |
+| 7       | Qidiruv: mahsulot teglari ([ADR-0016](adr/0016-qidiruv-teglari.md))              | ✅ Joylandi                                                      |
+| 8       | Mahsulotga batafsil havola ([ADR-0014](adr/0014-dokon-katalogi.md) yangilanishi) | 🔄 Jarayonda                                                     |
 
 ## 2-bosqich qadamlari
 
@@ -69,6 +70,21 @@ Oxirgi yangilanish: 2026-11-04
 | Egalar takliflari productionda: taklif, Telegram xabari, tasdiqlash va rad etish | Birinchi haqiqiy bizneslar bilan; shungacha sinalmagan deb hisoblanadi | 6.5   |
 | Telegram bilan kirib taklif havolasini qabul qilish (Google bilan sinalgan)      | Birinchi Telegram'dan foydalanadigan ega bilan                         | 6.5   |
 | Servercore balansini to'ldirish                                                  | ~2026-11-25                                                            | 5.3   |
+
+## 8-bosqich qadamlari — mahsulot havolasi
+
+| Qadam | Mazmuni                                                                                                         | Holat |
+| ----- | --------------------------------------------------------------------------------------------------------------- | ----- |
+| 8.1   | Havola maydoni (admin va kabinet), mahsulot sahifasi va roʻyxatdagi tugma, «Havola» statistikasi, mock, testlar | ✅    |
+| 8.2   | Joylash va productionda tekshirish                                                                              | ⏳    |
+
+## 8.1 natijalari
+
+- **Maydon:** mahsulot formasida «Batafsil havola (ixtiyoriy)». Faqat Instagram, Telegram, YouTube, TikTok, Facebook va faqat https — boshqasi formada ham, serverda ham rad etiladi (`http://`, begona sayt, `instagram.com.evil.uz`, login:parol, boshqa port, `javascript:`).
+- **Saytda:** mahsulot sahifasida «Instagramda koʻrish» tugmasi, roʻyxatda kichik «Instagram» tugmasi; yangi oynada ochiladi.
+- **Statistika:** bosilishi `link_click` boʻlib sanaladi — admin, kabinet va hisobot havolasida beshinchi koʻrsatkich «Havola». Migratsiyalar: `businesses.0005`, `stats.0003`.
+- **Egalar:** havola qoʻshilsa yoki oʻzgarsa, taklif moderatorga «muhim» belgisi bilan chiqadi.
+- **Testlar:** backend 606 ta, shartnoma qamrovi 102/102; frontend unit 286 ta (+5: havola qoidalari, mock), E2E `e2e/item-link.spec.ts` (3 ekran): forma begona saytni rad etadi → saytda tugma → bosilganda `link_click` yuboriladi. Toʻliq E2E: demo 279 ✅, backend 296 ✅; toʻliq parallel yugurishda 3 ta (demo) va 1 ta (backend) vaqt tugashi — `security.spec.ts` xarita CSP va `business.spec.ts` katalog; alohida yugurilganda 6/6 oʻtdi (yuklama, havolaga aloqasi yoʻq).
 
 ## 7-bosqich qadamlari — qidiruv teglari ([ADR-0016](adr/0016-qidiruv-teglari.md))
 

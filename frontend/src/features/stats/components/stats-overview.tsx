@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, MapPinned, Phone, Send, Table2, type LucideIcon } from "lucide-react";
+import { Eye, Link2, MapPinned, Phone, Send, Table2, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { StatsSeries } from "@/lib/api/types";
@@ -15,6 +15,7 @@ const METRICS: Array<{ key: StatsMetric; icon: LucideIcon }> = [
   { key: "calls", icon: Phone },
   { key: "telegramClicks", icon: Send },
   { key: "directionClicks", icon: MapPinned },
+  { key: "linkClicks", icon: Link2 },
 ];
 
 /**
@@ -32,7 +33,7 @@ export function StatsOverview({ series }: { series: StatsSeries }) {
       <div
         role="group"
         aria-label={t("metricsLabel")}
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5"
       >
         {METRICS.map(({ key, icon: Icon }) => (
           <button

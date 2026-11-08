@@ -480,3 +480,38 @@ def test_tag_suggestions(root: AdminClient, shop: Business) -> None:
     tags = root.call("GET", f"/admin/businesses/{shop.id}/tag-suggestions").json()["tags"]
     # Avval o'z teglari; boshqasi takrorlanmaydi; qoralama bizneslardan olinmaydi
     assert tags == ["ozim", "umumiy", "raqib"]
+
+
+# --- Batafsil havola ---
+
+
+def test_item_link_allowed_platforms_only(
+    root: AdminClient, client: Client, shop: Business
+) -> None:
+    url = f"/admin/businesses/{shop.id}/items"
+    for bad in (
+        "http://instagram.com/p/abc",  # faqat https
+        "https://evil.example.com/pay",  # ro'yxatda yo'q
+        "https://instagram.com.evil.uz/p/abc",
+        "https://user:pass@instagram.com/p/abc",
+        "https://instagram.com:8443/p/abc",
+        "javascript:alert(1)",
+        "https://instagram.com/p/" + "a" * 500,
+    ):
+        response = root.call("POST", url, {**ITEM, "link": bad})
+        assert response.status_code == 400, bad
+        assert "link" in response.json()["fields"]
+
+    created = root.call(
+        "POST", url, {**ITEM, "link": " https://www.instagram.com/reel/abc123/ "}
+    ).json()
+    assert created["link"] == "https://www.instagram.com/reel/abc123/"
+    for good in ("https://youtu.be/x1", "https://t.me/kanal/12", "https://vm.tiktok.com/Z/"):
+        assert root.call("POST", url, {**ITEM, "name": good[8:20], "link": good}).status_code == 201
+
+    # Ommaviy API'da ko'rinadi; `link` yuborilmasa o'zgarmaydi, null — olib tashlaydi
+    public_items = public_get(client, f"/businesses/{shop.slug}/items").json()
+    assert "https://www.instagram.com/reel/abc123/" in [i["link"] for i in public_items]
+    item_url = f"{url}/{created['id']}"
+    assert root.call("PUT", item_url, {**ITEM, "name": "Yangi"}).json()["link"] == created["link"]
+    assert root.call("PUT", item_url, {**ITEM, "link": None}).json()["link"] is None

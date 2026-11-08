@@ -207,7 +207,22 @@
       "duration": "Длительность",
       "details": "Подробности",
       "offeredBy": "Предлагает",
-      "metaDescription": "{item} — {business}, {district}. Цена и подробности."
+      "metaDescription": "{item} — {business}, {district}. Цена и подробности.",
+      "links": {
+        "instagram": "Смотреть в Instagram",
+        "telegram": "Открыть в Telegram",
+        "youtube": "Смотреть на YouTube",
+        "tiktok": "Смотреть в TikTok",
+        "facebook": "Смотреть в Facebook"
+      },
+      "platforms": {
+        "instagram": "Instagram",
+        "telegram": "Telegram",
+        "youtube": "YouTube",
+        "tiktok": "TikTok",
+        "facebook": "Facebook"
+      },
+      "newTab": "откроется в новом окне"
     }
   },
   "Gallery": {
@@ -634,7 +649,10 @@
       "tagRemove": "Удалить тег {tag}",
       "tagLength": "Тег должен быть от 2 до 40 символов",
       "tagsLimit": "Не больше {max} тегов",
-      "tagsAdded": "Добавленные теги"
+      "tagsAdded": "Добавленные теги",
+      "link": "Подробная ссылка (необязательно)",
+      "linkHint": "Видео или пост в Instagram, Telegram, YouTube, TikTok или Facebook. На сайте появится кнопка.",
+      "linkInvalid": "Введите ссылку на Instagram, Telegram, YouTube, TikTok или Facebook (https://...)"
     },
     "publish": {
       "current": "Текущий статус",
@@ -1281,7 +1299,8 @@
       "profileViews": "Просмотры профиля",
       "calls": "Звонки",
       "telegramClicks": "Telegram",
-      "directionClicks": "Маршрут"
+      "directionClicks": "Маршрут",
+      "linkClicks": "Ссылки"
     },
     "chartTitle": "{metric} — по дням",
     "chartLabel": "{metric}: {from} – {to}, всего {total}",
@@ -1503,7 +1522,8 @@
           "durationMinutes": "Длительность",
           "attributes": "Характеристики",
           "isAvailable": "Наличие",
-          "tags": "Поисковые теги"
+          "tags": "Поисковые теги",
+          "link": "Подробная ссылка"
         }
       },
       "changed": "Изменено: {fields}",

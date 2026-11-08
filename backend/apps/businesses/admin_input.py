@@ -15,6 +15,7 @@ from django.core.validators import URLValidator
 from django.utils.dateparse import parse_datetime
 
 from apps.businesses import attributes as item_attributes
+from apps.businesses import links as item_links
 from apps.businesses.models import Business, Item
 from apps.businesses.slugs import slugify
 from apps.catalog.models import Category, District
@@ -289,6 +290,12 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
     if len(text(body.get("description"))) > 1000:
         fields["description"] = ["1000 belgigacha"]
     tags = parse_tags(body["tags"]) if "tags" in body else item.tags
+    # `link` yuborilmasa ham o'zgarmaydi (eski ochiq sahifa uchun, teglar bilan bir xil)
+    link = text(body.get("link")) if "link" in body else item.link
+    if link and item_links.platform(link) is None:
+        fields["link"] = [
+            "Instagram, Telegram, YouTube, TikTok yoki Facebook havolasi (https://...)"
+        ]
     if tags is None:
         fields["tags"] = [f"Koʻpi bilan {MAX_TAGS} ta teg, har biri 2–40 belgi"]
     if fields:
@@ -304,4 +311,5 @@ def apply_item(item: Item, body: dict[str, Any]) -> None:
     item.duration_minutes = duration if kind == Item.Kind.SERVICE else None
     item.attributes = stored
     item.tags = tags or []
+    item.link = link
     item.is_available = body.get("isAvailable") is not False

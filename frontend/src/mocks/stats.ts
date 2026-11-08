@@ -15,6 +15,7 @@ export const EVENT_KEYS = {
   call_click: "calls",
   telegram_click: "telegramClicks",
   direction_click: "directionClicks",
+  link_click: "linkClicks",
 } as const satisfies Record<string, keyof StatsTotals>;
 
 export type StatsEventType = keyof typeof EVENT_KEYS;
@@ -27,6 +28,7 @@ const empty = (): StatsTotals => ({
   calls: 0,
   telegramClicks: 0,
   directionClicks: 0,
+  linkClicks: 0,
 });
 
 function add(target: StatsTotals, source: StatsTotals) {
@@ -34,6 +36,7 @@ function add(target: StatsTotals, source: StatsTotals) {
   target.calls += source.calls;
   target.telegramClicks += source.telegramClicks;
   target.directionClicks += source.directionClicks;
+  target.linkClicks += source.linkClicks;
 }
 
 /** Toshkent vaqti bo'yicha sana: YYYY-MM-DD */
@@ -73,6 +76,8 @@ function demoBaseline(business: DemoBusinessRecord, date: string): StatsTotals {
     calls: Math.round(views * (0.06 + random() * 0.1)),
     telegramClicks: Math.round(views * random() * 0.04),
     directionClicks: Math.round(views * (0.05 + random() * 0.08)),
+    // Demo mahsulotlarda havola yoʻq — namunaviy qiymat qoʻshilmaydi
+    linkClicks: 0,
   };
 }
 

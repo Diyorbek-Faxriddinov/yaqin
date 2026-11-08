@@ -22,6 +22,7 @@ FIELDS = {
     "calls": "calls",
     "telegramClicks": "telegram_clicks",
     "directionClicks": "direction_clicks",
+    "linkClicks": "link_clicks",
 }
 
 

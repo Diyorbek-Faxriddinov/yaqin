@@ -1918,6 +1918,12 @@ export interface components {
             /** Format: uuid */
             id: string;
             slug: string;
+            /**
+             * Format: uri
+             * @description Batafsil havola — Instagram, Telegram, YouTube, TikTok yoki Facebook'dagi video yoki post
+             *     (faqat https). Sayt uni yangi oynada ochadi va bosilishini `link_click` bilan sanaydi.
+             */
+            link: string | null;
             /** @enum {string} */
             kind: "product" | "service";
             name: string;
@@ -2165,6 +2171,12 @@ export interface components {
              *     o'zgarmaydi. Har biri 2–40 belgi; bir xil teg bir marta saqlanadi (ADR-0016).
              */
             tags?: string[];
+            /**
+             * @description Batafsil havola: faqat https va faqat instagram.com, t.me, youtube.com / youtu.be,
+             *     tiktok.com, facebook.com / fb.watch (boshqasi — `400`, `fields.link`). Yuborilmasa,
+             *     mavjud mahsulotda o'zgarmaydi. Egasi taklifida o'zgarsa — moderatorga «muhim» belgisi.
+             */
+            link?: string | null;
             isAvailable: boolean;
         };
         TagSuggestions: {
@@ -2203,7 +2215,7 @@ export interface components {
         };
         StatsEvent: {
             /** @enum {string} */
-            type: "profile_view" | "call_click" | "telegram_click" | "direction_click";
+            type: "profile_view" | "call_click" | "telegram_click" | "direction_click" | "link_click";
             /** Format: uuid */
             businessId: string;
         };
@@ -2485,6 +2497,8 @@ export interface components {
             calls: number;
             telegramClicks: number;
             directionClicks: number;
+            /** @description Mahsulotning batafsil havolasi (Instagram va boshqalar) bosilishi */
+            linkClicks: number;
         };
         StatsDay: components["schemas"]["StatsTotals"] & {
             /**

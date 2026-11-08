@@ -308,4 +308,5 @@ def item(entry: Item, lang: Lang, known: dict[str, Any]) -> dict[str, Any]:
         "attributes": item_attributes.public_attributes(entry.attributes, known, lang),
         "images": [image(photo) for photo in entry.photos.all()],
         "isAvailable": entry.is_available,
+        "link": entry.link or None,
     }

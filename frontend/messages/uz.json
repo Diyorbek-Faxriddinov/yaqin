@@ -207,7 +207,22 @@
       "duration": "Davomiyligi",
       "details": "Tafsilotlar",
       "offeredBy": "Taklif qiluvchi",
-      "metaDescription": "{item} — {business}, {district}. Narxi va tafsilotlari."
+      "metaDescription": "{item} — {business}, {district}. Narxi va tafsilotlari.",
+      "links": {
+        "instagram": "Instagramda koʻrish",
+        "telegram": "Telegramda koʻrish",
+        "youtube": "YouTubeda koʻrish",
+        "tiktok": "TikTokda koʻrish",
+        "facebook": "Facebookda koʻrish"
+      },
+      "platforms": {
+        "instagram": "Instagram",
+        "telegram": "Telegram",
+        "youtube": "YouTube",
+        "tiktok": "TikTok",
+        "facebook": "Facebook"
+      },
+      "newTab": "yangi oynada ochiladi"
     }
   },
   "Gallery": {
@@ -634,7 +649,10 @@
       "tagRemove": "{tag} tegini olib tashlash",
       "tagLength": "Teg 2–40 belgi boʻlsin",
       "tagsLimit": "Koʻpi bilan {max} ta teg",
-      "tagsAdded": "Qoʻshilgan teglar"
+      "tagsAdded": "Qoʻshilgan teglar",
+      "link": "Batafsil havola (ixtiyoriy)",
+      "linkHint": "Instagram, Telegram, YouTube, TikTok yoki Facebook'dagi video yoki post. Saytda tugma boʻlib chiqadi.",
+      "linkInvalid": "Instagram, Telegram, YouTube, TikTok yoki Facebook havolasini kiriting (https://...)"
     },
     "publish": {
       "current": "Hozirgi holat",
@@ -1281,7 +1299,8 @@
       "profileViews": "Profil koʻrishlari",
       "calls": "Qoʻngʻiroqlar",
       "telegramClicks": "Telegram",
-      "directionClicks": "Yoʻnalish"
+      "directionClicks": "Yoʻnalish",
+      "linkClicks": "Havola"
     },
     "chartTitle": "{metric} — kunlar boʻyicha",
     "chartLabel": "{metric}: {from} – {to}, jami {total}",
@@ -1503,7 +1522,8 @@
           "durationMinutes": "Davomiyligi",
           "attributes": "Xususiyatlar",
           "isAvailable": "Mavjudligi",
-          "tags": "Qidiruv teglari"
+          "tags": "Qidiruv teglari",
+          "link": "Batafsil havola"
         }
       },
       "changed": "Oʻzgargan: {fields}",

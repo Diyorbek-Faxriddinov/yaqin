@@ -25,6 +25,7 @@ EVENT_FIELDS = {
     "call_click": "calls",
     "telegram_click": "telegram_clicks",
     "direction_click": "direction_clicks",
+    "link_click": "link_clicks",
 }
 
 

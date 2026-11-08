@@ -14,6 +14,8 @@ class DailyStats(models.Model):
     calls = models.PositiveIntegerField(default=0)
     telegram_clicks = models.PositiveIntegerField(default=0)
     direction_clicks = models.PositiveIntegerField(default=0)
+    # Mahsulotning batafsil havolasi (Instagram va boshqalar) bosilishi
+    link_clicks = models.PositiveIntegerField(default=0)
 
     class Meta:
         constraints = [

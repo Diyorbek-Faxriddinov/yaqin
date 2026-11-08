@@ -141,8 +141,9 @@ function changeFields(change: StoredChange, record: DemoBusinessRecord): ChangeF
       };
     }
     const key = name.replace(/^item\./, "");
-    if (change.kind === "item.create") return field(name, null, null, afterItem[key]);
-    return field(name, beforeItem?.[key], currentItem?.[key] ?? null, afterItem[key]);
+    const important = key === "link" && Boolean(afterItem[key]);
+    if (change.kind === "item.create") return field(name, null, null, afterItem[key], important);
+    return field(name, beforeItem?.[key], currentItem?.[key] ?? null, afterItem[key], important);
   });
 }
 

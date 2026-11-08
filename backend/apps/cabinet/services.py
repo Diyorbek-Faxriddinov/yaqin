@@ -62,6 +62,7 @@ ITEM_FIELDS = (
     "durationMinutes",
     "attributes",
     "tags",
+    "link",
     "isAvailable",
 )
 MAX_PENDING_CHANGES = 20
@@ -104,6 +105,7 @@ def item_values(item: Item) -> dict[str, Any]:
         "durationMinutes": item.duration_minutes,
         "attributes": item_attributes.input_values(item.attributes, known),
         "tags": list(item.tags),
+        "link": item.link or None,
         "isAvailable": item.is_available,
     }
 
@@ -247,7 +249,8 @@ def _draft(kind: str, body: dict[str, Any], business: Business) -> dict[str, Any
             "payload": {"item": after, "photos": refs},
             "before": before,
             "fields": fields,
-            "important": False,
+            # Havola almashtirish — firibgarlikning eng oson yoʻli: moderatorga alohida belgi
+            "important": "item.link" in fields and bool(after.get("link")),
         }
 
     if kind == Kind.ITEM_DELETE:
@@ -630,8 +633,9 @@ def change_fields(change: BusinessChange, request: Request) -> list[dict[str, An
             continue
         key = name.removeprefix("item.")
         after = change.payload["item"].get(key)
+        important = key == "link" and bool(after)
         if change.kind == Kind.ITEM_CREATE:
-            fields.append(_field(name, None, None, after))
+            fields.append(_field(name, None, None, after, important))
         else:
             fields.append(
                 _field(
@@ -639,6 +643,7 @@ def change_fields(change: BusinessChange, request: Request) -> list[dict[str, An
                     (before_item or {}).get(key),
                     current_item.get(key) if current_item else None,
                     after,
+                    important,
                 )
             )
     return fields

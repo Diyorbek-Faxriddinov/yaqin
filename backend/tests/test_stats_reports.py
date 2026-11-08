@@ -56,12 +56,14 @@ def test_business_series_fills_empty_days(root: AdminClient, ustoz: Business) ->
         "calls": 0,
         "telegramClicks": 0,
         "directionClicks": 3,
+        "linkClicks": 0,
     }
     assert body["totals"] == {
         "profileViews": 7,
         "calls": 1,
         "telegramClicks": 0,
         "directionClicks": 3,
+        "linkClicks": 0,
     }
     assert root.call("GET", f"/admin/businesses/{ustoz.id}/stats?days=14").status_code == 400
     assert len(root.call("GET", f"/admin/businesses/{ustoz.id}/stats").json()["daily"]) == 30
@@ -98,7 +100,7 @@ def test_platform_stats(root: AdminClient, client: Client, ustoz: Business) -> N
 
 
 def test_events_feed_statistics(root: AdminClient, client: Client, ustoz: Business) -> None:
-    for event in ("profile_view", "profile_view", "call_click"):
+    for event in ("profile_view", "profile_view", "call_click", "link_click"):
         response = client.post(
             "/api/v1/events",
             {"type": event, "businessId": str(ustoz.id)},
@@ -106,7 +108,7 @@ def test_events_feed_statistics(root: AdminClient, client: Client, ustoz: Busine
         )
         assert response.status_code == 202
     totals = root.call("GET", f"/admin/businesses/{ustoz.id}/stats?days=7").json()["totals"]
-    assert (totals["profileViews"], totals["calls"]) == (2, 1)
+    assert (totals["profileViews"], totals["calls"], totals["linkClicks"]) == (2, 1, 1)
 
 
 # --- Hisobot havolasi ---

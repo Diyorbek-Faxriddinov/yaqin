@@ -73,3 +73,12 @@ Hostingdan oldingi koʻrib chiqishda (5.2a) maʼlum boʻldi: production bazasida
   - Filtr — keyinroq (`Amenity` qiymatlari tayyor).
 - **Jonli navbat va oʻz chatimiz qilinmadi** (ADR-0008 sabablari). Oʻrniga "Oldindan yozilish" qulayligi bor, aloqa esa Telegram va telefon orqali.
 - **Veb-sayt endi admin panelda kiritiladi.** Avval saytda koʻrsatilardi, lekin kiritib boʻlmasdi.
+
+## Yangilanish (2026-11-09): mahsulotning batafsil havolasi
+
+- **Nima:** mahsulot yoki xizmatga bitta havola — Instagram, Telegram, YouTube, TikTok yoki Facebook'dagi video yoki post. Masalan, fast food har bir taomga Instagram'da video tayyorlagan. Saytga video joylash shart emas.
+- **Faqat ruxsat etilgan platformalar va faqat https** (`apps/businesses/links.py`, frontendda `src/lib/item-link.ts` — bir xil saqlanadi). Ixtiyoriy sayt rad etildi: soxta toʻlov sahifasi kabi firibgarlikka eng oson yoʻl. Biznesning oʻz sayti kerak boʻlsa — alohida qaror.
+- **Koʻrinishi:** mahsulot sahifasida katta tugma («Instagramda koʻrish»), roʻyxatda kichik tugma. Yangi oynada ochiladi (`rel="noopener noreferrer nofollow ugc"`).
+- **Egalar:** kabinetda ham shu maydon; havola qoʻshilsa yoki oʻzgarsa, moderatorga «muhim» belgisi bilan chiqadi.
+- **Statistika:** bosilishi `link_click` hodisasi, kunlik `link_clicks` ustuni, `StatsTotals.linkClicks`. Admin, kabinet va hisobot havolasida «Havola» koʻrsatkichi.
+- `ItemInput.link` yuborilmasa, mavjud mahsulotda oʻzgarmaydi (teglar bilan bir xil — eski ochiq sahifa havolani oʻchirib yubormasin).

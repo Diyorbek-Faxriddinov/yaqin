@@ -78,6 +78,7 @@ Namuna — [`.env.example`](.env.example).
 - **Biznes qulayliklari** — tartib `src/lib/amenities.ts` da (kontrakt bilan bir xil), ikonkalar va ro'yxat — `features/business/components/amenities.tsx`, nomlar — `Amenities` namespace.
 - **Mahsulot xususiyatlari** (ADR-0014): kategoriya xususiyati — `key` va xom qiymat bilan yuboriladi, nom va qiymatni backend soʻralgan tilda qaytaradi; mock'dagi qoidalar `src/mocks/item-attributes.ts` — backend `apps/businesses/attributes.py` bilan bir xil saqlang.
 - **Qidiruv teglari** (ADR-0016): `features/admin/components/tag-input.tsx`, admin va kabinet uchun umumiy. Teglar faqat `AdminItem` da — ommaviy `Item` ga chiqmasin (mock `publicItem` ularni olib tashlaydi). `BusinessPage.relaxed` bo'lsa, natijalar sahifasi ogohlantirishi shart.
+- **Mahsulot havolasi** (ADR-0014 yangilanishi): ruxsat etilgan platformalar `src/lib/item-link.ts` da (backend `apps/businesses/links.py` bilan bir xil); tugma — `features/business/components/item-link-button.tsx`, bosilishi `trackEvent("link_click")`.
 - Dizayn tizimi va komponentlar — [docs/design-system.md](../docs/design-system.md), jonli koʻrinish: `/dev/ui`.
 
 ## E2E: ikki rejim

@@ -9,6 +9,7 @@ import { isDemoMode } from "@/lib/env";
 import { formatDuration } from "@/lib/format/duration";
 import { formatPrice, formatPriceRange } from "@/lib/format/price";
 import { cn } from "@/lib/utils";
+import { ItemLinkButton } from "./item-link-button";
 
 /** Narx turi bo'yicha matn: aniq, "... dan", oraliq, "so'rov bo'yicha" */
 export function ItemPriceText({ price, className }: { price: ItemPrice; className?: string }) {
@@ -97,10 +98,12 @@ function ItemDetails({ item }: { item: Item }) {
 function ProductCard({
   item,
   businessSlug,
+  businessId,
   iconKey,
 }: {
   item: Item;
   businessSlug: string;
+  businessId: string;
   iconKey: string | null;
 }) {
   return (
@@ -123,6 +126,14 @@ function ProductCard({
           <ItemDetails item={item} />
         </div>
         <ItemPriceText price={item.price} className="mt-auto pt-1 text-sm" />
+        {item.link && (
+          <ItemLinkButton
+            url={item.link}
+            businessId={businessId}
+            compact
+            className="mt-1 self-start"
+          />
+        )}
       </div>
     </li>
   );
@@ -131,10 +142,12 @@ function ProductCard({
 function ServiceRow({
   item,
   businessSlug,
+  businessId,
   iconKey,
 }: {
   item: Item;
   businessSlug: string;
+  businessId: string;
   iconKey: string | null;
 }) {
   return (
@@ -152,6 +165,9 @@ function ServiceRow({
         <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
           <ItemDetails item={item} />
         </div>
+        {item.link && (
+          <ItemLinkButton url={item.link} businessId={businessId} compact className="mt-2" />
+        )}
       </div>
       <ItemPriceText price={item.price} className="pt-0.5 text-right" />
     </li>
@@ -165,10 +181,13 @@ function ServiceRow({
 export function ItemList({
   items,
   businessSlug,
+  businessId,
   iconKey,
 }: {
   items: Item[];
   businessSlug: string;
+  /** Havola bosilishini statistikada sanash uchun */
+  businessId: string;
   /** Rasmsiz mahsulot uchun kategoriya ikonkasi */
   iconKey: string | null;
 }) {
@@ -204,6 +223,7 @@ export function ItemList({
                     key={item.id}
                     item={item}
                     businessSlug={businessSlug}
+                    businessId={businessId}
                     iconKey={iconKey}
                   />
                 ))}
@@ -216,6 +236,7 @@ export function ItemList({
                     key={item.id}
                     item={item}
                     businessSlug={businessSlug}
+                    businessId={businessId}
                     iconKey={iconKey}
                   />
                 ))}

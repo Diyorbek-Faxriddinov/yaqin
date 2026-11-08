@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { BusinessOpenStatus } from "@/features/business/components/business-open-status";
 import { ContactActions } from "@/features/business/components/contact-actions";
 import { ItemJsonLd } from "@/features/business/components/item-json-ld";
+import { ItemLinkButton } from "@/features/business/components/item-link-button";
 import { ItemPriceText } from "@/features/business/components/item-list";
 import { getBusiness, getBusinessItem, getBusinessItems } from "@/features/business/queries";
 import { CategoryIcon } from "@/features/category/category-icon";
@@ -92,6 +93,10 @@ export default async function ItemPage({ params }: PageProps<"/[locale]/biznes/[
         </header>
 
         {item.description && <p className="whitespace-pre-line">{item.description}</p>}
+
+        {item.link && (
+          <ItemLinkButton url={item.link} businessId={business.id} className="w-full sm:w-auto" />
+        )}
 
         {(item.durationMinutes != null || item.attributes.length > 0) && (
           <section aria-labelledby="item-details" className="space-y-3">

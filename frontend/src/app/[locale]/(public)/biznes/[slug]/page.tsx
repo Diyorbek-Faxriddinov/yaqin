@@ -180,7 +180,12 @@ export default async function BusinessPage({ params }: PageProps<"/[locale]/bizn
           />
 
           <Section id="catalog" title={t(`sections.${catalogTitleKey(items)}`)}>
-            <ItemList items={items} businessSlug={slug} iconKey={business.category.iconKey} />
+            <ItemList
+              items={items}
+              businessSlug={slug}
+              businessId={business.id}
+              iconKey={business.category.iconKey}
+            />
           </Section>
         </div>
 
